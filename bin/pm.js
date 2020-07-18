@@ -126,8 +126,8 @@ function commit(...args) {
 }
 
 function install(arg = null) {
-  let base = "https://github.com/prosemirror/"
-  if (arg == "--ssh") { base = "git@github.com:ProseMirror/" }
+  let base = "https://github.com/xheldon-prosemirror/"
+  if (arg == "--ssh") { base = "git@github.com:xheldon-prosemirror/" }
   else if (arg != null) help(1)
 
   modsAndWebsite.forEach(repo => {
@@ -247,7 +247,7 @@ function releaseNotes(mod, changes, version) {
   let d = new Date, date = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate())
 
   let types = {breaking: "Breaking changes", fix: "Bug fixes", feature: "New features"}
-
+  // TODO: modify this when public this translate project
   let refTarget = "https://prosemirror.net/docs/ref/"
   let head = `## ${version} (${date})\n\n`, body = ""
   for (let type in types) {
