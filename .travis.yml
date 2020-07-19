@@ -22,6 +22,7 @@ env:
     - NODE_ENV=prod
 after_success:
     - cd public
+    - echo "prosemirror.xheldon.com" > CNAME
     - git init
     - git checkout -b master
     - git add -A
