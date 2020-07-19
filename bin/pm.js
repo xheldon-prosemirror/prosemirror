@@ -203,9 +203,8 @@ function push() {
   })
   if (update) {
     // NOTE：在根目录也 push 一次
-    console.log('updateInfo.toString():', updateInfo.toString());
     run("git", ["add", '.']);
-    run("git", ["commit", "-m", updateInfo.toString()], './');
+    run("git", ["commit", "-m", 'update:' + updateInfo.toString()], './');
     run("git", ["push"]);
   }
 }

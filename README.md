@@ -44,6 +44,8 @@
 
 因此，如果需要 `website` 编译我们修改后的代码，就需要让其处在上层目录有修改后的代码，然后在安装包的时候，其依赖是对根目录 `node_modules` 相关仓库的一个引用---跟 `prosemirror` 仓库运行 `bin/pm install` 后一样，因此可以编译到修改后的代码。
 
+诚然，可以使用 organization webhooks 做到子模块更新即更新 `website` 但我不熟。。。算了
+
 以下是原始 README：
  
  ---
