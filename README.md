@@ -36,15 +36,8 @@
     5. `cd website`
     6. `make`
     7. 将当前目录（website）下的 `public` 逐个文件夹 `push` 到 `x_blog/_project/prosemirror/` 路径下
-    8. 稍等片刻后会自动触发 `Jekyll` 的自动编译，则通过访问 `https://xheldon.com/prosemirror/docs/ref/index.html` 来查看生成的文档
+    8. 稍等片刻后会自动触发 `Jekyll` 的自动编译，则通过访问 `https://prosemirror.xheldon.com` 来查看生成的文档
 
-## 为什么不只在 `prosemirror` 中放一个 `CI` 钩子呢？
-
-因为，`website` 生成 `doc` 或者 `example` 的时候，是现安装依赖包，因此其是从 `ProseMirror` 下载最新的包进行编译，而不是编译我们 `xheldon-prosemirror` 的修改后的代码。（我总不能重新发布 `N` 个 `prosemirror-xxx` 的包吧？）
-
-因此，如果需要 `website` 编译我们修改后的代码，就需要让其处在上层目录有修改后的代码，然后在安装包的时候，其依赖是对根目录 `node_modules` 相关仓库的一个引用---跟 `prosemirror` 仓库运行 `bin/pm install` 后一样，因此可以编译到修改后的代码。
-
-诚然，可以使用 organization webhooks 做到子模块更新即更新 `website` 但我不熟。。。算了
 
 以下是原始 README：
  
