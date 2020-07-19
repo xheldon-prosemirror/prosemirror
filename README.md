@@ -36,8 +36,7 @@
     5. `cd website`
     6. `make`
     7. 将当前目录（website）下的 `public` 逐个文件夹 `push` 到 `x_blog/_project/prosemirror/` 路径下
-    8. 稍等片刻后会自动触发 `Jekyll` 的自动编译，则通过访问 `https://prosemirror.xheldon.com` 来查看生成的文档
-
+    8. 稍等片刻后会自动触发 `Jekyll` 的自动编译，则通过访问 `https://prosemirror.xheldon.com/docs/ref/` 来查看生成的文档
 
 以下是原始 README：
  
