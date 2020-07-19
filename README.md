@@ -22,6 +22,28 @@
  1. `bin/pm commit -a -m 'some comment'` 将改动 `commit`
  2. `bin/pm push` 将代码推向远端的 `xheldon-prosemirror` 仓库而不是原 `ProseMirror` 仓库
 
+# 生成中文的文档及相关示例静态页面的 CI 流程：
+
+通过注释的方式翻译好后，如在 /view/src/index.js 中修改了某个注释，后：
+
+1. 依前面步骤 `commit` 的时候，我增加了 `bin/pm` 的一项行为，即是在 `prosemirror` 也就是根目录下新建/追加一个文件，记录本次修改的变动，然后在 `push` 的时候也一起 `push` 到 `prosemirror` 仓库，以此来触发更新（之前 `push` 的时候只会对应发布相关 `module`，`prosemirror` 本身不会更新
+2. 触发 `prosemirror` 的 `CI`
+3. `CI` 内容为拉取 `prosemirror` 仓库，然后依次执行：
+    1. `npm install yarn`
+    2. `npm install`
+    3. `bin/pm install`
+    4. `bin/pm test`
+    5. `cd website`
+    6. `make`
+    7. 将当前目录（website）下的 `public` 逐个文件夹 `push` 到 `x_blog/_project/prosemirror/` 路径下
+    8. 稍等片刻后会自动触发 `Jekyll` 的自动编译，则通过访问 `https://xheldon.com/prosemirror/docs/ref/index.html` 来查看生成的文档
+
+## 为什么不只在 `prosemirror` 中放一个 `CI` 钩子呢？
+
+因为，`website` 生成 `doc` 或者 `example` 的时候，是现安装依赖包，因此其是从 `ProseMirror` 下载最新的包进行编译，而不是编译我们 `xheldon-prosemirror` 的修改后的代码。（我总不能重新发布 `N` 个 `prosemirror-xxx` 的包吧？）
+
+因此，如果需要 `website` 编译我们修改后的代码，就需要让其处在上层目录有修改后的代码，然后在安装包的时候，其依赖是对根目录 `node_modules` 相关仓库的一个引用---跟 `prosemirror` 仓库运行 `bin/pm install` 后一样，因此可以编译到修改后的代码。
+
 以下是原始 README：
  
  ---
