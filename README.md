@@ -2,7 +2,7 @@
 
 此为个人项目，用来在本人阅读 ProseMirror 源码过程中加注释和汉化使用
 
-因为原作者 [@Marijn](https://github.com/marijnh) 的文档是用自己写的一个文档生成工具（不是 jsDoc）通过扫描源码生成文档然后放到 [官网](https://prosemirror.net/docs/ref/) 上的，因此此处只能通过在源码中添加注释的方式来生成相同的汉化 API 手册。
+因为原作者 [@Marijn](https://github.com/marijnh) 的文档是通过扫描源码生成文档然后放到 [官网](https://prosemirror.net/docs/ref/) 上的，因此此处只能通过在源码中添加注释的方式来生成相同的汉化 API 手册。
 
 后续会考虑仿照官网，将生成的文档、示例发布到网站上（待翻译的差不多的时候）。这个过程随缘翻译，不要催更。
 
@@ -22,21 +22,41 @@
  1. `bin/pm commit -a -m 'some comment'` 将改动 `commit`
  2. `bin/pm push` 将代码推向远端的 `xheldon-prosemirror` 仓库而不是原 `ProseMirror` 仓库
 
+# 如何注释及备注
+
+我通过修改字符串的方式，将特定开头的注释识别成中文翻译，特定的注释需要遵循以下规则：
+
+1. 必须在紧挨着英文原文注释之后，因为中文翻译生成的时候需要找到原文然后将原文放入其内部属性上，以在 hover 的时候能够显示原文
+2. 必须和英文原文注释隔开一个空行，是为了生成新的 p 标签
+3. 注释必须以 `@cn` 开头
+4. 如果有译者备注，则必须以 `@comment` 开头
+
+如此只增加不删除的操作，若原仓库有修改，则只需要 merge 即可，不会产生冲突
+
+举例：
+
+```js
+// ::- An editor view manages the DOM structure that represents an
+// editable document. Its state and behavior are determined by its
+// [props](#view.DirectEditorProps).
+//
+// @cn一个编辑器视图负责整个可编辑文档。它的 state 和行为由 props 决定
+// @comment新建编辑器的第一步就是 new 一个 EditorView
+```
+
+效果可在：[https://prosemirror.xheldon.com/docs/ref/#view.EditorView](https://prosemirror.xheldon.com/docs/ref/#view.EditorView) 查看
+
 # 生成中文的文档及相关示例静态页面的 CI 流程：
 
-通过注释的方式翻译好后，如在 /view/src/index.js 中修改了某个注释，后：
+通过注释的方式翻译好后，如在 `/view/src/index.js` 中修改了某个注释，后：
 
-1. 依前面步骤 `commit` 的时候，我增加了 `bin/pm` 的一项行为，即是在 `prosemirror` 也就是根目录下新建/追加一个文件，记录本次修改的变动，然后在 `push` 的时候也一起 `push` 到 `prosemirror` 仓库，以此来触发更新（之前 `push` 的时候只会对应发布相关 `module`，`prosemirror` 本身不会更新
-2. 触发 `prosemirror` 的 `CI`
-3. `CI` 内容为拉取 `prosemirror` 仓库，然后依次执行：
-    1. `npm install yarn`
-    2. `npm install`
-    3. `bin/pm install`
-    4. `bin/pm test`
-    5. `cd website`
-    6. `make`
-    7. 将当前目录（website）下的 `public` 逐个文件夹 `push` 到 `x_blog/_project/prosemirror/` 路径下
-    8. 稍等片刻后会自动触发 `Jekyll` 的自动编译，则通过访问 `https://prosemirror.xheldon.com/docs/ref/` 来查看生成的文档
+1. 依前面步骤 `commit`
+2. 自动追加一个文件 `X_CHANGELOG.md`，记录本次修改的变动，然后在 `push` 的时候也一起 `push` 到 `prosemirror` 仓库，以此来触发更新（之前 `push` 的时候只会对应发布相关 `module`，`prosemirror` 本身不会更新
+3. 触发 `prosemirror` 的 `CI`
+4. `CI` 拉取 `prosemirror` 仓库，然后将当前目录（`website`）下的 `public` `push` 到 `https://github.com/Xheldon/prosemirror-doc-cn/` 仓库
+5. 稍等片刻后会自动触发 `Jekyll` 的自动编译生成 `GitHub Pages`，之后通过访问 `https://prosemirror.xheldon.com/docs/ref/` 来查看生成的文档
+
+注：原示例页面中有一个 [协同编辑的示例](https://prosemirror.xheldon.com/examples/collab/#edit-Example )，因为其需要服务端支持而目前`不可用`。
 
 以下是原始 README：
  
