@@ -1,6 +1,6 @@
 # ProseMirror 源码阅读/汉化计划
 
-项目地址：[https://prosemirror.xheldon.com](https://prosemirror.xheldon.com)
+项目地址：[https://prosemirror.xheldon.com](https://prosemirror.xheldon.com)  [![Build Status](https://travis-ci.org/xheldon-prosemirror/prosemirror.svg?branch=master)](https://travis-ci.org/xheldon-prosemirror/prosemirror)
 
 此为个人项目，用来在本人阅读 ProseMirror 源码过程中加注释和汉化使用
 
