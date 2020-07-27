@@ -1,5 +1,7 @@
 # ProseMirror 源码阅读/汉化计划
 
+项目地址：[https://prosemirror.xheldon.com](https://prosemirror.xheldon.com)
+
 此为个人项目，用来在本人阅读 ProseMirror 源码过程中加注释和汉化使用
 
 因为原作者 [@Marijn](https://github.com/marijnh) 的文档是通过扫描源码生成文档然后放到 [官网](https://prosemirror.net/docs/ref/) 上的，因此此处只能通过在源码中添加注释的方式来生成相同的汉化 API 手册。
