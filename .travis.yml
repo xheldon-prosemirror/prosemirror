@@ -23,7 +23,7 @@ env:
 after_success:
     - cd public
     - echo "prosemirror.xheldon.com" > CNAME
-    - echo "# [ProseMirror '中文文档'](https://prosemirror.xheldon.com) '\n\n' '本文档由' [https://github.com/xheldon-prosemirror/prosemirror](https://github.com/xheldon-prosemirror/prosemirror) '生成'" > README.md
+    - echo "# [ProseMirror中文文档](https://prosemirror.xheldon.com)\n\n本文档由 [https://github.com/xheldon-prosemirror/prosemirror](https://github.com/xheldon-prosemirror/prosemirror) 生成" > README.md
     - git init
     - git checkout -b master
     - git add -A
