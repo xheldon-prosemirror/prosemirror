@@ -58,7 +58,7 @@
 4. `CI` 拉取 `prosemirror` 仓库，然后将当前目录（`website`）下的 `public` `push` 到 `https://github.com/Xheldon/prosemirror-doc-cn/` 仓库
 5. 稍等片刻后会自动触发 `Jekyll` 的自动编译生成 `GitHub Pages`，之后通过访问 `https://prosemirror.xheldon.com/docs/ref/` 来查看生成的文档
 
-注：原示例页面中有一个 [协同编辑的示例](https://prosemirror.xheldon.com/examples/collab/#edit-Example )，因为其需要服务端支持而目前`不可用`。
+注：原示例页面中有一个 [协同编辑的示例](https://prosemirror.xheldon.com/examples/collab/#edit-Example) ，因为其需要服务端支持而目前`不可用`。
 
 以下是原始 README：
  
