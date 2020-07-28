@@ -1,6 +1,18 @@
 
 <details>
 <summary>
+Tue Jul 28 2020 14:24:10 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+website:
+ M pages/index.html
+ M src/build/templates.js
+
+</details>
+
+<details>
+<summary>
 Mon Jul 27 2020 10:00:52 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
