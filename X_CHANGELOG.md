@@ -1,6 +1,19 @@
 
 <details>
 <summary>
+Wed Jul 29 2020 00:43:02 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+website:
+ M pages/examples/index.html
+ M pages/index.html
+ M templates/foot.html
+
+</details>
+
+<details>
+<summary>
 Tue Jul 28 2020 14:24:10 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
