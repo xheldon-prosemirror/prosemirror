@@ -1,30 +1,19 @@
-### Issue details
-
-<!-- Please provide issue details here. -->
-
-### Steps to reproduce
+<!-- 也许来个 PR 更直接？-->
 
 <!--
-Please provide necessary steps to reproduce the issue. For convenience, you can use this Glitch demo to start with.
-
-https://glitch.com/edit/#!/remix/prosemirror-demo-basic
+写上列上错误的简写仓库名、文件、出错行数及正确的翻译，如下示例：
+#### 仓库名：view：src/index.js:257
+  * 错误：`翻译挫误`
+  * 正确：`翻译错误`
+#### 仓库名：state：src/index.js:567
+  * 错误：
+  * 正确：
 -->
 
-### ProseMirror version
+#### 仓库名：
+  * 错误：
+  * 正确：
 
-<!-- Please provide which version of ProsemMirror you're running. -->
-
-### Affected platforms
-
-<!-- Please provide specific version of affected browsers or platforms. -->
-
-- [ ] Chrome
-- [ ] Firefox
-- [ ] Internet Explorer
-- [ ] Other
-
-### Screenshots / Screencast (Optional)
-
-<!--
-For convenience, you can use [Recordit](http://recordit.co/) to share screencast GIF.
--->
+#### 仓库名：
+  * 错误：
+  * 正确：
