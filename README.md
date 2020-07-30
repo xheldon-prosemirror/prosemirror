@@ -6,51 +6,75 @@
 
 因为原作者 [@Marijn](https://github.com/marijnh) 的文档是通过扫描源码生成文档然后放到 [官网](https://prosemirror.net/docs/ref/) 上的，因此此处只能通过在源码中添加注释的方式来生成相同的汉化 API 手册。
 
-后续会考虑仿照官网，将生成的文档、示例发布到网站上（待翻译的差不多的时候）。这个过程随缘翻译，不要催更。
+因为是业余时间做这件事，因此这个进度不确定，不要催更。
 
-本项目仅含 ProseMirror 的 demo，本地第一次运行的时候是现 clone 远端仓库，因此需要依次运行：
+# 启动
+
+本地第一次运行的时候是现 `clone` 远端仓库，因此需要依次运行：
 
 1. `npm install yarn -g` 如果没有安装 `yarn` 的话
-2. `npm install`
-3. `bin/pm install`
+2. `bin/pm install`
 
-之后开始开发：
+# 翻译 API 文档可同步官网文档更新的原理
 
-1. `npm run demo`
-2. `bin/pm watch` 进行实时刷新，即修改了任一模块的 src 下的内容，也会重新生成 dist 文件，供 demo 使用。
+因为 [ProseMirror官网](https://prosemirror.net) 整体的静态文件（包括示例、文档手册等）位于 `website` 的 `public` 目录下。除了 [文档手册](https://prosemirror.net/docs/ref/) 之外，其他内容如示例、指南等页面均固定不变，因此可以直接翻译（这些页面改动频率极低）。
+而其 `文档手册` 是通过逐个将 `ProseMirror 子模块` 源文件中的 [注释识别并生成](https://github.com/marijnh/builddocs) 成文档手册的，
+因此，在 `install` 后，本地目录会有全部的 `ProseMirror` 子模块，然后 `website` 内有 `make` 命令可以逐个将子模块的源文件中的注释生成成文档手册，
+我们只需要在源码中的注释下`添加`中文注释即可。同时，因为只在原始注释下新增而不删除，所以直接 `merge` 原始仓库的后续修改到本仓库不会有冲突。
 
-修改完成后，需要 push 到远端，此处我已经修改远端地址为 `https://github.com/xheldon-prosemirror/MODULE_NAME` ，因此可以通过运行:
- 
- 1. `bin/pm commit -a -m 'some comment'` 将改动 `commit`
- 2. `bin/pm push` 将代码推向远端的 `xheldon-prosemirror` 仓库而不是原 `ProseMirror` 仓库
+# 如何翻译
 
-# 如何注释及备注
-
-我通过修改字符串的方式，将特定开头的注释识别成中文翻译，特定的注释需要遵循以下规则：
+通过将特定开头的注释识别成中文的方式进行翻译，以保证不删除原始文档而只新增，特定的注释需要遵循以下规则：
 
 1. 必须在紧挨着英文原文注释之后，因为中文翻译生成的时候需要找到原文然后将原文放入其内部属性上，以在 hover 的时候能够显示原文
-2. 必须和英文原文注释隔开一个空行，是为了生成新的 p 标签
+2. 必须和英文原文注释隔开一个空行，是为了生成新的 `p` 标签
 3. 注释必须以 `@cn` 开头
 4. 如果有译者备注，则必须以 `@comment` 开头
 
-如此只增加不删除的操作，若原仓库有修改，则只需要 merge 即可，不会产生冲突
-
 举例：
+
+如下在子模块 `prosemirror-view` 中（本地路径 `./view/src/index.js`）翻译某个 API，则需要这么做：
 
 ```js
 // ::- An editor view manages the DOM structure that represents an
 // editable document. Its state and behavior are determined by its
 // [props](#view.DirectEditorProps).
 //
-// @cn一个编辑器视图负责整个可编辑文档。它的 state 和行为由 props 决定
-// @comment新建编辑器的第一步就是 new 一个 EditorView
+// @cn一个编辑器视图负责整个可编辑文档。它的 state 和行为由 props 决定。
+// @comment新建编辑器的第一步就是 new 一个 EditorView。
 ```
 
-效果可在：[https://prosemirror.xheldon.com/docs/ref/#view.EditorView](https://prosemirror.xheldon.com/docs/ref/#view.EditorView) 查看
+# 如何本地预览翻译：
+
+1. `cd` 到 `website` 目录
+2. 运行 `make` 命令
+3. 运行 `npm run devserver -- --prot 8888`
+4. 访问 `localhost:8888` 查看效果
+
+注：通过修改注释来翻译文档后，因为需要重新生成 `doc`，所以需要重启 `devserver` ，这点后续优化。
+
+在线效果可在：[https://prosemirror.xheldon.com/docs/ref/#view.EditorView](https://prosemirror.xheldon.com/docs/ref/#view.EditorView) 查看
+
+# 修改源码（为了研究源码而不是为了翻译）后如何查看效果：
+
+如你在 `prosemirror-view` 子模块中添加了一个 `console.log` 或者修改了一个逻辑，然后想查看效果，需要直接在根目录下运行：
+
+1. `npm run demo`
+2. `bin/pm watch` 进行实时刷新，即修改了任一模块的 `src` 下的内容后，就会重新打包文件，供 `demo` 使用。
+3. 打开 `localhost:8080` 查看效果。
+
+# 翻译完成后，如何发布到远端
+
+注：其他人想翻译需要先 `fork` 对应的子模块仓库，然后按照上面说的方式进行翻译，完成后提 `PR`。*下列操作仅限 xheldon-prosemirror 团队成员*。
+
+修改完成后，需要 `push` 到远端，此处我已经修改远端地址为 `https://github.com/xheldon-prosemirror/MODULE_NAME` ，因此可以通过运行:
+ 
+ 1. `bin/pm commit -a -m 'some comment'` 将改动 `commit`
+ 2. `bin/pm push` 将代码推向远端的 `xheldon-prosemirror` 仓库而不是原 `ProseMirror` 仓库
 
 # 生成中文的文档及相关示例静态页面的 CI 流程：
 
-通过注释的方式翻译好后，如在 `/view/src/index.js` 中修改了某个注释，后：
+通过注释的方式翻译好后，如在 `./view/src/index.js` 中修改了某个注释，后：
 
 1. 依前面步骤 `commit`
 2. 自动追加一个文件 `X_CHANGELOG.md`，记录本次修改的变动，然后在 `push` 的时候也一起 `push` 到 `prosemirror` 仓库，以此来触发更新（之前 `push` 的时候只会对应发布相关 `module`，`prosemirror` 本身不会更新
