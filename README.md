@@ -41,6 +41,7 @@
 // [props](#view.DirectEditorProps).
 //
 // @cn一个编辑器视图负责整个可编辑文档。它的 state 和行为由 props 决定。
+// 
 // @comment新建编辑器的第一步就是 new 一个 EditorView。
 ```
 
