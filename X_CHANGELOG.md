@@ -1,6 +1,21 @@
 
 <details>
 <summary>
+Wed Aug 12 2020 00:40:19 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+state:
+ M src/plugin.js
+ M src/selection.js
+
+website:
+ M public/css/site.css
+
+</details>
+
+<details>
+<summary>
 Mon Aug 10 2020 00:20:49 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
