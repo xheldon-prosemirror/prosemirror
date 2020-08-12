@@ -1,6 +1,25 @@
 
 <details>
 <summary>
+Wed Aug 12 2020 10:02:30 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+view:
+ M src/README.md
+ M src/decoration.js
+
+website:
+ M example/basic/index.html
+ M example/dino/index.html
+ M pages/examples/basic/index.md
+ M pages/examples/dino/index.md
+ M src/build/buildfile.js
+
+</details>
+
+<details>
+<summary>
 Wed Aug 12 2020 00:40:19 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
