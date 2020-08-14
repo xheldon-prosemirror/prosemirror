@@ -1,6 +1,24 @@
 
 <details>
 <summary>
+Fri Aug 14 2020 23:43:28 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+menu:
+ M src/menu.js
+
+website:
+ M example/basic/index.js
+ M example/dino/index.js
+ M example/markdown/index.html
+ M pages/examples/dino/index.md
+ M pages/examples/markdown/index.md
+
+</details>
+
+<details>
+<summary>
 Wed Aug 12 2020 10:02:30 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
