@@ -7,8 +7,9 @@
 #   github_url: prosemirror.xheldon.com
 language: node_js
 node_js:
-  - "14"
+  - "14.8.0"
 install:
+  - "npm i yarn -g"
   - "bin/pm install"
 before_script:
   - "cd website"
