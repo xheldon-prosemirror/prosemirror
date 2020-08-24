@@ -7,17 +7,15 @@
 #   github_url: prosemirror.xheldon.com
 language: node_js
 node_js:
-  - "10"
+  - "14"
 install:
+  - "npm i yarn -g"
   - "yarn install"
   - "bin/pm install"
 before_script:
   - "cd website"
-  - "make"
 script:
-cache:
-  directories:
-    - "node_modules"
+  - "make"
 env:
     - NODE_ENV=prod
 after_success:
