@@ -13,9 +13,16 @@ install:
   - "bin/pm install"
 before_script:
   - "cd website"
-  - "yarn"
-script:
+  - "npm i"
   - "make"
+script:
+  - "echo START_LOG========================"
+  - "node -v"
+  - "yarn -v"
+  - "cat package.json"
+  - "cat node_modules/rollup/package.json"
+  - "cat node_modules/buble/package.json"
+  - "echo END_LOG========================"
 env:
     - NODE_ENV=prod
 after_success:
