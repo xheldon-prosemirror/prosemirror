@@ -1,6 +1,21 @@
 
 <details>
 <summary>
+Mon Aug 24 2020 10:09:57 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+website:
+M  bin/build-example.js
+M  bin/build-library.js
+M  pages/index.html
+M  public/css/site.css
+A  public/logos/atypon.svg
+
+</details>
+
+<details>
+<summary>
 Mon Aug 24 2020 09:51:28 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
