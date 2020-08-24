@@ -9,8 +9,6 @@ language: node_js
 node_js:
   - "14"
 install:
-  - "npm i yarn -g"
-  - "yarn install"
   - "bin/pm install"
 before_script:
   - "cd website"
