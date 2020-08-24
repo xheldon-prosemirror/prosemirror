@@ -13,6 +13,7 @@ install:
   - "bin/pm install"
 before_script:
   - "cd website"
+  - "yarn"
 script:
   - "make"
 env:
