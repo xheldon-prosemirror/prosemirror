@@ -10,10 +10,11 @@ node_js:
   - "14.8.0"
 install:
   - "npm i yarn -g"
+  - "yarn"
   - "bin/pm install"
 before_script:
   - "cd website"
-  - "npm i"
+  - "yarn"
   - "make"
 script:
 env:
