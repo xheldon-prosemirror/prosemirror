@@ -13,6 +13,7 @@ install:
   - "bin/pm install"
 before_script:
   - "cd website"
+  - "npm i"
   - "make"
 script:
 env:
