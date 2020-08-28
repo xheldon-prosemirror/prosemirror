@@ -1,6 +1,19 @@
 
 <details>
 <summary>
+Fri Aug 28 2020 15:27:52 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+website:
+ M example/menu/index.html
+ M example/menu/index.js
+ M pages/examples/menu/index.md
+
+</details>
+
+<details>
+<summary>
 Fri Aug 28 2020 11:38:08 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
