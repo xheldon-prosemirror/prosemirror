@@ -1,6 +1,20 @@
 
 <details>
 <summary>
+Mon Aug 31 2020 18:17:09 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+website:
+ M example/footnote/index.html
+ M example/footnote/index.js
+ M pages/examples/footnote/index.md
+ M pages/examples/lint/index.md
+
+</details>
+
+<details>
+<summary>
 Mon Aug 31 2020 17:13:32 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
