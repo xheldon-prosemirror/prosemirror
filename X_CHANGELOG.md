@@ -1,6 +1,19 @@
 
 <details>
 <summary>
+Wed Sep 02 2020 18:30:20 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+model:
+ M src/README.md
+ M src/fragment.js
+ M src/node.js
+
+</details>
+
+<details>
+<summary>
 Tue Sep 01 2020 17:42:08 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
