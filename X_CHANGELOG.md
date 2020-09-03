@@ -1,6 +1,20 @@
 
 <details>
 <summary>
+Thu Sep 03 2020 18:30:10 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+model:
+ M src/fragment.js
+ M src/mark.js
+ M src/replace.js
+ M src/resolvedpos.js
+
+</details>
+
+<details>
+<summary>
 Wed Sep 02 2020 18:30:20 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
