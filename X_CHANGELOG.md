@@ -1,6 +1,17 @@
 
 <details>
 <summary>
+Tue Sep 22 2020 20:00:40 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+model:
+ M src/schema.js
+
+</details>
+
+<details>
+<summary>
 Mon Sep 14 2020 23:50:55 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
