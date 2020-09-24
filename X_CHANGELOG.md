@@ -1,6 +1,18 @@
 
 <details>
 <summary>
+Thu Sep 24 2020 18:19:44 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+model:
+ M src/from_dom.js
+ M src/to_dom.js
+
+</details>
+
+<details>
+<summary>
 Wed Sep 23 2020 23:02:42 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
