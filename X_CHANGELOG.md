@@ -1,6 +1,214 @@
 
 <details>
 <summary>
+Tue Sep 29 2020 19:50:35 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+keymap:
+## master...origin/master [ahead 1]
+
+inputrules:
+## master...origin/master [ahead 2]
+
+history:
+## master...origin/master [ahead 1]
+
+collab:
+## master...origin/master [ahead 1]
+
+gapcursor:
+## master...origin/master [ahead 1]
+
+schema-basic:
+## master...origin/master [ahead 1]
+
+schema-list:
+## master...origin/master [ahead 1]
+
+website:
+ M markdown/guide/doc.md
+ M markdown/guide/intro.md
+ M markdown/guide/schema.md
+ M markdown/guide/transform.md
+ M markdown/ref_intro.md
+ M pages/docs/guide/index.html
+ M src/build/templates.js
+
+</details>
+
+<details>
+<summary>
+Tue Sep 29 2020 12:09:29 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+keymap:
+## master...origin/master [ahead 1]
+
+inputrules:
+## master...origin/master [ahead 2]
+
+history:
+## master...origin/master [ahead 1]
+
+collab:
+## master...origin/master [ahead 1]
+
+gapcursor:
+## master...origin/master [ahead 1]
+
+schema-basic:
+## master...origin/master [ahead 1]
+
+schema-list:
+ M src/README.md
+ M src/schema-list.js
+
+</details>
+
+<details>
+<summary>
+Tue Sep 29 2020 11:50:23 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+keymap:
+## master...origin/master [ahead 1]
+
+inputrules:
+## master...origin/master [ahead 2]
+
+history:
+## master...origin/master [ahead 1]
+
+collab:
+## master...origin/master [ahead 1]
+
+gapcursor:
+## master...origin/master [ahead 1]
+
+schema-basic:
+ M src/README.md
+ M src/schema-basic.js
+
+</details>
+
+<details>
+<summary>
+Tue Sep 29 2020 11:27:58 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+keymap:
+## master...origin/master [ahead 1]
+
+inputrules:
+## master...origin/master [ahead 2]
+
+history:
+## master...origin/master [ahead 1]
+
+collab:
+## master...origin/master [ahead 1]
+
+gapcursor:
+ M src/README.md
+ M src/gapcursor.js
+ M src/index.js
+
+</details>
+
+<details>
+<summary>
+Tue Sep 29 2020 11:11:51 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+keymap:
+## master...origin/master [ahead 1]
+
+inputrules:
+## master...origin/master [ahead 1]
+ M src/rulebuilders.js
+ M src/rules.js
+
+history:
+## master...origin/master [ahead 1]
+
+collab:
+## master...origin/master [ahead 1]
+
+</details>
+
+<details>
+<summary>
+Tue Sep 29 2020 00:22:55 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+keymap:
+## master...origin/master [ahead 1]
+
+inputrules:
+ M src/README.md
+ M src/inputrules.js
+
+history:
+## master...origin/master [ahead 1]
+
+collab:
+## master...origin/master [ahead 1]
+
+</details>
+
+<details>
+<summary>
+Tue Sep 29 2020 00:02:21 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+keymap:
+ M src/README.md
+ M src/keymap.js
+
+history:
+## master...origin/master [ahead 1]
+
+collab:
+## master...origin/master [ahead 1]
+
+</details>
+
+<details>
+<summary>
+Mon Sep 28 2020 18:46:09 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+history:
+## master...origin/master [ahead 1]
+
+collab:
+ M src/README.md
+ M src/collab.js
+
+</details>
+
+<details>
+<summary>
+Mon Sep 28 2020 15:57:29 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+history:
+ M src/README.md
+ M src/history.js
+
+</details>
+
+<details>
+<summary>
 Mon Sep 28 2020 00:12:16 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
