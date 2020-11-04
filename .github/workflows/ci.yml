@@ -29,8 +29,15 @@ jobs:
       - name: Install Yarn
         run: npm install yarn -g
       
-      - name: Install Dependencies
+      - name: Install Node Dependencies
+        run: yarn install
+      
+      - name: Install SubPackage
         run: bin/pm install
+      
+      - name: Website Install Node Dependencies
+        run: npm i
+        working-directory: ./website
      
       - name: Build Page
         run: make
