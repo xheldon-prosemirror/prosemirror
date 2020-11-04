@@ -1,12 +1,13 @@
 # ProseMirror 源码阅读/汉化计划
 
-项目地址：[https://prosemirror.xheldon.com](https://prosemirror.xheldon.com)  [![Build Status](https://travis-ci.org/xheldon-prosemirror/prosemirror.svg?branch=master)](https://travis-ci.org/xheldon-prosemirror/prosemirror)
+项目地址：[https://prosemirror.xheldon.com](https://prosemirror.xheldon.com)  [![Build Status](https://github.com/xheldon-prosemirror/prosemirror/workflows/Page%20Generator/badge.svg)
 
 此为个人项目，用来在本人阅读 ProseMirror 源码过程中加注释和汉化使用
 
 因为原作者 [@Marijn](https://github.com/marijnh) 的文档是通过扫描源码生成文档然后放到 [官网](https://prosemirror.net/docs/ref/) 上的，因此此处只能通过在源码中添加注释的方式来生成相同的汉化 API 手册。
 
-因为是业余时间做这件事，因此这个进度不确定，不要催更。
+~~因为是业余时间做这件事，因此这个进度不确定，不要催更。~~
+> 2020年09月09日更新：翻译已全部完成
 
 # 安装
 
@@ -80,10 +81,12 @@
 1. 依前面步骤 `commit`
 2. 自动追加一个文件 `X_CHANGELOG.md`，记录本次修改的变动，然后在 `push` 的时候也一起 `push` 到 `prosemirror` 仓库，以此来触发更新（之前 `push` 的时候只会对应发布相关 `module`，`prosemirror` 本身不会更新
 3. 触发 `prosemirror` 的 `CI`
-4. `CI` 拉取 `prosemirror` 仓库，然后将当前目录（`website`）下的 `public` `push` 到 `https://github.com/Xheldon/prosemirror-doc-cn/` 仓库
-5. 稍等片刻后会自动触发 `Jekyll` 的自动编译生成 `GitHub Pages`，之后通过访问 `https://prosemirror.xheldon.com/docs/ref/` 来查看生成的文档
+4. `CI` 拉取 `prosemirror` 仓库，然后将当前目录（`website`）下的 `public` 目录 `push` 到本仓库的 `gh` 分支。
+5. 稍等片刻后会触发自动编译生成 `GitHub Pages`，之后通过访问 `https://prosemirror.xheldon.com/docs/ref/` 来查看生成的文档
 
 注：原示例页面中有一个 [协同编辑的示例](https://prosemirror.xheldon.com/examples/collab/#edit-Example) ，因为其需要服务端支持而目前`不可用`。
+
+> 2020年11月4日将 `CI` 从 `travis` 变为 `Github Actions`
 
 以下是原始 README：
  
