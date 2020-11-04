@@ -1,6 +1,6 @@
 # ProseMirror 源码阅读/汉化计划
 
-项目地址：[https://prosemirror.xheldon.com](https://prosemirror.xheldon.com)  [![Build Status](https://github.com/xheldon-prosemirror/prosemirror/workflows/Page%20Generator/badge.svg)
+项目地址：[https://prosemirror.xheldon.com](https://prosemirror.xheldon.com)  [![Build Status](https://github.com/xheldon-prosemirror/prosemirror/workflows/Page%20Generator/badge.svg)](https://github.com/xheldon-prosemirror/prosemirror/actions?query=workflow%3A%22Page+Generator%22)
 
 此为个人项目，用来在本人阅读 ProseMirror 源码过程中加注释和汉化使用
 
