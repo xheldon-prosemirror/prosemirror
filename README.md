@@ -14,7 +14,11 @@
 本地第一次运行的时候是现 `clone` 远端仓库，因此需要依次运行：
 
 1. `npm install yarn -g` 如果没有安装 `yarn` 的话
-2. `bin/pm install`
+2. `yarn install`
+3. `bin/pm install`
+4. `cd website` cd 到 website 目录后执行下列操作：
+5. `npm i`
+6. `make`
 
 # 翻译 API 文档可同步官网文档更新的原理
 
@@ -46,6 +50,8 @@
 // @comment新建编辑器的第一步就是 new 一个 EditorView。
 ```
 
+注：空行不能少！
+
 # 如何本地预览翻译：
 
 1. `cd` 到 `website` 目录
@@ -65,9 +71,16 @@
 2. `bin/pm watch` 进行实时刷新，即修改了任一模块的 `src` 下的内容后，就会重新打包文件，供 `demo` 使用。
 3. 打开 `localhost:8080` 查看效果。
 
+# 如何合并上游分支
+
+使用 Github 自带的功能，即在仓库里面，点击仓库代码界面右上方的的 `Fetch Upstream` 按钮，然后进行接下来的操作，有时候没有冲突会直接合并，有时候有冲突需要手动解决。
+此时需要在本地拉取远端 ProseMirror 官方对应的子仓库，然后在本地解决掉冲突后，将代码 Push 到 master，然后再执行 `Fetch Upstream` 即可。
+
 # 翻译完成后，如何发布到远端
 
-注：其他人想翻译需要先 `fork` 对应的子模块仓库，然后按照上面说的方式进行翻译，完成后提 `PR`。*下列操作仅限 xheldon-prosemirror 团队成员*。
+注：其他人想翻译需要先 `fork` 对应的子模块仓库，然后按照上面说的方式进行翻译，完成后提 `PR`，`请将 pr 提到对应仓库的 pr 分支！`。
+
+*下列操作仅限 xheldon-prosemirror 团队成员*。
 
 修改完成后，需要 `push` 到远端，此处我已经修改远端地址为 `https://github.com/xheldon-prosemirror/MODULE_NAME` ，因此可以通过运行:
  

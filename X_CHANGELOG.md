@@ -1,6 +1,59 @@
 
 <details>
 <summary>
+Sun Jun 13 2021 17:46:33 GMT+0800 (China Standard Time) @Xheldon
+
+</summary>
+
+model:
+M  CHANGELOG.md
+M  package.json
+M  rollup.config.js
+M  src/content.js
+M  src/fragment.js
+M  src/from_dom.js
+M  src/node.js
+M  src/schema.js
+M  src/to_dom.js
+M  test/test-dom.js
+
+state:
+M  CHANGELOG.md
+M  package.json
+M  rollup.config.js
+M  src/state.js
+
+view:
+M  CHANGELOG.md
+M  package.json
+M  rollup.config.js
+M  src/README.md
+M  src/browser.js
+M  src/capturekeys.js
+M  src/clipboard.js
+M  src/decoration.js
+M  src/dom.js
+M  src/domchange.js
+M  src/domcoords.js
+M  src/domobserver.js
+M  src/index.js
+M  src/input.js
+M  src/selection.js
+M  src/viewdesc.js
+M  test/test-clipboard.js
+M  test/test-decoration.js
+M  test/test-draw-decoration.js
+M  test/test-nodeview.js
+M  test/test-selection.js
+M  test/test-view.js
+
+website:
+?? package-lock.json
+
+</details>
+
+<details>
+<summary>
 Sat Oct 31 2020 17:54:42 GMT+0800 (China Standard Time) @Xheldon
 
 </summary>
