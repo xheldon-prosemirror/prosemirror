@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Page Generator
+name: 自动触发更新
 
 # 代码 push 到 master 分支的时候运行该 workflow
 on:
