@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Page Generator
+name: 手动触发发布更新
 
 # 手动触发
 on: workflow_dispatch
