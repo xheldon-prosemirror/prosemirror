@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror 基本示例</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" class=active>示例</a>
+      <a href="/docs/" >文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><article><h1>配置一个编辑器</h1>
+<p>只使用核心库来从零配置一个编辑器的话需要很多的代码。为了能够用一个预先配置好的编辑器快速开始，
+我们提供了 <a href="https://github.com/xheldon-prosemirror/prosemirror-example-setup"><code>prosemirror-example-setup</code></a> 包，
+它已经为你创建好了一系列的插件、基础设置，以及一个可配置的 schema。在这个示例中，我们使用 <a href="https://github.com/xheldon-prosemirror/prosemirror-schema-basic">basic schema</a>
+以及使用 <a href="https://github.com/xheldon-prosemirror/prosemirror-schema-list">lists</a> 来扩展该 schema。</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">EditorState</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-state"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">EditorView</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-view"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">Schema</span>, <span class="hl-def">DOMParser</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-model"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">schema</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-schema-basic"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">addListNodes</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-schema-list"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">exampleSetup</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-example-setup"</span>
+
+<span class="hl-comment">// 将 prosemirror-schema-list 和基本 schema 放在一起形成一个支持 list 的 schema</span>
+<span class="hl-keyword">const</span> <span class="hl-def">mySchema</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Schema</span>({
+  <span class="hl-property">nodes</span>: <span class="hl-variable">addListNodes</span>(<span class="hl-variable">schema</span>.<span class="hl-property">spec</span>.<span class="hl-property">nodes</span>, <span class="hl-string">"paragraph block*"</span>, <span class="hl-string">"block"</span>),
+  <span class="hl-property">marks</span>: <span class="hl-variable">schema</span>.<span class="hl-property">spec</span>.<span class="hl-property">marks</span>
+})
+
+<span class="hl-variable">window</span>.<span class="hl-property">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>(<span class="hl-variable">document</span>.<span class="hl-property">querySelector</span>(<span class="hl-string">"#editor"</span>), {
+  <span class="hl-property">state</span>: <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({
+    <span class="hl-property">doc</span>: <span class="hl-variable">DOMParser</span>.<span class="hl-property">fromSchema</span>(<span class="hl-variable">mySchema</span>).<span class="hl-property">parse</span>(<span class="hl-variable">document</span>.<span class="hl-property">querySelector</span>(<span class="hl-string">"#content"</span>)),
+    <span class="hl-property">plugins</span>: <span class="hl-variable">exampleSetup</span>({<span class="hl-property">schema</span>: <span class="hl-variable">mySchema</span>})
+  })
+})
+</code></pre>
+<p>上面代码的运行效果是这个样子：</p>
+<div id="editor" style="margin-bottom: 23px"></div>
+<div style="display: none" id="content">
+  <h3>你好，ProseMirror</h3>
+  <p>这就是可编辑的文本，你可以将光标放入然后开始打字。</p>
+  <p>若要应用样式，你可以先选中一段文字，然后从菜单中进行相关操作。基本的 schema 支持
+      <em>斜体</em>，<strong>加粗</strong>，<a href="https://xheldon.com">链接</a>，
+      <code>代码字体</code>， 以及 <img src="/img/smiley.png"> 图片。</p>
+  <p>块级的结构可以使用按键绑定来快捷操作（试试 ctrl+shift+2 以创建一个二级标题，或者在一个空的文本 block 中按回车，
+      以退出父级 block），或者通过 menu。</p>
+  <p>试试选中一段文本后使用菜单中的 `list` 选项来将其用有序列表包裹的效果。</p>
+</div>
+<p><a href="https://glitch.com/edit/#!/remix/prosemirror-demo-basic"><img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg" alt="Remix on Glitch"></a></p>
+<p>下面这些插件由上述的 example-setup 库所创建：</p>
+<ul>
+<li><a href="/docs/ref/#inputrules">Input rules</a>，它是一个 <code>宏</code>，以当有匹配到的输入的时候执行。在这个示例中，
+它提供了类似智能引号（自动配对引号）以及一些类 markdown 的编辑行为，比如如果想新建输入一个 blockquote 可以输入 「&gt;」。</li>
+<li><a href="/docs/ref/#keymap">Keymaps</a> 加上 <a href="/docs/ref/#commands.baseKeymap">base bindings</a> 和自定义的键盘绑定以生成常用的样式和节点，
+如 mod+i 可以设置斜体，ctrl—shift—1 则将当前文本块转换成一级标题。</li>
+<li><a href="https://github.com/xheldon-prosemirror/prosemirror-dropcursor">drop cursor</a> 和 <a href="/docs/ref/#gapcursor">gap cursor</a> 插件。</li>
+<li><a href="/docs/ref/#history">撤销历史</a></li>
+<li>一个 <a href="https://github.com/xheldon-prosemirror/prosemirror-menu">菜单栏</a> （该模块更多的是 demo 性质而不是在生产环境使用），有一些
+常用的菜单操作。</li>
+</ul>
+<link rel=stylesheet href="../../css/editor.css">
+<script src="../prosemirror.js"></script>
+<script src="example.js"></script></article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror collab example</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" class=active>示例</a>
+      <a href="/docs/" >文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><article><h1>Collaborate</h1>
+<p>The editor below talks to a simple server-side service to allow
+real-time <a href="http://marijnhaverbeke.nl/blog/collaborative-editing.html">collaborative
+editing</a>.
+Everybody connected to a given document sees the same document, and
+has their changes sent over to other people working on the
+document.</p>
+<p>The demo also (crudely) shows how ProseMirror can be used to implement
+something like out-of-line annotations. If you select text and click
+the speech bubble icon in the menu, you'll be prompted to enter an
+annotation. These are synced to other users and show up as text with
+yellow background. Put the cursor in an annotation to see what it
+says.</p>
+<p>You can find the code for this
+<a href="https://github.com/ProseMirror/website/tree/master/src/collab/">here</a>.</p>
+<p><strong>Disclaimer:</strong> Since this demo is open for everybody, you might run
+into people typing stupid, mean, and disgusting things. Since I'm not
+going to be able to moderate this, I recommend just hitting delete.</p>
+<style>
+.subtle { color: #777 }
+
+.comment { background-color: #ff8 }
+.currentComment { background-color: #fe0 }
+
+.commentList, .commentText {
+  display: block;
+  padding: 0;
+  margin: 0;
+}
+
+.tooltip-wrapper {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  overflow: visible;
+  vertical-align: bottom;
+}
+
+.ProseMirror ul.commentList {
+  font-family: "Source Sans Pro";
+  font-size: 16px;
+  width: 15em;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: -2em;
+  font-size: 1rem;
+  color: black;
+  background: white;
+  font-weight: normal;
+  border: 1px solid #888;
+  border-radius: 5px;
+  z-index: 10;
+  padding: 0;
+}
+
+ul.commentList::before {
+  border: 5px solid #888;
+  border-top-width: 0px;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  position: absolute;
+  top: -5px;
+  left: calc(2em - 6px);
+  content: " ";
+  height: 0;
+  width: 0;
+}
+
+li.commentText {
+  padding: 2px 20px 2px 5px;
+  position: relative;
+  pointer-events: auto;
+  margin: 0;
+}
+
+li.commentText + li.commentText {
+  border-top: 1px solid silver;
+}
+
+.commentDelete {
+  position: absolute;
+  right: 0;
+  border: 0;
+  font: inherit;
+  display: inline;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.commentDelete:hover {
+  color: #f88;
+}
+
+.doclist {
+  z-index: 20;
+  display: block;
+  padding: 2px 2px;
+  margin: 0;
+  border: 1px solid silver;
+  position: absolute;
+  background: white;
+  font-size: 90%;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  max-height: 15em;
+  overflow-y: auto;
+}
+
+.doclist li {
+  display: block;
+  padding: 1px 3px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.doclist li:hover {
+  background: #5ae;
+  color: white;
+}
+
+.docinfo {
+  position: relative;
+  color: #555;
+}
+
+.ProseMirror-report {
+  position: fixed;
+  top: 0; right: 0; left: 0;
+  border-width: 0;
+  border-style: solid;
+  border-bottom-width: 1px;
+  padding: 3px 27px 5px;
+  white-space: pre;
+  z-index: 1000;
+}
+
+.ProseMirror-report-fail {
+  background: rgb(255, 230, 230);
+  border-color: rgb(200, 150, 150);
+}
+
+.ProseMirror-report-delay {
+  background: rgb(255, 255, 200);
+  border-color: rgb(200, 200, 120);
+}
+</style>
+<div id="editor" style="margin-bottom: 0"></div>
+<div class="docinfo">
+  Connected to: <span id="connected">
+    <span id="docname">None</span>
+    <span id="users"></span>
+    <button type="button" id="changedoc">Change</button>
+  </span>
+</div>
+<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+<link rel=stylesheet href="../../css/editor.css">
+<script src="../prosemirror.js"></script>
+<script src="example.js"></script></article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror 提示文本示例</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" class=active>示例</a>
+      <a href="/docs/" >文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><article><h1>Tooltips</h1>
+<p>我使用「Tooltips」意指一个小的 UI 元素显示于文档之上。这对于编辑器来说将其用来显示控制菜单或者额外的信息很有用，比如
+显示一个类似于「Medium」风格的编辑 UI 组件（Medium 是一个知名的博客平台），它的控制按钮一般是隐藏的，除非你选中了一些文本。
+此时它会在选区上方弹出来一个小的悬浮菜单。</p>
+<p>在 ProseMirror 中通常有两种途径来实现这个 tooltips 效果。最简单的方式是插入一个 widget <a href="/docs/guide/#view.decorations">decorations(装饰器)</a>
+然后绝对定位之。如果你没有指定一个位置信息（即含有 <code>left</code> 和 <code>bottom</code> 的对象），该 widget 就会出现在你默认放置它的地方（新建一个 widget 需要一个 ProseMirror 中的位置 pos 坐标）。
+如果该 tooltips 依赖一个你指定的位置的话，这挺好用的。</p>
+<p>如果你想将一些东西置于选区之上，或者你想对这些元素使用动画，亦或者你需要能够允许当编辑器的 <code>overflow</code> 属性不是 <code>visible</code> 的时候，这个 tooltips 能够固定在编辑器之外（例如让
+编辑器能滚动），那么上面的 decoration（装饰器）可能不太可行。在这种场景下，你将需要「手动」的来定位你的 tooltips。</p>
+<style>
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    z-index: 20;
+    background: white;
+    border: 1px solid silver;
+    border-radius: 2px;
+    padding: 2px 10px;
+    margin-bottom: 7px;
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
+  }
+  .tooltip:before {
+    content: "";
+    height: 0; width: 0;
+    position: absolute;
+    left: 50%;
+    margin-left: -5px;
+    bottom: -6px;
+    border: 5px solid transparent;
+    border-bottom-width: 0;
+    border-top-color: silver;
+  }
+  .tooltip:after {
+    content: "";
+    height: 0; width: 0;
+    position: absolute;
+    left: 50%;
+    margin-left: -5px;
+    bottom: -4.5px;
+    border: 5px solid transparent;
+    border-bottom-width: 0;
+    border-top-color: white;
+  }
+  #editor { position: relative; }
+</style>
+<div id="editor"></div>
+<div style="display: none" id="content">
+  <p>选择一些文本来让 tooltips 显示出来，它带有选区的字符数信息。</p>
+  <p>（这可能不是一个有用的 tooltips，不过确实一个不错的基本示例）</p>
+</div>
+<p><a href="https://glitch.com/edit/#!/remix/prosemirror-demo-tooltip"><img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg" alt="Remix on Glitch"></a></p>
+<p>不过你仍然可以充分利用 ProseMirror 的更新逻辑，以让 tooltips 和编辑器的 state 保持同步。我们可以使用 <a href="/docs/ref/#state.PluginSpec.view">plugin view(插件视图)</a> 来创建一个 view component（视图组件）
+来将其加到编辑器的更新周期中。</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">Plugin</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-state"</span>
+
+<span class="hl-keyword">let</span> <span class="hl-def">selectionSizePlugin</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Plugin</span>({
+  <span class="hl-property">view</span>(<span class="hl-def">editorView</span>) { <span class="hl-keyword">return</span> <span class="hl-keyword">new</span> <span class="hl-variable">SelectionSizeTooltip</span>(<span class="hl-variable-2">editorView</span>) }
+})
+</code></pre>
+<p>实际的 view 会创建一个 DOM 节点来表示该 tooltips，然后将其插入到编辑器文档中。</p>
+<pre><code class="language-javascript"><span class="hl-keyword">class</span> <span class="hl-def">SelectionSizeTooltip</span> {
+  <span class="hl-property">constructor</span>(<span class="hl-def">view</span>) {
+    <span class="hl-keyword">this</span>.<span class="hl-property">tooltip</span> <span class="hl-operator">=</span> <span class="hl-variable">document</span>.<span class="hl-property">createElement</span>(<span class="hl-string">"div"</span>)
+    <span class="hl-keyword">this</span>.<span class="hl-property">tooltip</span>.<span class="hl-property">className</span> <span class="hl-operator">=</span> <span class="hl-string">"tooltip"</span>
+    <span class="hl-variable-2">view</span>.<span class="hl-property">dom</span>.<span class="hl-property">parentNode</span>.<span class="hl-property">appendChild</span>(<span class="hl-keyword">this</span>.<span class="hl-property">tooltip</span>)
+
+    <span class="hl-keyword">this</span>.<span class="hl-property">update</span>(<span class="hl-variable-2">view</span>, <span class="hl-atom">null</span>)
+  }
+
+  <span class="hl-property">update</span>(<span class="hl-def">view</span>, <span class="hl-def">lastState</span>) {
+    <span class="hl-keyword">let</span> <span class="hl-def">state</span> <span class="hl-operator">=</span> <span class="hl-variable-2">view</span>.<span class="hl-property">state</span>
+    <span class="hl-comment">// 如果文档或者选区未发生更改，则什么不做</span>
+    <span class="hl-keyword">if</span> (<span class="hl-variable-2">lastState</span> <span class="hl-operator">&amp;&amp;</span> <span class="hl-variable-2">lastState</span>.<span class="hl-property">doc</span>.<span class="hl-property">eq</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">doc</span>) <span class="hl-operator">&amp;&amp;</span>
+        <span class="hl-variable-2">lastState</span>.<span class="hl-property">selection</span>.<span class="hl-property">eq</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">selection</span>)) <span class="hl-keyword">return</span>
+
+    <span class="hl-comment">// 如果选区为空（光标状态）则隐藏 tooltip</span>
+    <span class="hl-keyword">if</span> (<span class="hl-variable-2">state</span>.<span class="hl-property">selection</span>.<span class="hl-property">empty</span>) {
+      <span class="hl-keyword">this</span>.<span class="hl-property">tooltip</span>.<span class="hl-property">style</span>.<span class="hl-property">display</span> <span class="hl-operator">=</span> <span class="hl-string">"none"</span>
+      <span class="hl-keyword">return</span>
+    }
+
+    <span class="hl-comment">// 否则，重新设置它的位置并且更新它的内容</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">tooltip</span>.<span class="hl-property">style</span>.<span class="hl-property">display</span> <span class="hl-operator">=</span> <span class="hl-string">""</span>
+    <span class="hl-keyword">let</span> {<span class="hl-def">from</span>, <span class="hl-def">to</span>} <span class="hl-operator">=</span> <span class="hl-variable-2">state</span>.<span class="hl-property">selection</span>
+    <span class="hl-comment">// 这些是在屏幕上的坐标信息</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">start</span> <span class="hl-operator">=</span> <span class="hl-variable-2">view</span>.<span class="hl-property">coordsAtPos</span>(<span class="hl-variable-2">from</span>), <span class="hl-def">end</span> <span class="hl-operator">=</span> <span class="hl-variable-2">view</span>.<span class="hl-property">coordsAtPos</span>(<span class="hl-variable-2">to</span>)
+    <span class="hl-comment">// 将 tooltip 所在的父级节点作为参照系</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">box</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">tooltip</span>.<span class="hl-property">offsetParent</span>.<span class="hl-property">getBoundingClientRect</span>()
+    <span class="hl-comment">// 寻找 tooltip 的中点，当跨行的时候，端点可能更靠近左侧</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">left</span> <span class="hl-operator">=</span> <span class="hl-variable">Math</span>.<span class="hl-property">max</span>((<span class="hl-variable-2">start</span>.<span class="hl-property">left</span> <span class="hl-operator">+</span> <span class="hl-variable-2">end</span>.<span class="hl-property">left</span>) <span class="hl-operator">/</span> <span class="hl-number">2</span>, <span class="hl-variable-2">start</span>.<span class="hl-property">left</span> <span class="hl-operator">+</span> <span class="hl-number">3</span>)
+    <span class="hl-keyword">this</span>.<span class="hl-property">tooltip</span>.<span class="hl-property">style</span>.<span class="hl-property">left</span> <span class="hl-operator">=</span> (<span class="hl-variable-2">left</span> <span class="hl-operator">-</span> <span class="hl-variable-2">box</span>.<span class="hl-property">left</span>) <span class="hl-operator">+</span> <span class="hl-string">"px"</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">tooltip</span>.<span class="hl-property">style</span>.<span class="hl-property">bottom</span> <span class="hl-operator">=</span> (<span class="hl-variable-2">box</span>.<span class="hl-property">bottom</span> <span class="hl-operator">-</span> <span class="hl-variable-2">start</span>.<span class="hl-property">top</span>) <span class="hl-operator">+</span> <span class="hl-string">"px"</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">tooltip</span>.<span class="hl-property">textContent</span> <span class="hl-operator">=</span> <span class="hl-variable-2">to</span> <span class="hl-operator">-</span> <span class="hl-variable-2">from</span>
+  }
+
+  <span class="hl-property">destroy</span>() { <span class="hl-keyword">this</span>.<span class="hl-property">tooltip</span>.<span class="hl-property">remove</span>() }
+}
+</code></pre>
+<p>无论何时编辑器的 state 更新了，它都会检查是否需要去更新 tooltips。它的位置计算可能有点麻烦，但是 CSS 就是这样。
+基本上讲，它使用了 ProseMirror 的 <a href="/docs/ref/#view.EditorView.coordsAtPos"><code>coordsAtPos</code> 方法</a> 来找到选区的位置坐标，
+然后使用该左边设置了一个 <code>left</code> 和 <code>bottom</code> 属性以让该 tooltips 相对于父级节点进行偏移，该父级节点指的是理它最近的 position 属性是 relative 或者 absolute 的元素。</p>
+<link rel=stylesheet href="../../css/editor.css">
+<script src="../prosemirror.js"></script>
+<script src="example.js"></script></article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>

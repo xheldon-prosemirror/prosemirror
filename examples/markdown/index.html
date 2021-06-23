@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror markdown 示例</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" class=active>示例</a>
+      <a href="/docs/" >文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><article><h1>友好的 markdown</h1>
+<p>想象一下你有一个允许用户输入评论的网站，同时你决定让用户在评论输入的时候使用 Markdown。
+你的大部分用户都知道如何使用 Markdown，并且觉得它很方便。但是你可能还要面对一些非技术的用户，
+他们对学习 Markdown 的晦涩难懂的语法规则并不感冒。</p>
+<p>不用修改你后端服务的任何东西，你可以将 ProseMirror 作为你的编辑器。
+人们在编辑的时候可以随时切换到正常编辑模式和 Markdown 编辑模式！</p>
+<style>
+  .ProseMirror { height: 120px; overflow-y: auto; box-sizing: border-box; -moz-box-sizing: border-box }
+  textarea { width: 100%; height: 123px; border: 1px solid silver; box-sizing: border-box; -moz-box-sizing: border-box; padding: 3px 10px;
+             border: none; outline: none; font-family: inherit; font-size: inherit }
+  .ProseMirror-menubar-wrapper, #markdown textarea { display: block; margin-bottom: 4px }
+</style>
+<div id="editor" style="margin-bottom: 0"></div>
+<div style="text-align: center">
+  <label style="border-right: 1px solid silver">
+    Markdown <input type="radio" name="inputformat" value="markdown" checked="">&nbsp;</label>
+  <label>&nbsp;<input type="radio" name="inputformat" value="prosemirror"> WYSIWYM</label>
+</div>
+<div style="display: none"><textarea id="content">这是一个用 [Markdown](http://commonmark.org) 写的评论. *你* 可能知道插入一个链接的语法，但是你确定你所有的用户也知道吗？因此你可以将 **选择** 交给用户，让他们自己选择一个熟悉的书写方式。</textarea></div>
+<p><a href="https://github.com/prosemirror/prosemirror-markdown"><code>prosemirror-markdown</code></a> 库定义了
+一个 ProseMirror 的 <a href="/docs/guide/#schema">schema</a> ，它支持了 Markdown 的语法及元素。
+它也提供了一个 parser 和 serializer 来将普通文档和 Markdown 文档相互转化。</p>
+<p>为了抽象这个实际的编辑器，我们首先在 textarea 中创建了一个 Markdown 视图：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">class</span> <span class="hl-def">MarkdownView</span> {
+  <span class="hl-property">constructor</span>(<span class="hl-def">target</span>, <span class="hl-def">content</span>) {
+    <span class="hl-keyword">this</span>.<span class="hl-property">textarea</span> <span class="hl-operator">=</span> <span class="hl-variable-2">target</span>.<span class="hl-property">appendChild</span>(<span class="hl-variable">document</span>.<span class="hl-property">createElement</span>(<span class="hl-string">"textarea"</span>))
+    <span class="hl-keyword">this</span>.<span class="hl-property">textarea</span>.<span class="hl-property">value</span> <span class="hl-operator">=</span> <span class="hl-variable-2">content</span>
+  }
+
+  <span class="hl-keyword">get</span> <span class="hl-property">content</span>() { <span class="hl-keyword">return</span> <span class="hl-keyword">this</span>.<span class="hl-property">textarea</span>.<span class="hl-property">value</span> }
+  <span class="hl-property">focus</span>() { <span class="hl-keyword">this</span>.<span class="hl-property">textarea</span>.<span class="hl-property">focus</span>() }
+  <span class="hl-property">destroy</span>() { <span class="hl-keyword">this</span>.<span class="hl-property">textarea</span>.<span class="hl-property">remove</span>() }
+}
+</code></pre>
+<p>之后实现支持 Markdown 的 ProseMirror 编辑器。该编辑器输入和输入的内容仍然是 Markdown 文本，
+该文本内部被转换成 ProseMirror 文档:</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">EditorView</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-view"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">EditorState</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-state"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">schema</span>, <span class="hl-def">defaultMarkdownParser</span>,
+        <span class="hl-def">defaultMarkdownSerializer</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-markdown"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">exampleSetup</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-example-setup"</span>
+
+<span class="hl-keyword">class</span> <span class="hl-def">ProseMirrorView</span> {
+  <span class="hl-property">constructor</span>(<span class="hl-def">target</span>, <span class="hl-def">content</span>) {
+    <span class="hl-keyword">this</span>.<span class="hl-property">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>(<span class="hl-variable-2">target</span>, {
+      <span class="hl-property">state</span>: <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({
+        <span class="hl-property">doc</span>: <span class="hl-variable">defaultMarkdownParser</span>.<span class="hl-property">parse</span>(<span class="hl-variable-2">content</span>),
+        <span class="hl-property">plugins</span>: <span class="hl-variable">exampleSetup</span>({<span class="hl-property">schema</span>})
+      })
+    })
+  }
+
+  <span class="hl-keyword">get</span> <span class="hl-property">content</span>() {
+    <span class="hl-keyword">return</span> <span class="hl-variable">defaultMarkdownSerializer</span>.<span class="hl-property">serialize</span>(<span class="hl-keyword">this</span>.<span class="hl-property">view</span>.<span class="hl-property">state</span>.<span class="hl-property">doc</span>)
+  }
+  <span class="hl-property">focus</span>() { <span class="hl-keyword">this</span>.<span class="hl-property">view</span>.<span class="hl-property">focus</span>() }
+  <span class="hl-property">destroy</span>() { <span class="hl-keyword">this</span>.<span class="hl-property">view</span>.<span class="hl-property">destroy</span>() }
+}
+</code></pre>
+<p>最后，我们可以再加一些单选按钮以让用户来在两种输入模式中切换:</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">place</span> <span class="hl-operator">=</span> <span class="hl-variable">document</span>.<span class="hl-property">querySelector</span>(<span class="hl-string">"#editor"</span>)
+<span class="hl-keyword">let</span> <span class="hl-def">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">MarkdownView</span>(<span class="hl-variable">place</span>, <span class="hl-variable">document</span>.<span class="hl-property">querySelector</span>(<span class="hl-string">"#content"</span>).<span class="hl-property">value</span>)
+
+<span class="hl-variable">document</span>.<span class="hl-property">querySelectorAll</span>(<span class="hl-string">"input[type=radio]"</span>).<span class="hl-property">forEach</span>(<span class="hl-def">button</span> <span class="hl-operator">=&gt;</span> {
+  <span class="hl-variable-2">button</span>.<span class="hl-property">addEventListener</span>(<span class="hl-string">"change"</span>, () <span class="hl-operator">=&gt;</span> {
+    <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-variable-2">button</span>.<span class="hl-property">checked</span>) <span class="hl-keyword">return</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">View</span> <span class="hl-operator">=</span> <span class="hl-variable-2">button</span>.<span class="hl-property">value</span> <span class="hl-operator">==</span> <span class="hl-string">"markdown"</span> <span class="hl-operator">?</span> <span class="hl-variable">MarkdownView</span> : <span class="hl-variable">ProseMirrorView</span>
+    <span class="hl-keyword">if</span> (<span class="hl-variable">view</span> <span class="hl-keyword">instanceof</span> <span class="hl-variable-2">View</span>) <span class="hl-keyword">return</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">content</span> <span class="hl-operator">=</span> <span class="hl-variable">view</span>.<span class="hl-property">content</span>
+    <span class="hl-variable">view</span>.<span class="hl-property">destroy</span>()
+    <span class="hl-variable">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable-2">View</span>(<span class="hl-variable">place</span>, <span class="hl-variable-2">content</span>)
+    <span class="hl-variable">view</span>.<span class="hl-property">focus</span>()
+  })
+})
+</code></pre>
+<link rel=stylesheet href="../../css/editor.css">
+<script src="../prosemirror.js"></script>
+<script src="example.js"></script></article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>

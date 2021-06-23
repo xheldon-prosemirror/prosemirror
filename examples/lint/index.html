@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror 拼写检查示例</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" class=active>示例</a>
+      <a href="/docs/" >文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><article><h1>拼写检查示例</h1>
+<p>浏览器的 DOM 用来表示复杂的网页是很棒的--这也是设计它的目的。但是它巨大的页面内容和松散的结构使其很难做一些类似于「TypeScript类型推断」一样的推断（来判断用户是否书写合法的内容）。因此，一个代表了更小文档的文档模型就理所当然的应运而生了。</p>
+<p>本示例实现了一个简单的文档 <a href="https://en.wikipedia.org/wiki/Lint_(software)">拼写检查</a> 功能，它能够发现文档中的问题，然后方便的修复它：</p>
+<style>
+  #editor { position: relative }
+  .problem { background: #fdd; border-bottom: 1px solid #f22; margin-bottom: -1px; }
+  .lint-icon {
+    display: inline-block; position: absolute; right: 2px; cursor: pointer;
+    border-radius: 100px; background: #f22; color: white; font-family: times, georgia, serif;
+    font-size: 15px; font-weight: bold; width: 1.1em; height: 1.1em;
+    text-align: center; padding-left: .5px; line-height: 1.1em
+  }
+  .lint-icon:before { content: "!" }
+  .ProseMirror { padding-right: 20px }
+</style>
+<div id="editor"></div>
+<div id="content" style="display: none">
+  <h3>拼写检查示例</h3>
+  <p>这是一个句子 ,但是标点并不在正确的位置（这里我在中文中使用了英文标点以匹配示例代码）</p>
+  <h5>标题等级设置低了</h5>
+  <p>这是一个图片， <img src="/img/smiley.png"> ，它没有 alt 属性。
+    你可以鼠标悬浮在右侧的 icons 上，来查看错误内容，点击它以选中相关的文本，
+    然后，obviously，双击它以自动修复错误（如果支持的话）</p>
+</div>
+<p><a href="https://glitch.com/edit/#!/remix/prosemirror-demo-lint"><img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg" alt="Remix on Glitch"></a></p>
+<p>这个示例的第一个部分就是一个函数，它接受一个文档参数，返回在该文档中发现的错误数组。我们将会使用 <a href="/docs/ref/#model.Node.descendants"><code>descendants</code></a> 方法去方便的迭代文档中的所有节点。然后根据不同的节点类型，来应用不同的错误检查方式。</p>
+<p>每个错误类型被表示为一个对象，它包含有一个错误提示、一个起始位置，以及一个结束位置信息，这样我们就能够展示错误提示然后高亮错误内容。对象也可选的有一个 <code>fix</code> 方法，可以修复错误（传 view 作为参数）：</p>
+<pre><code class="language-javascript"><span class="hl-comment">// 定义一些你可能不想让用户使用的值</span>
+<span class="hl-keyword">const</span> <span class="hl-def">badWords</span> <span class="hl-operator">=</span> <span class="hl-string-2">/\b(obviously|clearly|evidently|simply)\b/ig</span>
+<span class="hl-comment">// 将标点符号与前面的空格匹配</span>
+<span class="hl-keyword">const</span> <span class="hl-def">badPunc</span> <span class="hl-operator">=</span> <span class="hl-string-2">/ ([,\.!?:]) ?/g</span>
+
+<span class="hl-keyword">function</span> <span class="hl-def">lint</span>(<span class="hl-def">doc</span>) {
+  <span class="hl-keyword">let</span> <span class="hl-def">result</span> <span class="hl-operator">=</span> [], <span class="hl-def">lastHeadLevel</span> <span class="hl-operator">=</span> <span class="hl-atom">null</span>
+
+  <span class="hl-keyword">function</span> <span class="hl-def">record</span>(<span class="hl-def">msg</span>, <span class="hl-def">from</span>, <span class="hl-def">to</span>, <span class="hl-def">fix</span>) {
+    <span class="hl-variable-2">result</span>.<span class="hl-property">push</span>({<span class="hl-property">msg</span>, <span class="hl-property">from</span>, <span class="hl-property">to</span>, <span class="hl-property">fix</span>})
+  }
+
+  <span class="hl-comment">// 遍历在文档中的每个节点</span>
+  <span class="hl-variable-2">doc</span>.<span class="hl-property">descendants</span>((<span class="hl-def">node</span>, <span class="hl-def">pos</span>) <span class="hl-operator">=&gt;</span> {
+    <span class="hl-keyword">if</span> (<span class="hl-variable-2">node</span>.<span class="hl-property">isText</span>) {
+      <span class="hl-comment">// 扫描文本节点中的可疑的匹配内容</span>
+      <span class="hl-keyword">let</span> <span class="hl-def">m</span>
+      <span class="hl-keyword">while</span> (<span class="hl-variable-2">m</span> <span class="hl-operator">=</span> <span class="hl-variable">badWords</span>.<span class="hl-property">exec</span>(<span class="hl-variable-2">node</span>.<span class="hl-property">text</span>))
+        <span class="hl-variable-2">record</span>(<span class="hl-string-2">`Try not to say '${</span><span class="hl-variable-2">m</span>[<span class="hl-number">0</span>]<span class="hl-string-2">}</span><span class="hl-string-2">'`</span>,
+               <span class="hl-variable-2">pos</span> <span class="hl-operator">+</span> <span class="hl-variable-2">m</span>.<span class="hl-property">index</span>, <span class="hl-variable-2">pos</span> <span class="hl-operator">+</span> <span class="hl-variable-2">m</span>.<span class="hl-property">index</span> <span class="hl-operator">+</span> <span class="hl-variable-2">m</span>[<span class="hl-number">0</span>].<span class="hl-property">length</span>)
+      <span class="hl-keyword">while</span> (<span class="hl-variable-2">m</span> <span class="hl-operator">=</span> <span class="hl-variable">badPunc</span>.<span class="hl-property">exec</span>(<span class="hl-variable-2">node</span>.<span class="hl-property">text</span>))
+        <span class="hl-variable-2">record</span>(<span class="hl-string">"Suspicious spacing around punctuation"</span>,
+               <span class="hl-variable-2">pos</span> <span class="hl-operator">+</span> <span class="hl-variable-2">m</span>.<span class="hl-property">index</span>, <span class="hl-variable-2">pos</span> <span class="hl-operator">+</span> <span class="hl-variable-2">m</span>.<span class="hl-property">index</span> <span class="hl-operator">+</span> <span class="hl-variable-2">m</span>[<span class="hl-number">0</span>].<span class="hl-property">length</span>,
+               <span class="hl-variable">fixPunc</span>(<span class="hl-variable-2">m</span>[<span class="hl-number">1</span>] <span class="hl-operator">+</span> <span class="hl-string">" "</span>))
+    } <span class="hl-keyword">else</span> <span class="hl-keyword">if</span> (<span class="hl-variable-2">node</span>.<span class="hl-property">type</span>.<span class="hl-property">name</span> <span class="hl-operator">==</span> <span class="hl-string">"heading"</span>) {
+      <span class="hl-comment">// 检查标题的等级是否与当前的等级匹配</span>
+      <span class="hl-keyword">let</span> <span class="hl-def">level</span> <span class="hl-operator">=</span> <span class="hl-variable-2">node</span>.<span class="hl-property">attrs</span>.<span class="hl-property">level</span>
+      <span class="hl-keyword">if</span> (<span class="hl-variable-2">lastHeadLevel</span> <span class="hl-operator">!=</span> <span class="hl-atom">null</span> <span class="hl-operator">&amp;&amp;</span> <span class="hl-variable-2">level</span> <span class="hl-operator">&gt;</span> <span class="hl-variable-2">lastHeadLevel</span> <span class="hl-operator">+</span> <span class="hl-number">1</span>)
+        <span class="hl-variable-2">record</span>(<span class="hl-string-2">`Heading too small (${</span><span class="hl-variable-2">level</span><span class="hl-string-2">}</span> <span class="hl-string-2">under ${</span><span class="hl-variable-2">lastHeadLevel</span><span class="hl-string-2">}</span><span class="hl-string-2">)`</span>,
+               <span class="hl-variable-2">pos</span> <span class="hl-operator">+</span> <span class="hl-number">1</span>, <span class="hl-variable-2">pos</span> <span class="hl-operator">+</span> <span class="hl-number">1</span> <span class="hl-operator">+</span> <span class="hl-variable-2">node</span>.<span class="hl-property">content</span>.<span class="hl-property">size</span>,
+               <span class="hl-variable">fixHeader</span>(<span class="hl-variable-2">lastHeadLevel</span> <span class="hl-operator">+</span> <span class="hl-number">1</span>))
+      <span class="hl-variable-2">lastHeadLevel</span> <span class="hl-operator">=</span> <span class="hl-variable-2">level</span>
+    } <span class="hl-keyword">else</span> <span class="hl-keyword">if</span> (<span class="hl-variable-2">node</span>.<span class="hl-property">type</span>.<span class="hl-property">name</span> <span class="hl-operator">==</span> <span class="hl-string">"image"</span> <span class="hl-operator">&amp;&amp;</span> <span class="hl-operator">!</span><span class="hl-variable-2">node</span>.<span class="hl-property">attrs</span>.<span class="hl-property">alt</span>) {
+      <span class="hl-comment">// 确保图片都有一个 alt 属性</span>
+      <span class="hl-variable-2">record</span>(<span class="hl-string">"Image without alt text"</span>, <span class="hl-variable-2">pos</span>, <span class="hl-variable-2">pos</span> <span class="hl-operator">+</span> <span class="hl-number">1</span>, <span class="hl-variable">addAlt</span>)
+    }
+  })
+
+  <span class="hl-keyword">return</span> <span class="hl-variable-2">result</span>
+}
+</code></pre>
+<p>用来提供修复命令的工具函数大致长这样：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">function</span> <span class="hl-def">fixPunc</span>(<span class="hl-def">replacement</span>) {
+  <span class="hl-keyword">return</span> <span class="hl-keyword">function</span>({<span class="hl-def">state</span>, <span class="hl-def">dispatch</span>}) {
+    <span class="hl-variable-2">dispatch</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">tr</span>.<span class="hl-property">replaceWith</span>(<span class="hl-keyword">this</span>.<span class="hl-property">from</span>, <span class="hl-keyword">this</span>.<span class="hl-property">to</span>,
+                                  <span class="hl-variable-2">state</span>.<span class="hl-property">schema</span>.<span class="hl-property">text</span>(<span class="hl-variable-2">replacement</span>)))
+  }
+}
+
+<span class="hl-keyword">function</span> <span class="hl-def">fixHeader</span>(<span class="hl-def">level</span>) {
+  <span class="hl-keyword">return</span> <span class="hl-keyword">function</span>({<span class="hl-def">state</span>, <span class="hl-def">dispatch</span>}) {
+    <span class="hl-variable-2">dispatch</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">tr</span>.<span class="hl-property">setNodeMarkup</span>(<span class="hl-keyword">this</span>.<span class="hl-property">from</span> <span class="hl-operator">-</span> <span class="hl-number">1</span>, <span class="hl-atom">null</span>, {<span class="hl-property">level</span>}))
+  }
+}
+
+<span class="hl-keyword">function</span> <span class="hl-def">addAlt</span>({<span class="hl-def">state</span>, <span class="hl-def">dispatch</span>}) {
+  <span class="hl-keyword">let</span> <span class="hl-def">alt</span> <span class="hl-operator">=</span> <span class="hl-variable">prompt</span>(<span class="hl-string">"Alt text"</span>, <span class="hl-string">""</span>)
+  <span class="hl-keyword">if</span> (<span class="hl-variable-2">alt</span>) {
+    <span class="hl-keyword">let</span> <span class="hl-def">attrs</span> <span class="hl-operator">=</span> <span class="hl-variable">Object</span>.<span class="hl-property">assign</span>({}, <span class="hl-variable-2">state</span>.<span class="hl-property">doc</span>.<span class="hl-property">nodeAt</span>(<span class="hl-keyword">this</span>.<span class="hl-property">from</span>).<span class="hl-property">attrs</span>, {<span class="hl-property">alt</span>})
+    <span class="hl-variable-2">dispatch</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">tr</span>.<span class="hl-property">setNodeMarkup</span>(<span class="hl-keyword">this</span>.<span class="hl-property">from</span>, <span class="hl-atom">null</span>, <span class="hl-variable-2">attrs</span>))
+  }
+}
+</code></pre>
+<p>插件通过维护一个 decorations 集合来高亮错误同时插入一个紧挨着错误的 icon。CSS 用来将这个 icon 定位到编辑器的右侧，这样它就脱离了文档流而不会影响内容：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">Decoration</span>, <span class="hl-def">DecorationSet</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-view"</span>
+
+<span class="hl-keyword">function</span> <span class="hl-def">lintDeco</span>(<span class="hl-def">doc</span>) {
+  <span class="hl-keyword">let</span> <span class="hl-def">decos</span> <span class="hl-operator">=</span> []
+  <span class="hl-variable">lint</span>(<span class="hl-variable-2">doc</span>).<span class="hl-property">forEach</span>(<span class="hl-def">prob</span> <span class="hl-operator">=&gt;</span> {
+    <span class="hl-variable-2">decos</span>.<span class="hl-property">push</span>(<span class="hl-variable">Decoration</span>.<span class="hl-property">inline</span>(<span class="hl-variable-2">prob</span>.<span class="hl-property">from</span>, <span class="hl-variable-2">prob</span>.<span class="hl-property">to</span>, {<span class="hl-property">class</span>: <span class="hl-string">"problem"</span>}),
+               <span class="hl-variable">Decoration</span>.<span class="hl-property">widget</span>(<span class="hl-variable-2">prob</span>.<span class="hl-property">from</span>, <span class="hl-variable">lintIcon</span>(<span class="hl-variable-2">prob</span>)))
+  })
+  <span class="hl-keyword">return</span> <span class="hl-variable">DecorationSet</span>.<span class="hl-property">create</span>(<span class="hl-variable-2">doc</span>, <span class="hl-variable-2">decos</span>)
+}
+
+<span class="hl-keyword">function</span> <span class="hl-def">lintIcon</span>(<span class="hl-def">prob</span>) {
+  <span class="hl-keyword">let</span> <span class="hl-def">icon</span> <span class="hl-operator">=</span> <span class="hl-variable">document</span>.<span class="hl-property">createElement</span>(<span class="hl-string">"div"</span>)
+  <span class="hl-variable-2">icon</span>.<span class="hl-property">className</span> <span class="hl-operator">=</span> <span class="hl-string">"lint-icon"</span>
+  <span class="hl-variable-2">icon</span>.<span class="hl-property">title</span> <span class="hl-operator">=</span> <span class="hl-variable-2">prob</span>.<span class="hl-property">msg</span>
+  <span class="hl-variable-2">icon</span>.<span class="hl-property">problem</span> <span class="hl-operator">=</span> <span class="hl-variable-2">prob</span>
+  <span class="hl-keyword">return</span> <span class="hl-variable-2">icon</span>
+}
+</code></pre>
+<p>错误对象被存储在 icon 的 DOM 节点上，这样当点击 icon 的时候，事件处理函数能够访问到相应的信息。我们将单击设计成选中错误的区域，双击设计成执行 <code>fix</code> 方法。</p>
+<p>重新计算所有的错误，然后重新创建 decorations 的集合不是一种非常高效方式，因此对于生产环境的代码你可能想要考虑一种增量更新这些 decorations 的方式。想实现这个确实有点复杂，不过却是可行的--transaction 可以为你提供文档的哪部分更新了的信息：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">Plugin</span>, <span class="hl-def">TextSelection</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-state"</span>
+
+<span class="hl-keyword">let</span> <span class="hl-def">lintPlugin</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Plugin</span>({
+  <span class="hl-property">state</span>: {
+    <span class="hl-property">init</span>(<span class="hl-def">_</span>, {<span class="hl-def">doc</span>}) { <span class="hl-keyword">return</span> <span class="hl-variable">lintDeco</span>(<span class="hl-variable-2">doc</span>) },
+    <span class="hl-property">apply</span>(<span class="hl-def">tr</span>, <span class="hl-def">old</span>) { <span class="hl-keyword">return</span> <span class="hl-variable-2">tr</span>.<span class="hl-property">docChanged</span> <span class="hl-operator">?</span> <span class="hl-variable">lintDeco</span>(<span class="hl-variable-2">tr</span>.<span class="hl-property">doc</span>) : <span class="hl-variable-2">old</span> }
+  },
+  <span class="hl-property">props</span>: {
+    <span class="hl-property">decorations</span>(<span class="hl-def">state</span>) { <span class="hl-keyword">return</span> <span class="hl-keyword">this</span>.<span class="hl-property">getState</span>(<span class="hl-variable-2">state</span>) },
+    <span class="hl-property">handleClick</span>(<span class="hl-def">view</span>, <span class="hl-def">_</span>, <span class="hl-def">event</span>) {
+      <span class="hl-keyword">if</span> (<span class="hl-string-2">/lint-icon/</span>.<span class="hl-property">test</span>(<span class="hl-variable-2">event</span>.<span class="hl-property">target</span>.<span class="hl-property">className</span>)) {
+        <span class="hl-keyword">let</span> {<span class="hl-def">from</span>, <span class="hl-def">to</span>} <span class="hl-operator">=</span> <span class="hl-variable-2">event</span>.<span class="hl-property">target</span>.<span class="hl-property">problem</span>
+        <span class="hl-variable-2">view</span>.<span class="hl-property">dispatch</span>(
+          <span class="hl-variable-2">view</span>.<span class="hl-property">state</span>.<span class="hl-property">tr</span>
+            .<span class="hl-property">setSelection</span>(<span class="hl-variable">TextSelection</span>.<span class="hl-property">create</span>(<span class="hl-variable-2">view</span>.<span class="hl-property">state</span>.<span class="hl-property">doc</span>, <span class="hl-variable-2">from</span>, <span class="hl-variable-2">to</span>))
+            .<span class="hl-property">scrollIntoView</span>())
+        <span class="hl-keyword">return</span> <span class="hl-atom">true</span>
+      }
+    },
+    <span class="hl-property">handleDoubleClick</span>(<span class="hl-def">view</span>, <span class="hl-def">_</span>, <span class="hl-def">event</span>) {
+      <span class="hl-keyword">if</span> (<span class="hl-string-2">/lint-icon/</span>.<span class="hl-property">test</span>(<span class="hl-variable-2">event</span>.<span class="hl-property">target</span>.<span class="hl-property">className</span>)) {
+        <span class="hl-keyword">let</span> <span class="hl-def">prob</span> <span class="hl-operator">=</span> <span class="hl-variable-2">event</span>.<span class="hl-property">target</span>.<span class="hl-property">problem</span>
+        <span class="hl-keyword">if</span> (<span class="hl-variable-2">prob</span>.<span class="hl-property">fix</span>) {
+          <span class="hl-variable-2">prob</span>.<span class="hl-property">fix</span>(<span class="hl-variable-2">view</span>)
+          <span class="hl-variable-2">view</span>.<span class="hl-property">focus</span>()
+          <span class="hl-keyword">return</span> <span class="hl-atom">true</span>
+        }
+      }
+    }
+  }
+})
+</code></pre>
+<link rel=stylesheet href="../../css/editor.css">
+<script src="../prosemirror.js"></script>
+<script src="example.js"></script></article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>

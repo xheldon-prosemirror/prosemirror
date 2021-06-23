@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror 追踪变更示例</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" class=active>示例</a>
+      <a href="/docs/" >文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><article><blockquote>
+<p>本文较为复杂本人理解不深，因此一些代码中的注释可能翻译的不准确，需要的话可以去 <a href="https://prosemirror.net/examples/track/">查看原文</a></p>
+</blockquote>
+<h1>追踪修改</h1>
+<p>「修改」是 ProseMirror 中的一等公民（这句翻译使用了一些书介绍 JavaScript 中函数时的说法：「函数」是 JavaScript 中的一等公民）。
+你可以持有它的引用然后用它做一些事情。比如 <a href="/docs/guide/#transform.rebasing">rebasing（中文意译成变基）</a>、反转修改或者检查它看它做了什么。</p>
+<p>这个示例使用了上述的这些特性，以允许你「提交」你的修改，或者反转某个独立的提交，亦或者发现某个文本变化源自何处：</p>
+<style>
+  .commit {
+    margin-bottom: 4px;
+  }
+  .commit:hover {
+    background: #ff8;
+  }
+  .commit-revert {
+    color: #a22;
+  }
+  .commit-time {
+    background: #5ab;
+    padding: 0 5px;
+    color: white;
+    font-size: 90%;
+  }
+  .commit-blame {
+    background: #ff8;
+  }
+  .blame-info {
+    position: fixed;
+    border: 1px solid silver;
+    background: white;
+    padding: 3px 8px;
+    z-index: 3;
+  }
+  .blame-wrap {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+  #commit {
+    margin: 6px 0;
+    position: relative;
+  }
+  .blame-marker {
+    background: #ff8;
+  }
+</style>
+<div id="editor"></div>
+<form id="commit">
+  提交信息：<input type="text" id="message" name="message"> <button id="commitbutton" type="submit">提交</button>
+    <div class="blame-wrap"><button type="button" id="blame">查看光标处的内容修改详情</button></div>
+</form>
+<div id="commits" style="margin-bottom: 23px"></div>
+<p><a href="https://glitch.com/edit/#!/remix/prosemirror-demo-track"><img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg" alt="Remix on Glitch"></a></p>
+<p>鼠标悬浮在某个提交上，以高亮该提交的所做的文本修改。</p>
+<p>当前页面不会列出来 <a href="https://github.com/ProseMirror/website/blob/master/example/track/index.js">所有的源码</a>，而只会说明一些大家最感兴趣的部分。</p>
+<p>首先，我们需要做的事情是实现提交历史追踪。用编辑器插件比较适合做这个事情，因为它可以接收到任何一个修改。这个插件的 state 看起来应该是这个样子：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">class</span> <span class="hl-def">TrackState</span> {
+  <span class="hl-property">constructor</span>(<span class="hl-def">blameMap</span>, <span class="hl-def">commits</span>, <span class="hl-def">uncommittedSteps</span>, <span class="hl-def">uncommittedMaps</span>) {
+    <span class="hl-comment">// blameMap 是一种数组数据结构，它含有一系列的文档的范围，以及与其相关的提交。</span>
+    <span class="hl-comment">// 这可以用来做一些很有用的事情，比如高亮某个提交的修改范围等</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">blameMap</span> <span class="hl-operator">=</span> <span class="hl-variable-2">blameMap</span>
+    <span class="hl-comment">// 提交的历史，以一个对象的数组存储</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">commits</span> <span class="hl-operator">=</span> <span class="hl-variable-2">commits</span>
+    <span class="hl-comment">// 通过自上次提交以来发生的 steps 来反转新的 step 和他们相应的 map</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">uncommittedSteps</span> <span class="hl-operator">=</span> <span class="hl-variable-2">uncommittedSteps</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">uncommittedMaps</span> <span class="hl-operator">=</span> <span class="hl-variable-2">uncommittedMaps</span>
+  }
+
+  <span class="hl-comment">// 对当前 state 应用一个 transform</span>
+  <span class="hl-property">applyTransform</span>(<span class="hl-def">transform</span>) {
+    <span class="hl-comment">// 在当前 transaction 中反转它的 step，以在下一次的提交中保存它们（被用来 undo）</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">inverted</span> <span class="hl-operator">=</span>
+      <span class="hl-variable-2">transform</span>.<span class="hl-property">steps</span>.<span class="hl-property">map</span>((<span class="hl-def">step</span>, <span class="hl-def">i</span>) <span class="hl-operator">=&gt;</span> <span class="hl-variable-2">step</span>.<span class="hl-property">invert</span>(<span class="hl-variable-2">transform</span>.<span class="hl-property">docs</span>[<span class="hl-variable-2">i</span>]))
+    <span class="hl-keyword">let</span> <span class="hl-def">newBlame</span> <span class="hl-operator">=</span> <span class="hl-variable">updateBlameMap</span>(<span class="hl-keyword">this</span>.<span class="hl-property">blameMap</span>, <span class="hl-variable-2">transform</span>, <span class="hl-keyword">this</span>.<span class="hl-property">commits</span>.<span class="hl-property">length</span>)
+    <span class="hl-comment">// 创建一个新的 state，因为编辑器的 state 以及它的任意一个部分，都是一个不可突变的存储结构，任何修改都会产生一个新的 state</span>
+    <span class="hl-keyword">return</span> <span class="hl-keyword">new</span> <span class="hl-variable">TrackState</span>(<span class="hl-variable-2">newBlame</span>, <span class="hl-keyword">this</span>.<span class="hl-property">commits</span>,
+                          <span class="hl-keyword">this</span>.<span class="hl-property">uncommittedSteps</span>.<span class="hl-property">concat</span>(<span class="hl-variable-2">inverted</span>),
+                          <span class="hl-keyword">this</span>.<span class="hl-property">uncommittedMaps</span>.<span class="hl-property">concat</span>(<span class="hl-variable-2">transform</span>.<span class="hl-property">mapping</span>.<span class="hl-property">maps</span>))
+  }
+  <span class="hl-comment">// 当一个 transaction 被标记为一个 commit 的时候，下面这个函数用来将所有那些暂未提交的 step 放到下一个提交中去。</span>
+  <span class="hl-property">applyCommit</span>(<span class="hl-def">message</span>, <span class="hl-def">time</span>) {
+    <span class="hl-keyword">if</span> (<span class="hl-keyword">this</span>.<span class="hl-property">uncommittedSteps</span>.<span class="hl-property">length</span> <span class="hl-operator">==</span> <span class="hl-number">0</span>) <span class="hl-keyword">return</span> <span class="hl-keyword">this</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">commit</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Commit</span>(<span class="hl-variable-2">message</span>, <span class="hl-variable-2">time</span>, <span class="hl-keyword">this</span>.<span class="hl-property">uncommittedSteps</span>,
+                            <span class="hl-keyword">this</span>.<span class="hl-property">uncommittedMaps</span>)
+    <span class="hl-keyword">return</span> <span class="hl-keyword">new</span> <span class="hl-variable">TrackState</span>(<span class="hl-keyword">this</span>.<span class="hl-property">blameMap</span>, <span class="hl-keyword">this</span>.<span class="hl-property">commits</span>.<span class="hl-property">concat</span>(<span class="hl-variable-2">commit</span>), [], [])
+  }
+}
+</code></pre>
+<p>插件本身仅仅只是接收所有的 transactions 然后更新自身的 state。当该插件设置了一个 meta 信息到 transaction 的时候，就表示该 transaction 是一个提交 transaction，
+meta 的属性值即为提交信息：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">Plugin</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-state"</span>
+
+<span class="hl-keyword">const</span> <span class="hl-def">trackPlugin</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Plugin</span>({
+  <span class="hl-property">state</span>: {
+    <span class="hl-property">init</span>(<span class="hl-def">_</span>, <span class="hl-def">instance</span>) {
+      <span class="hl-keyword">return</span> <span class="hl-keyword">new</span> <span class="hl-variable">TrackState</span>([<span class="hl-keyword">new</span> <span class="hl-variable">Span</span>(<span class="hl-number">0</span>, <span class="hl-variable-2">instance</span>.<span class="hl-property">doc</span>.<span class="hl-property">content</span>.<span class="hl-property">size</span>, <span class="hl-atom">null</span>)], [], [], [])
+    },
+    <span class="hl-property">apply</span>(<span class="hl-def">tr</span>, <span class="hl-def">tracked</span>) {
+      <span class="hl-keyword">if</span> (<span class="hl-variable-2">tr</span>.<span class="hl-property">docChanged</span>) <span class="hl-variable-2">tracked</span> <span class="hl-operator">=</span> <span class="hl-variable-2">tracked</span>.<span class="hl-property">applyTransform</span>(<span class="hl-variable-2">tr</span>)
+      <span class="hl-keyword">let</span> <span class="hl-def">commitMessage</span> <span class="hl-operator">=</span> <span class="hl-variable-2">tr</span>.<span class="hl-property">getMeta</span>(<span class="hl-keyword">this</span>)
+      <span class="hl-keyword">if</span> (<span class="hl-variable-2">commitMessage</span>) <span class="hl-variable-2">tracked</span> <span class="hl-operator">=</span> <span class="hl-variable-2">tracked</span>.<span class="hl-property">applyCommit</span>(<span class="hl-variable-2">commitMessage</span>, <span class="hl-keyword">new</span> <span class="hl-variable">Date</span>(<span class="hl-variable-2">tr</span>.<span class="hl-property">time</span>))
+      <span class="hl-keyword">return</span> <span class="hl-variable-2">tracked</span>
+    }
+  }
+})
+</code></pre>
+<p>像这样一样追踪历史允许各种有用的事情，比如可以搞清楚是谁何时添加了一段内容，或者反转一个独立的提交。</p>
+<p>反转一个旧的 setps 需要 <a href="/docs/guide/#transform.rebasing">rebasing</a> 该 step 到最新 step 之间的所有的 step，这也是下面这个函数所做的工作：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">Mapping</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-transform"</span>
+
+<span class="hl-keyword">function</span> <span class="hl-def">revertCommit</span>(<span class="hl-def">commit</span>) {
+  <span class="hl-keyword">let</span> <span class="hl-def">trackState</span> <span class="hl-operator">=</span> <span class="hl-variable">trackPlugin</span>.<span class="hl-property">getState</span>(<span class="hl-variable">state</span>)
+  <span class="hl-keyword">let</span> <span class="hl-def">index</span> <span class="hl-operator">=</span> <span class="hl-variable-2">trackState</span>.<span class="hl-property">commits</span>.<span class="hl-property">indexOf</span>(<span class="hl-variable-2">commit</span>)
+  <span class="hl-comment">// 如果一个提交不在历史操作中，我们就不能反转它</span>
+  <span class="hl-keyword">if</span> (<span class="hl-variable-2">index</span> <span class="hl-operator">==</span> <span class="hl-operator">-</span><span class="hl-number">1</span>) <span class="hl-keyword">return</span>
+
+  <span class="hl-comment">// 提交完所有未提交的修改，反转才会被执行</span>
+  <span class="hl-keyword">if</span> (<span class="hl-variable-2">trackState</span>.<span class="hl-property">uncommittedSteps</span>.<span class="hl-property">length</span>)
+    <span class="hl-keyword">return</span> <span class="hl-variable">alert</span>(<span class="hl-string">"先提交你的修改！"</span>)
+
+  <span class="hl-comment">// 这是从当前文档初始提交到现在文档的 mapping</span>
+  <span class="hl-keyword">let</span> <span class="hl-def">remap</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Mapping</span>(<span class="hl-variable-2">trackState</span>.<span class="hl-property">commits</span>.<span class="hl-property">slice</span>(<span class="hl-variable-2">index</span>)
+                          .<span class="hl-property">reduce</span>((<span class="hl-def">maps</span>, <span class="hl-def">c</span>) <span class="hl-operator">=&gt;</span> <span class="hl-variable-2">maps</span>.<span class="hl-property">concat</span>(<span class="hl-variable-2">c</span>.<span class="hl-property">maps</span>), []))
+  <span class="hl-keyword">let</span> <span class="hl-def">tr</span> <span class="hl-operator">=</span> <span class="hl-variable">state</span>.<span class="hl-property">tr</span>
+  <span class="hl-comment">// 以当前文档为基础，在这个 commit 中构建一个包含所有反转 steps 的 transaction。</span>
+  <span class="hl-comment">// 这些 step 需要以相反的顺序被应用</span>
+  <span class="hl-keyword">for</span> (<span class="hl-keyword">let</span> <span class="hl-def">i</span> <span class="hl-operator">=</span> <span class="hl-variable-2">commit</span>.<span class="hl-property">steps</span>.<span class="hl-property">length</span> <span class="hl-operator">-</span> <span class="hl-number">1</span>; <span class="hl-variable-2">i</span> <span class="hl-operator">&gt;=</span> <span class="hl-number">0</span>; <span class="hl-variable-2">i</span><span class="hl-operator">--</span>) {
+    <span class="hl-comment">// mapping 被分隔成不包括当前和之前的 step 的 mapping</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">remapped</span> <span class="hl-operator">=</span> <span class="hl-variable-2">commit</span>.<span class="hl-property">steps</span>[<span class="hl-variable-2">i</span>].<span class="hl-property">map</span>(<span class="hl-variable-2">remap</span>.<span class="hl-property">slice</span>(<span class="hl-variable-2">i</span> <span class="hl-operator">+</span> <span class="hl-number">1</span>))
+    <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-variable-2">remapped</span>) <span class="hl-keyword">continue</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">result</span> <span class="hl-operator">=</span> <span class="hl-variable-2">tr</span>.<span class="hl-property">maybeStep</span>(<span class="hl-variable-2">remapped</span>)
+    <span class="hl-comment">// 如果一个 step 可以被应用，那么添加该 step 的 map 到我们的 mapping 流，这样后续的 step 可以以当前 step 继续 mapping。</span>
+    <span class="hl-keyword">if</span> (<span class="hl-variable-2">result</span>.<span class="hl-property">doc</span>) <span class="hl-variable-2">remap</span>.<span class="hl-property">appendMap</span>(<span class="hl-variable-2">remapped</span>.<span class="hl-property">getMap</span>(), <span class="hl-variable-2">i</span>)
+  }
+  <span class="hl-comment">// 添加一个提交信息，然后 dispatch</span>
+  <span class="hl-keyword">if</span> (<span class="hl-variable-2">tr</span>.<span class="hl-property">docChanged</span>)
+    <span class="hl-variable">dispatch</span>(<span class="hl-variable-2">tr</span>.<span class="hl-property">setMeta</span>(<span class="hl-variable">trackPlugin</span>, <span class="hl-string-2">`Revert '${</span><span class="hl-variable-2">commit</span>.<span class="hl-property">message</span><span class="hl-string-2">}</span><span class="hl-string-2">'`</span>))
+}
+</code></pre>
+<p>因为当合并一些改变的时候会导致一些隐藏的冲突，因此复杂的反转步骤可能导致一些不甚直观的结果（尤其是对相同内容先后做不同更改的时候）。
+在一个生产环境的应用中，也许应该在检测到这种情况的时候提供给用户一个交互界面，以让用户手动解决冲突。</p>
+<link rel=stylesheet href="../../css/editor.css">
+<script src="../prosemirror.js"></script>
+<script src="example.js"></script></article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>

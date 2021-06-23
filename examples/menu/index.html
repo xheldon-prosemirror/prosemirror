@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror 菜单示例</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" class=active>示例</a>
+      <a href="/docs/" >文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><article><h1>添加一个操作菜单</h1>
+<p>大多数示例使用 <a href="https://github.com/prosemirror/prosemirror-example-setup">example setup package</a> 来创建一个菜单，不过我们其实并不推荐在生产环境使用它和 <a href="https://github.com/prosemirror/prosemirror-menu">menu package</a> ，因为它们既不足够简单，也不是可定制的模块，你使用的话可能很快就会遇到一些限制。</p>
+<p>这个示例将会展示如何为 ProseMirror 编辑器实现一个自定义（并且丑陋）的菜单：</p>
+<style>
+  .menubar {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    line-height: 0.1;
+  }
+  .menuicon {
+    display: inline-block;
+    border-right: 1px solid rgba(0, 0, 0, 0.2);
+    color: #888;
+    line-height: 1;
+    padding: 0 7px;
+    margin: 1px;
+    cursor: pointer;
+    text-align: center;
+    min-width: 1.4em;
+  }
+  .strong, .heading { font-weight: bold; }
+  .em { font-style: italic; }
+
+  #editor { padding-top: 0 }
+</style>
+<div id="editor"></div>
+<div style="display: none" id="content">
+  <h3>简单编辑器</h3>
+  <p>以及一个非常粗糙的菜单栏。
+</p></div>
+<p><a href="https://glitch.com/edit/#!/remix/prosemirror-demo-menu"><img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg" alt="Remix on Glitch"></a></p>
+<p>实现的大致思路是，创建一系列的界面操作元素，然后将他们绑定到 <a href="/docs/guide/#commands">commands</a> 上。当点击的时候，它们就会在编辑器中执行相应的命令。</p>
+<p>但是有个问题就是，如何处理一些并不总是可用的命令，比如当你光标在一个段落中的时候，是否应该将「将此元素转换成段落」的命令展示出来？如果是的话，是否应该将其置灰？这个示例将会简单的隐藏哪些当前不可用的命令按钮（译者注：命令是否可用与光标所在的位置紧密相关）。</p>
+<p>为了能够做到这一点，就需要当编辑器的 state 更新的时候，同步更新菜单的 DOM 结构（取决于菜单中按钮命令的数量，以及需要决定命令是否可用的工作量，更新 DOM 的操作可能会比较「昂贵」。事实上针对这个问题除非让命令的数量尽可能的少，复杂性尽可能的低，或者当 state 改变的时候不要改变菜单的外观，否则并没有好的解决办法）。</p>
+<p>如果你已经有了某种数据流的抽象，可以将菜单作为一个与 ProseMirror 分离的组件的同时还能将其编辑器的 state 状态绑定，那么它应该会工作良好。如果你还没有，那么一个 plugin 可能是最简单的实现菜单的方案。</p>
+<p>菜单组件的样子看起来可能是下面这样：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">class</span> <span class="hl-def">MenuView</span> {
+  <span class="hl-property">constructor</span>(<span class="hl-def">items</span>, <span class="hl-def">editorView</span>) {
+    <span class="hl-keyword">this</span>.<span class="hl-property">items</span> <span class="hl-operator">=</span> <span class="hl-variable-2">items</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">editorView</span> <span class="hl-operator">=</span> <span class="hl-variable-2">editorView</span>
+
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span> <span class="hl-operator">=</span> <span class="hl-variable">document</span>.<span class="hl-property">createElement</span>(<span class="hl-string">"div"</span>)
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">className</span> <span class="hl-operator">=</span> <span class="hl-string">"menubar"</span>
+    <span class="hl-variable-2">items</span>.<span class="hl-property">forEach</span>(({<span class="hl-def">dom</span>}) <span class="hl-operator">=&gt;</span> <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">appendChild</span>(<span class="hl-variable-2">dom</span>))
+    <span class="hl-keyword">this</span>.<span class="hl-property">update</span>()
+
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">addEventListener</span>(<span class="hl-string">"mousedown"</span>, <span class="hl-def">e</span> <span class="hl-operator">=&gt;</span> {
+      <span class="hl-variable-2">e</span>.<span class="hl-property">preventDefault</span>()
+      <span class="hl-variable-2">editorView</span>.<span class="hl-property">focus</span>()
+      <span class="hl-variable-2">items</span>.<span class="hl-property">forEach</span>(({<span class="hl-def">command</span>, <span class="hl-def">dom</span>}) <span class="hl-operator">=&gt;</span> {
+        <span class="hl-keyword">if</span> (<span class="hl-variable-2">dom</span>.<span class="hl-property">contains</span>(<span class="hl-variable-2">e</span>.<span class="hl-property">target</span>))
+          <span class="hl-variable-2">command</span>(<span class="hl-variable-2">editorView</span>.<span class="hl-property">state</span>, <span class="hl-variable-2">editorView</span>.<span class="hl-property">dispatch</span>, <span class="hl-variable-2">editorView</span>)
+      })
+    })
+  }
+
+  <span class="hl-property">update</span>() {
+    <span class="hl-keyword">this</span>.<span class="hl-property">items</span>.<span class="hl-property">forEach</span>(({<span class="hl-def">command</span>, <span class="hl-def">dom</span>}) <span class="hl-operator">=&gt;</span> {
+      <span class="hl-keyword">let</span> <span class="hl-def">active</span> <span class="hl-operator">=</span> <span class="hl-variable-2">command</span>(<span class="hl-keyword">this</span>.<span class="hl-property">editorView</span>.<span class="hl-property">state</span>, <span class="hl-atom">null</span>, <span class="hl-keyword">this</span>.<span class="hl-property">editorView</span>)
+      <span class="hl-variable-2">dom</span>.<span class="hl-property">style</span>.<span class="hl-property">display</span> <span class="hl-operator">=</span> <span class="hl-variable-2">active</span> <span class="hl-operator">?</span> <span class="hl-string">""</span> : <span class="hl-string">"none"</span>
+    })
+  }
+
+  <span class="hl-property">destroy</span>() { <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">remove</span>() }
+}
+</code></pre>
+<p>它是一些菜单项的数组，每个数组元素有 <code>command</code> 和 <code>dom</code> 属性，然后把他们都放到一个菜单栏元素中。然后，它设置了一个事件处理函数，监听哪些菜单被点击了，然后运行相应的命令。</p>
+<p>为了在 state 更新的时候同步更新菜单，所有的命令都应该可以在没有 dispatch 函数的时候运行，然后那些返回 false 的命令对应的菜单项会被隐藏。</p>
+<p>将这个组件放到编辑器 view 上的时候有点棘手--该组件需要在编辑器 view 初始化的时候访问它，但是与此同时，编辑器 view 的 <a href="/docs/ref/#view.DirectEditorProps.dispatchTransaction"><code>dispatchTransaction</code></a> 属性需要调用该菜单组件的更新方法。因此，Plugins 在这里很有用。它允许你定义一个 <a href="/docs/ref/#state.PluginSpec.view">plugin view</a>,就像下面这样：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">Plugin</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-state"</span>
+
+<span class="hl-keyword">function</span> <span class="hl-def">menuPlugin</span>(<span class="hl-def">items</span>) {
+  <span class="hl-keyword">return</span> <span class="hl-keyword">new</span> <span class="hl-variable">Plugin</span>({
+    <span class="hl-property">view</span>(<span class="hl-def">editorView</span>) {
+      <span class="hl-keyword">let</span> <span class="hl-def">menuView</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">MenuView</span>(<span class="hl-variable-2">items</span>, <span class="hl-variable-2">editorView</span>)
+      <span class="hl-variable-2">editorView</span>.<span class="hl-property">dom</span>.<span class="hl-property">parentNode</span>.<span class="hl-property">insertBefore</span>(<span class="hl-variable-2">menuView</span>.<span class="hl-property">dom</span>, <span class="hl-variable-2">editorView</span>.<span class="hl-property">dom</span>)
+      <span class="hl-keyword">return</span> <span class="hl-variable-2">menuView</span>
+    }
+  })
+}
+</code></pre>
+<p>当一个编辑器 view 初始化的时候，或者当任一个 plugins 中的 state 变化的时候，那些定义了 plugin view 的 plugin 会将 plugin view 初始化。然后每当编辑器的 state 更新的时候，这些 plugin view 的 <code>update</code> 方法就会被调用，当 plugin 被销毁的时候，plugin view 的 <code>destory</code> 方法会被调用。因此，通过增加带有 plugin view 的 plugin 到编辑器的 view 上，我们可以确保菜单栏与编辑器的 view 同步更新。</p>
+<p>真实的菜单项看上去可能与下面这个类似，它有一些基本的如加粗，斜体，以及一些 block 类型的按钮：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">toggleMark</span>, <span class="hl-def">setBlockType</span>, <span class="hl-def">wrapIn</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-commands"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">schema</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-schema-basic"</span>
+
+<span class="hl-comment">// 创建菜单图标的辅助函数</span>
+<span class="hl-keyword">function</span> <span class="hl-def">icon</span>(<span class="hl-def">text</span>, <span class="hl-def">name</span>) {
+  <span class="hl-keyword">let</span> <span class="hl-def">span</span> <span class="hl-operator">=</span> <span class="hl-variable">document</span>.<span class="hl-property">createElement</span>(<span class="hl-string">"span"</span>)
+  <span class="hl-variable-2">span</span>.<span class="hl-property">className</span> <span class="hl-operator">=</span> <span class="hl-string">"menuicon "</span> <span class="hl-operator">+</span> <span class="hl-variable-2">name</span>
+  <span class="hl-variable-2">span</span>.<span class="hl-property">title</span> <span class="hl-operator">=</span> <span class="hl-variable-2">name</span>
+  <span class="hl-variable-2">span</span>.<span class="hl-property">textContent</span> <span class="hl-operator">=</span> <span class="hl-variable-2">text</span>
+  <span class="hl-keyword">return</span> <span class="hl-variable-2">span</span>
+}
+
+<span class="hl-comment">// 创建一个给定级别的标题图标</span>
+<span class="hl-keyword">function</span> <span class="hl-def">heading</span>(<span class="hl-def">level</span>) {
+  <span class="hl-keyword">return</span> {
+    <span class="hl-property">command</span>: <span class="hl-variable">setBlockType</span>(<span class="hl-variable">schema</span>.<span class="hl-property">nodes</span>.<span class="hl-property">heading</span>, {<span class="hl-property">level</span>}),
+    <span class="hl-property">dom</span>: <span class="hl-variable">icon</span>(<span class="hl-string">"H"</span> <span class="hl-operator">+</span> <span class="hl-variable-2">level</span>, <span class="hl-string">"heading"</span>)
+  }
+}
+
+<span class="hl-keyword">let</span> <span class="hl-def">menu</span> <span class="hl-operator">=</span> <span class="hl-variable">menuPlugin</span>([
+  {<span class="hl-property">command</span>: <span class="hl-variable">toggleMark</span>(<span class="hl-variable">schema</span>.<span class="hl-property">marks</span>.<span class="hl-property">strong</span>), <span class="hl-property">dom</span>: <span class="hl-variable">icon</span>(<span class="hl-string">"B"</span>, <span class="hl-string">"strong"</span>)},
+  {<span class="hl-property">command</span>: <span class="hl-variable">toggleMark</span>(<span class="hl-variable">schema</span>.<span class="hl-property">marks</span>.<span class="hl-property">em</span>), <span class="hl-property">dom</span>: <span class="hl-variable">icon</span>(<span class="hl-string">"i"</span>, <span class="hl-string">"em"</span>)},
+  {<span class="hl-property">command</span>: <span class="hl-variable">setBlockType</span>(<span class="hl-variable">schema</span>.<span class="hl-property">nodes</span>.<span class="hl-property">paragraph</span>), <span class="hl-property">dom</span>: <span class="hl-variable">icon</span>(<span class="hl-string">"p"</span>, <span class="hl-string">"paragraph"</span>)},
+  <span class="hl-variable">heading</span>(<span class="hl-number">1</span>), <span class="hl-variable">heading</span>(<span class="hl-number">2</span>), <span class="hl-variable">heading</span>(<span class="hl-number">3</span>),
+  {<span class="hl-property">command</span>: <span class="hl-variable">wrapIn</span>(<span class="hl-variable">schema</span>.<span class="hl-property">nodes</span>.<span class="hl-property">blockquote</span>), <span class="hl-property">dom</span>: <span class="hl-variable">icon</span>(<span class="hl-string">"&gt;"</span>, <span class="hl-string">"blockquote"</span>)}
+])
+</code></pre>
+<p><a href="https://github.com/prosemirror/prosemirror-menu"><code>prosemirror-menu</code> package</a> 包做了类似的事情，不过它还增加了一些东西类似简单的拖入菜单和激活/失活图标（去高亮加粗按钮当选择了加粗的文本时候）。</p>
+<link rel=stylesheet href="../../css/editor.css">
+<script src="../prosemirror.js"></script>
+<script src="example.js"></script></article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>

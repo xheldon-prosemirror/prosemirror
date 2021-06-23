@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><meta property="og:title" content="ProseMirror 中文"><meta property="og:type" content="website"><meta property="og:url" content="https://prosemirror.xheldon.com/"><meta property="og:image" content="https://prosemirror.xheldon.com/img/picture.png"><meta property="og:description" content="In-browser structured text editing component"><title>ProseMirror 中文</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header class=frontpage>
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" >示例</a>
+      <a href="/docs/" >文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav><h1>使用 Web 技术构建富有表现力的富文本编辑器</h1>
+    <div id=editor></div></header><article><style>
+  .ProseMirror { padding: 2px 20px; min-height: 180px; outline: none; }
+  p.callout {
+    padding: 0 20px 0 15px;
+    font-weight: 600;
+  }
+</style>
+
+<div id="content" style="display: none">
+  <p>就像这样一样！</p>
+  <p>在这个地方尝试输入内容，或者到 <a href="examples">examples</a>查看更多示例！</p>
+</div>
+
+<p>一个理想的富文本编辑器产生结构化的、语义化的、有意义的文档的同时还要能够让用户能够容易的理解与使用。ProseMirror 试着在
+  <a href="http://commonmark.org/">Markdown</a> 编辑体验和传统的 <a href="https://en.wikipedia.org/wiki/WYSIWYG">WYSIWYG</a>
+编辑体验中寻找一种融合的方法。</p>
+
+<p>它通过实现一个比普通的 HTML 具有更多的限制和结构化的 WYSIWYG 风格的接口来做到这点。你可以自定义编辑器创建的文档的结构和内容，使它们符合你应用的需要。</p>
+
+<h2 class=hr id=features>特点</h2>
+
+<ul class=grid-list>
+  <li>
+    <h3>实时协同编辑</h3>
+    <p>ProseMirror 内置了对实时协同编辑的坚定支持，它允许多个人同时对一个文档进行编辑。</p>
+  </li>
+  <li>
+    <h3>可扩展的文档结构</h3>
+    <p>文档结构（Document schemas）允许使用自定义的文档结构而无需从头开始编写自己的编辑器。</p>
+  </li>
+  <li>
+    <h3>模块化</h3>
+    <p>模块机制确保你只载入自己需要的模块，同时能够按需替换已有的模块。</p>
+  </li>
+  <li>
+    <h3>插件化</h3>
+    <p>插件系统允许你容易地增加额外的功能，同时以一种简单的方式打包你的插件。</p>
+  </li>
+  <li>
+    <h3>函数式</h3>
+    <p>一个函数式和不可变数据结构让 ProseMirror 很容易的与现代 web app 集成，以实现复杂的编辑行为。</p>
+  </li>
+  <li>
+    <h3>定制化</h3>
+    <p>核心库小巧且通用，为构建不同类型的编辑器提供基础支持。</p>
+  </li>
+</ul>
+
+<h2 class=hr id=about>关于</h2>
+
+<p>ProseMirror
+是一个 <a href="https://github.com/ProseMirror/prosemirror/blob/master/LICENSE">开源库
+  </a>, 你可以合法的将其用于商业目的。当然，编写、维护、支持如此一个庞大的开源项目需要很大精力，因此...</p>
+
+<p class=callout>如果你正在使用 ProseMirror 赚钱，<u>我们大家</u>都希望你能够资助这个项目，以让它长远发展。 &nbsp;
+<a class=fund-button href="http://marijnhaverbeke.nl/fund/">点击这里了解更多</a>
+</p>
+
+<p>ProseMirror 被放在了
+  <a href="https://github.com/prosemirror/">GitHub</a>，欢迎
+ <a href="https://github.com/ProseMirror/prosemirror/blob/master/CONTRIBUTING.md">贡献代码</a>。</p>
+
+<p>安装 ProseMirror 最容易的方式是使用
+  <a href="https://www.npmjs.com/search?q=prosemirror-">npm</a>。
+可以通过查看 <a href="examples/basic/">示例</a>来快速上手</p>
+
+<p>ProseMirror 支持最新的 Firefox、Chrome、Safari 和 Edge，当然还有 IE 11。</p>
+
+<p>关于这个项目的讨论，或者问问题，最好的地方是在
+  <a href="https://discuss.prosemirror.net/">ProseMirror 论坛</a>。
+提 Bug 的话请前往 Github 的 <a href="https://github.com/ProseMirror/prosemirror/issues">issue
+tracker</a>。我们希望营造一个包容和友善的社区。为了试这个目标更明确，我们有一个关于 ProseMirror 的
+  <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>。</p>
+
+<h2 class=hr id=sponsors>赞助者</h2>
+
+<p>软件发起者是 <a href="https://www.indiegogo.com/projects/prosemirror/">crowd-funded</a>
+以及下面这 414 个非常棒的 <a href="backers.html">独立开发者和组织</a>.</p>
+
+<p>下列公司一直在支持着项目的发展:</p>
+
+<div class=sponsorlist>
+  <a href="https://www.rstudio.com" class="sponsor diamond"><img src="/logos/rstudio.svg" alt=RStudio></a>
+  <a href="https://www.nytimes.com/" class="sponsor diamond"><img src="/logos/times.svg" alt="The New York Times"></a>
+  <a href="https://storyscript.com/" class="sponsor gold"><img src="/logos/storyscript.svg" alt=Storyscript></a>
+  <a href="https://nextjournal.com/" class="sponsor silver"><img src="/logos/nextjournal.svg" alt=Nextjournal></a>
+  <a href="https://www.atypon.com/products/manuscripts/" class="sponsor silver"><img src="/logos/atypon.svg" alt=Atypon></a>
+  <a href="https://pilot.pm/" class="sponsor bronze">pilot.pm</a>
+</div>
+
+<link rel=stylesheet href="css/editor.css">
+<script src="examples/prosemirror.js"></script>
+<script src="examples/basic/example.js"></script></article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>

@@ -1,0 +1,2010 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror 中文指南</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a class=toc-toggle>导航</a><a href="/examples/" >示例</a>
+      <a href="/docs/" class=active>文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><nav id=toc>
+    <ul><li><a href="#intro">介绍</a></li><li><a href="#doc">文档</a></li><li><a href="#schema">文档骨架</a></li><li><a href="#transform">文档转换</a></li><li><a href="#state">编辑器状态</a></li><li><a href="#view">视图组件</a></li><li><a href="#commands">命令</a></li><li><a href="#collab">协同编辑</a></li></ul>
+  </nav>
+  <script>
+addEventListener("load", function() {
+  var toc = document.querySelector("nav#toc")
+  var state = "top"
+  var footer = document.querySelector("footer"), header = document.querySelector("header")
+  function align() {
+    var tocRect = toc.getBoundingClientRect(),
+        headRect = header.getBoundingClientRect(),
+        footRect = footer.getBoundingClientRect()
+    if (state == "top" && headRect.bottom <= -40 ||
+        state == "bottom" && toc.getBoundingClientRect().top >= 0) {
+      toc.style.top = "0"
+      toc.style.bottom = ""
+      toc.classList.add("fixed")
+      state = "fixed"
+    } else if (state == "fixed" && headRect.bottom > -40) {
+      toc.style.bottom = toc.style.top = ""
+      toc.classList.remove("fixed")
+      state = "top"
+    } else if (state == "fixed" && footRect.top < tocRect.bottom) {
+      toc.style.bottom = footRect.height + "px"
+      toc.style.top = "auto"
+      toc.classList.remove("fixed")
+      state = "bottom"
+    }
+  }
+  if (document.body.scrollHeight - header.offsetHeight > innerHeight) {
+    align()
+    addEventListener("scroll", align)
+  }
+  document.querySelector(".toc-toggle").addEventListener("click", function() {
+    toc.classList.toggle("open")
+  })
+})
+  </script><article><blockquote>本文用到的名词解释可以参照 <a href="https://xheldon.com/prosemirror-guide-chinese.html" target="_blank">这个中文翻译</a> 的开头部分，
+本文与上述中文翻译内容相同，只是纯翻译，以及为了在 <a href="/docs/ref/" target="_blank">API 手册</a> 中方便的引用该地址。</blockquote>
+<h1>ProseMirror 中文指南</h1>
+
+<p>本指南介绍了在该库中使用的各种概念，以及它们是如何相互关联的。
+为了让你对系统整体有一个印象， 推荐读者按本文的文档顺序阅读，
+或者至少（如果你没有耐心而只是想大概了解的话），读完 View 组件的那一块。</p><h2 id=intro>介绍</h2>
+<p data-en="ProseMirror provides a set of tools and concepts for building rich
+text editors, using user interface inspired by
+what-you-see-is-what-you-get, but trying to avoid the pitfalls of that
+style of editing." lang="cn">ProseMirror 提供了一整套构建富文本编辑器的工具和概念，它使用的用户界面受 所见即所得 概念的启发，
+但是尽量避免陷入它样式编辑的天坑。</p>
+
+<p data-en="The main principle of ProseMirror is that your code gets full control
+over the document and what happens to it. This document isn't a blob
+of HTML, but a custom data structure that only contains elements that
+you explicitly allow it to contain, in relations that you specified.
+All updates go through a single point, where you can inspect them and
+react to them." lang="cn">Prosemirror 的基本概念是，你和你的代码对文档和文档的变化拥有绝对的控制权。
+这里的文档不是 HTML 里的那一大坨杂乱无章的代码，而是一个只包含那些你明确指定允许它包含的元素和它们之间的你指定的关系的自定义数据结构(意思就是什么元素可以出现，
+元素之间的关系，都在你的掌控之下——译者注)。所有的文档更新操作都从一个点出发，方便你对更新做处理。</p>
+
+<p data-en="The core library is not an easy drop-in component—we are prioritizing
+modularity and customizability over simplicity, with the hope that,
+in the future, people will distribute drop-in editors based on
+ProseMirror. As such, this is more of a Lego set than a Matchbox car." lang="cn">Prosemirror 的核心模块并不是开箱即用的，在开发这个库的时候，我们坚持它的模块化和自定义程度的优先级高于简洁性。
+当然，我们希望将来有人能开发一个基于 Prosemirror 的开箱即用的编辑器。这种感觉打个比喻来说就是，Prosemirror 是一个乐高积木，
+拿到后需要你手动拼装，而不是像一个火柴盒一样，打开就能使用。</p>
+
+<p data-en="There are four essential modules, which are required to do any editing at
+all, and a number of extension modules maintained by the core team,
+which have a status similar to that of 3rd party modules—they provide
+useful functionality, but you may omit them or replace them with other
+modules that implement similar functionality." lang="cn">Prosemirror 有四个必要的模块，任何操作都需要这四个模块，另外还有很多 Prosemirror 核心团队维护的扩展模块，
+它们(这些扩展模块)像一些提供了很多有用功能的第三方模块一样，都能被实现了相同功能的其他模块所取代。</p>
+
+<p data-en="The essential modules are:" lang="cn">上述的四个必要模块有：</p>
+<ul>
+<li>
+
+<p data-en="prosemirror-model defines the editor's document
+model, the data structure used to describe the content
+of the editor." lang="cn"><a href="/docs/ref/#model"><code>prosemirror-model</code></a> 定义了编辑器的 Document Model，它用来描述编辑器的内容。</p>
+</li>
+<li>
+
+<p data-en="prosemirror-state provides the data structure that
+describes the editor's whole state, including the selection, and a
+transaction system for moving from one state to the next." lang="cn"><a href="/docs/ref/#state"><code>prosemirror-state</code></a> 提供了一个描述编辑器完整状态的单一数据结构，
+包括编辑器的选区操作，和一个用来处理从当前 state 到下一个 state 的一个叫做 transaction 的系统。</p>
+</li>
+<li>
+
+<p data-en="prosemirror-view implements a user interface component
+that shows a given editor state as an editable element in the
+browser, and handles user interaction with that element." lang="cn"><a href="/docs/ref/#view"><code>prosemirror-view</code></a> 用来将给定的 state 展示成相对应的可编辑元素显示在编辑器中，同时处理用户交互。</p>
+</li>
+<li>
+
+<p data-en="prosemirror-transform contains functionality for
+modifying documents in a way that can be recorded and replayed,
+which is the basis for the transactions in the state module, and
+which makes the undo history and collaborative editing possible." lang="cn"><a href="/docs/ref/#transform"><code>prosemirror-transform</code></a> 包含了一种可以被重做和撤销的修改文档的功能，它是 prosemirror-state 库的 transaction 功能的基础，这使得撤销操作历史记录和协同编辑成为可能。</p>
+</li>
+</ul>
+
+<p data-en="In addition, there are modules for basic editing
+commands, binding keys, undo
+history, input macros, collaborative
+editing, a simple document schema, and
+more under the GitHub prosemirror
+organization." lang="cn">除此之外，还有一些模块如 <a href="/docs/ref/#commands">基本编辑命令</a>，<a href="/docs/ref/#keymap">快捷键绑定</a>，<a href="/docs/ref/#history">撤销历史</a>，
+<a href="/docs/ref/#inputrules">宏命令</a>，<a href="/docs/ref/#collab">协同编辑</a>，和<a href="/docs/ref/#schema-basic">一个简单的文档 Schema</a>等等。更多模块可以在 Github 上的 <a href="https://github.com/prosemirror/">Prosemirror 组织</a> 中发现。</p>
+<p type="comment"><span>注: </span>相应模块的中文版在 <a href="https://github.com/xheldon-prosemirror/">这里</a></p>
+
+<p data-en="The fact that ProseMirror isn't distributed as a single,
+browser-loadable script means that you'll probably want to use some
+kind of bundler when using it. A bundler is a tool that automatically
+finds your script's dependencies, and combines them into a single big
+file that you can easily load from a web page. You can read more about
+bundling on the web, for example
+here." lang="cn">Prosemirror 并不是一个浏览器可直接加载的脚本，这意味着你需要使用一些打包工具才能使用它。
+打包工具就是一个自动寻找你脚本声明的依赖，然后合并它们到一个单独的脚本文件，以便你能够在浏览器中方便的加载它。
+你可以自己去看看更多关于 Web 打包方面的东西，比如 <a href="https://medium.freecodecamp.org/javascript-modules-part-2-module-bundling-5020383cf306">这里</a> 。</p>
+<h3><a id="intro.my_first_editor"></a>My first editor</h3>
+
+<p data-en="The Lego pieces fit together like this to create a very minimal
+editor:" lang="cn">下面的代码像乐高积木一样的摞在一起创建了一个最简单的编辑器：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">schema</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-schema-basic"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">EditorState</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-state"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">EditorView</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-view"</span>
+
+<span class="hl-keyword">let</span> <span class="hl-def">state</span> <span class="hl-operator">=</span> <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({<span class="hl-property">schema</span>})
+<span class="hl-keyword">let</span> <span class="hl-def">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>(<span class="hl-variable">document</span>.<span class="hl-property">body</span>, {<span class="hl-property">state</span>})
+</code></pre>
+
+<p data-en="ProseMirror requires you to specify a schema that your document
+conforms to, so the first thing this does is import a module with a
+basic schema in it." lang="cn">Prosemirror 需要你手动指定一个 document 需要遵守的 Schema (来规定哪些元素能包含哪些不能包含以及元素之间的关系)，
+为了达成这个目的，上述代码做的第一件事就是先导入一个基本的 schema（通常情况下 schema 是你自己写的，这里作者拿了一个现成的包含基本元素的 schema 做示例——译者注）。</p>
+
+<p data-en="That schema is then used to create a state, which will generate an
+empty document conforming to the schema, and a default selection at
+the start of that document. Finally, a view is created for the state,
+and appended to document.body. This will render the state's document
+as an editable DOM node, and generate state transactions whenever the
+user types into it." lang="cn">之后，这个基础 schema 被用来创建一个 state，该 state 会生成一个遵守 schema 约束的一个空的文档，
+以及一个默认的选区在这个文档的开头(这个选区是空的，因此这里指的是光标)。最终，这个 state 会生成一个 view 被 append 到 document.body。
+上述的 state 的文档最终将被渲染成一个可编辑的 DOM 节点(就是 contenteditable 的节点——译者注) 和一个会对用户输入做出反应的 state transaction。</p>
+
+<p data-en="The editor isn't very usable yet. If you press enter, for example,
+nothing happens, because the core library has no opinion on what enter
+should do. We'll get to that in a moment." lang="cn">(不幸的是)到目前为止这个编辑器还不能用. 例如, 如果你在刚刚的编辑器中按 Enter 键,
+则什么也不会发生, 因为上述提到的四个核心模块并不知道输入 Enter 之后应该做什么, 我们将在稍后告诉它如何响应各种输入行为.</p>
+<h3><a id="intro.transactions"></a>Transactions</h3>
+
+<p data-en="When the user types, or otherwise interacts with the view, it
+generates ‘state transactions’. What that means is that it does not
+just modify the document in-place and implicitly update its state in
+that way. Instead, every change causes a
+transaction to be created, which describes
+the changes that are made to the state, and can be applied to create a
+new state, which is then used to update the view." lang="cn">当用户输入的时候, 或者更广泛的说, 当用户与页面的 view 进行交互的时候, prosemirror 会产生 ‘state transactions’.
+这意味着每当用户输入后, prosemirror 不仅仅只修改 document 内容, 同时还会在背后更新 state.
+也就是说, 每一个变化都会有一个 <a href="#state.transactions"><em>transaction</em></a> 被创建, 它描述了 state 被应用的变化,
+这些变化可以被用来创建一个新的 state, 然后这个新的 state 被用来更新 view.</p>
+
+<p data-en="By default this all happens under the cover, but you can hook into by
+writing plugins or configuring your view. For
+example, this code adds a
+dispatchTransaction
+prop, which will be called whenever a
+transaction is created:" lang="cn">默认情况下, 上述的这些变化是框架进行的, 你无需关注. 不过你可以通过写一个 <a href="#state.plugins">plugins</a> 或者自定义你的 view 的方式,
+来往这个变化的过程中挂载一些 hook. 举个例子, 下面的代码增加了一个 <a href="/docs/ref/#view.DirectEditorProps.dispatchTransaction"><code>dispatchTransaction</code></a> 的 <a href="/docs/ref/#view.EditorProps">prop</a>,
+它在每一个 transaction 被创建的时候调用：</p>
+<pre><code class="language-javascript"><span class="hl-comment">// (Imports omitted)</span>
+
+<span class="hl-keyword">let</span> <span class="hl-def">state</span> <span class="hl-operator">=</span> <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({<span class="hl-property">schema</span>})
+<span class="hl-keyword">let</span> <span class="hl-def">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>(<span class="hl-variable">document</span>.<span class="hl-property">body</span>, {
+  <span class="hl-property">state</span>,
+  <span class="hl-property">dispatchTransaction</span>(<span class="hl-def">transaction</span>) {
+    <span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-string">"Document size went from"</span>, <span class="hl-variable-2">transaction</span>.<span class="hl-property">before</span>.<span class="hl-property">content</span>.<span class="hl-property">size</span>,
+                <span class="hl-string">"to"</span>, <span class="hl-variable-2">transaction</span>.<span class="hl-property">doc</span>.<span class="hl-property">content</span>.<span class="hl-property">size</span>)
+    <span class="hl-keyword">let</span> <span class="hl-def">newState</span> <span class="hl-operator">=</span> <span class="hl-variable">view</span>.<span class="hl-property">state</span>.<span class="hl-property">apply</span>(<span class="hl-variable-2">transaction</span>)
+    <span class="hl-variable">view</span>.<span class="hl-property">updateState</span>(<span class="hl-variable-2">newState</span>)
+  }
+})
+</code></pre>
+
+<p data-en="Every state update has to go through
+updateState, and every normal
+editing update will happen by dispatching a transaction." lang="cn"><em>每次</em> 的 state 更新最终都需要执行 <a href="/docs/ref/#view.EditorView.updateState"><code>updateState</code></a> 方法,
+而且每 dispatching 一个 transaction 一般情况下都会触发一个编辑状态的更新.</p>
+<h3><a id="intro.plugins"></a>Plugins</h3>
+
+<p data-en="Plugins are used to extend the behavior of the editor and editor state
+in various ways. Some are relatively simple, like the
+keymap plugin that binds actions to
+keyboard input. Others are more involved, like the
+history plugin which implements an undo history by
+observing transactions and storing their inverse in case the user
+wants to undo them." lang="cn">Plugins 被用来以多种不同的方式扩展编辑行为和编辑状态.
+一些插件比较简单, 比如 <a href="/docs/ref/#keymap">keymap</a> 插件, 它用来绑定键盘输入的 <a href="#commands">actions</a>. 还有些插件相对复杂一点,
+比如 <a href="/docs/ref/#history">history</a> 插件, 它通过监视 transactions 和按照相反的顺序存储它们以便用户想要撤销
+一个 transactions 来实现一个 undo/redo 的功能.</p>
+
+<p data-en="Let's add those two plugins to our editor to get undo/redo
+functionality:" lang="cn">让我们先增加下面两个 plugin 以获得 undo/redo 的功能：</p>
+<pre><code class="language-javascript"><span class="hl-comment">// (Omitted repeated imports)</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">undo</span>, <span class="hl-def">redo</span>, <span class="hl-def">history</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-history"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">keymap</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-keymap"</span>
+
+<span class="hl-keyword">let</span> <span class="hl-def">state</span> <span class="hl-operator">=</span> <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({
+  <span class="hl-property">schema</span>,
+  <span class="hl-property">plugins</span>: [
+    <span class="hl-variable">history</span>(),
+    <span class="hl-variable">keymap</span>({<span class="hl-string hl-property">"Mod-z"</span>: <span class="hl-variable">undo</span>, <span class="hl-string hl-property">"Mod-y"</span>: <span class="hl-variable">redo</span>})
+  ]
+})
+<span class="hl-keyword">let</span> <span class="hl-def">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>(<span class="hl-variable">document</span>.<span class="hl-property">body</span>, {<span class="hl-property">state</span>})
+</code></pre>
+
+<p data-en="Plugins are registered when creating a state (because they get access
+to state transactions). After creating a view for this history-enabled
+state, you'll be able to press Ctrl-Z (or Cmd-Z on OS X) to undo your
+last change." lang="cn">Plugins 会在创建 state 的时候被注册(因为它们需要访问 state 的 transactions 的权限).
+在给这个可撤销/重做的 state 创建一个 view 之后, 你将能够通过按 Ctrl+Z(或者 Mac 下 Cmd+Z) 撤销上一步操作.</p>
+<h3><a id="intro.commands"></a>Commands</h3>
+
+<p data-en="The undo and redo values that the previous example bound to keys
+are a special kind of functions called commands.
+Most editing actions are written as commands which can be bound to
+keys, hooked up to menus, or otherwise exposed to the user." lang="cn">上面示例中, 被绑定到相关键盘按键的的特殊的函数叫做 <a href="#commands"><em>commands</em></a>. 大多数的编辑行为都会被写成 commands 的形式,
+因此可以被绑定到特定的键上, 以供编辑菜单调用, 或者暴露给用户来操作.</p>
+
+<p data-en="The prosemirror-commands package provides a number of basic editing
+commands, along with a minimal keymap that you'll probably want to
+enable to have things like enter and delete do the expected thing in
+your editor." lang="cn"><code>prosemirror-commands</code> 这个包提供了很多基本的编辑 commands, 包括在编辑器中按照你的期望映射 enter 和 delete 按键的行为.</p>
+<pre><code class="language-javascript"><span class="hl-comment">// (忽略无关代码)</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">baseKeymap</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-commands"</span>
+
+<span class="hl-keyword">let</span> <span class="hl-def">state</span> <span class="hl-operator">=</span> <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({
+  <span class="hl-property">schema</span>,
+  <span class="hl-property">plugins</span>: [
+    <span class="hl-variable">history</span>(),
+    <span class="hl-variable">keymap</span>({<span class="hl-string hl-property">"Mod-z"</span>: <span class="hl-variable">undo</span>, <span class="hl-string hl-property">"Mod-y"</span>: <span class="hl-variable">redo</span>}),
+    <span class="hl-variable">keymap</span>(<span class="hl-variable">baseKeymap</span>)
+  ]
+})
+<span class="hl-keyword">let</span> <span class="hl-def">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>(<span class="hl-variable">document</span>.<span class="hl-property">body</span>, {<span class="hl-property">state</span>})
+</code></pre>
+
+<p data-en="At this point, you have a basically working editor." lang="cn">到此为止, 你应该有了一个基本能 work 的编辑器了.</p>
+
+<p data-en="To add a menu, additional keybindings for schema-specific things, and
+so on, you might want to look into the
+prosemirror-example-setup
+package. This is a module that provides you with an array of plugins
+that set up a baseline editor, but as the name suggests, it is meant
+more as an example than as a production-level library. For a
+real-world deployment, you'll probably want to replace it with custom
+code that sets things up exactly the way you want." lang="cn">如果还想增加一个菜单方便编辑操作, 或者想增加一些 schema 允许的按键绑定, 诸如此类的东西,
+那么你可能想要看下 <a href="https://github.com/prosemirror/prosemirror-example-setup"><code>prosemirror-example-setup</code></a> 这个包.
+这个包提供了实现一个基本编辑器的一系列设置好的插件, 不过就像这个包名所表示的含义那样, 它仅仅是用来示例一些 API 的用法,
+而不是一个可以用在生产环境的包. 对于一个真实的开发环境, 你可能想要用自己的代码替换其中的一些内容, 以精确实现你想要的效果.</p>
+<h3><a id="intro.content"></a>Content</h3>
+
+<p data-en="A state's document lives under its doc
+property. This is a read-only data structure, representing the
+document as a hierarchy of nodes, somewhat like the browser DOM. A
+simple document might be a &quot;doc&quot; node containing two &quot;paragraph&quot;
+nodes, each containing a single &quot;text&quot; node. You can read more about
+the document data structure in the guide about it." lang="cn">一个 state 的 document 对象存储在 <a href="/docs/ref/#state.EditorState.doc"><code>doc</code></a> 属性上, 它是一个只读类型的数据结构, 用一系列的不同层级的节点表示,
+这些节点的层级结构有点类似于浏览器中的 DOM 节点. 一个简单的 document 可能有一个 “doc” 节点,
+它包含两个 “paragraph” 节点, 每个 “prragraph” 节点又包含一个 “text” 节点.
+你可以在 <a href="#doc">guide</a> 中读到更多关于 document 数据结构的信息.</p>
+
+<p data-en="When initializing a state, you can give it an initial document to use.
+In that case, the schema field is optional, since the schema can be
+taken from the document." lang="cn">当初始化一个 state 的时候, 你可以传给它一个初始 document. 在这种情况下,
+schema 字段就是可选的, 因为 schema 可以从 document 中获取.</p>
+
+<p data-en="Here we initialize a state by parsing the content found in the DOM
+element with the ID &quot;content&quot;, using the DOM parser mechanism, which
+uses information supplied by the schema about which DOM nodes map to
+which elements in that schema:" lang="cn">下面的示例我们通过 DOM 格式化的机制去格式化 DOM 中 id 为 “content” 的元素来初始化一个 state,
+这个 state 使用的 schema 信息是由 DOM 节点格式化后映射到相应元素上获得的(意思就是 DOM 节点包含哪些元素,
+格式化后被对应成 schema 的形式供 state 使用, 因此 schema 信息可以从格式化 DOM 的信息中获取而不用手动指定——译者注).</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">DOMParser</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-model"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">EditorState</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-state"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">schema</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-schema-basic"</span>
+
+<span class="hl-keyword">let</span> <span class="hl-def">content</span> <span class="hl-operator">=</span> <span class="hl-variable">document</span>.<span class="hl-property">getElementById</span>(<span class="hl-string">"content"</span>)
+<span class="hl-keyword">let</span> <span class="hl-def">state</span> <span class="hl-operator">=</span> <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({
+  <span class="hl-property">doc</span>: <span class="hl-variable">DOMParser</span>.<span class="hl-property">fromSchema</span>(<span class="hl-variable">schema</span>).<span class="hl-property">parse</span>(<span class="hl-variable">content</span>)
+})
+</code></pre>
+<h2 id=doc>文档</h2><style>
+  .box {
+    color: white;
+    display: inline-block;
+    border-radius: 5px;
+    padding: 3px 6px;
+    margin: 3px 0;
+    vertical-align: top;
+  }
+</style>
+
+<p data-en="ProseMirror defines its own data structure to
+represent content documents. Since documents are the central element
+around which the rest of the editor is built, it is helpful to
+understand how they work." lang="cn">Prosemirror 定义了它自己的 <a href="/docs/ref/#model.Node">data structure</a> 来表示 document 内容. 因为 document 是构建一个编辑器的核心元素,
+因此理解 document 是如何工作的很有必要.</p>
+<h3><a id="doc.structure"></a>Structure</h3>
+
+<p data-en="A ProseMirror document is a node, which holds a
+fragment containing zero or more child nodes." lang="cn">一个 Porsemirror 的 document 是一个 <a href="/docs/ref/#model.Node">node</a> 类型, 它含有一个 fragment 对象,
+<a href="/docs/ref/#model.Fragment">fragment</a> 对象又包含了 0 个或更多子 node.</p>
+
+<p data-en="This is a lot like the browser
+DOM,
+in that it is recursive and tree-shaped. But it differs from the DOM
+in the way it stores inline content." lang="cn">这看起来很像 <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model">浏览器 DOM</a> 结构,
+因为 Prosemirror 跟 DOM 一样是递归的树状结构. 不过, Prosemirror 在存储内联元素的方式上跟 DOM 有点不同.</p>
+
+<p data-en="In HTML, a paragraph with markup is represented as a tree, like this:" lang="cn">在 HTML 中, 一个 paragraph 及其中包含的标记, 表现形式就像一个树, 比如有以下 HTML 结构:</p>
+<pre><code class="language-html"><span class="hl-tag hl-bracket">&lt;</span><span class="hl-tag">p</span><span class="hl-tag hl-bracket">&gt;</span>This is <span class="hl-tag hl-bracket">&lt;</span><span class="hl-tag">strong</span><span class="hl-tag hl-bracket">&gt;</span>strong text with <span class="hl-tag hl-bracket">&lt;</span><span class="hl-tag">em</span><span class="hl-tag hl-bracket">&gt;</span>emphasis<span class="hl-tag hl-bracket">&lt;/</span><span class="hl-tag">em</span><span class="hl-tag hl-bracket">&gt;</span><span class="hl-tag hl-bracket">&lt;/</span><span class="hl-tag">strong</span><span class="hl-tag hl-bracket">&gt;</span><span class="hl-tag hl-bracket">&lt;/</span><span class="hl-tag">p</span><span class="hl-tag hl-bracket">&gt;</span>
+</code></pre>
+<div class="figure">
+  <div class="box" style="background: #77e">
+    <strong>p</strong><br>
+    "This is "
+    <div class="box" style="background: #55b">
+      <strong>strong</strong><br>
+      "strong text with "
+      <div class="box" style="background: #77e">
+        <strong>em</strong><br>
+        "emphasis"
+      </div>
+    </div>
+  </div>
+</div>
+
+<p data-en="Whereas in ProseMirror, the inline content is modeled as a flat
+sequence, with the markup attached as metadata to the nodes:" lang="cn">然而在 Prosemirror 中, 内联元素被表示成一个扁平的模型, 他们的节点标记被作为 metadata 信息附加到相应 node 上:</p>
+<div class="figure">
+  <div class="box" style="background: #77e">
+    <strong>paragraph</strong><br>
+    <div class="box" style="background: #55b">
+      "This is "
+    </div>
+    <div class="box" style="background: #55b">
+      "strong text with "<br>
+      <div class="box" style="background: #d94">
+        <strong>strong</strong>
+      </div>
+    </div>
+    <div class="box" style="background: #55b">
+      "emphasis"<br>
+      <div class="box" style="background: #d94">
+        <strong>strong</strong>
+      </div>
+      <div class="box" style="background: #d94">
+        <strong>em</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p data-en="This more closely matches the way we tend to think about
+and work with such text. It allows us to represent positions in a
+paragraph using a character offset rather than a path in a tree, and
+makes it easier to perform operations like splitting or changing the
+style of the content without performing awkward tree manipulation." lang="cn">这种数据结构显然更符合我们心中的这类文本该有的样子. 它允许我们使用字符的偏移量而不是一个树节点的路径来表示其所处段落中的位置,
+并且使一些诸如 splitting 内容或者改变内容 style 的操作变得很容易, 而不是以一种笨拙的树的操作来修改内容.</p>
+
+<p data-en="This also means each document has one valid representation. Adjacent
+text nodes with the same set of marks are always combined together,
+and empty text nodes are not allowed. The order in which marks appear
+is specified by the schema." lang="cn">这也意味着, 每个 document 只有 <em>一种</em> 数据结构表示方式. 文本节点中相邻且相同的 marks 被合并在一起,
+而且不允许空文本节点. marks 的顺序在 schema 中指定.</p>
+
+<p data-en="So a ProseMirror document is a tree of block nodes, with most of the
+leaf nodes being textblocks, which are block nodes that contain
+text. You can also have leaf blocks that are simply empty, for example
+a horizontal rule or a video element." lang="cn">因此, 一个 Prosemirror document 就是一颗 block nodes 的树, 它的大多数 leaf nodes 是 <em>textblock</em> 类型,
+该节点是包含 text 的 block nodes.你也可以有一些内容为空的简单的 leaf nodes, 比如一个水平分隔线 hr 元素, 或者一个 video 元素.</p>
+
+<p data-en="Node objects come with a number of properties that reflect the role
+they play in the document:" lang="cn">Node 对象有一系列属性来表示他在文档中的角色:</p>
+<ul>
+<li>
+
+<p data-en="isBlock and isInline tell you whether a given node is a block
+or inline node." lang="cn"><code>isBlock</code> 和 <code>isInline</code> 告诉你这个 node 是一个 block 类型的 node(类似 div)还是一个 inline 的 node(类似 span).</p>
+</li>
+<li>
+
+<p data-en="inlineContent is true for nodes that expect inline nodes as
+content." lang="cn"><code>inlineContent</code> 为 true 表示该 node 只接受 inline 元素作为 content(可以通过判断此节点来决定下一步是否往里面加 inline node or not——译者注)</p>
+</li>
+<li>
+
+<p data-en="isTextblock is true for block nodes with inline content." lang="cn"><code>isTextBlock</code> 为 true 表示这个 node 是个含有 inline content 的 block nodes.</p>
+</li>
+<li>
+
+<p data-en="isLeaf tells you that a node doesn't allow any content." lang="cn"><code>isLeaf</code> 为 true 表示该 node 不允许含有任何 content.</p>
+</li>
+</ul>
+
+<p data-en="So a typical &quot;paragraph&quot; node will be a textblock, whereas a
+blockquote might be a block element whose content consists of other
+blocks. Text, hard breaks, and inline images are inline leaf nodes,
+and a horizontal rule node would be an example of a block leaf node." lang="cn">因此, 一个典型的 <code>"paragraph"</code> node 是一个 textblock 类型的节点,
+然后一个 blockquote(引用元素)则是一个可能由其他 block 元素构成其内容的 block 元素.
+Text 节点, 回车, 和 inline 的 images 都是 inline leaf nodes,
+而水平分隔线(hr 元素)节点是一个典型的 block leaf nodes.(leaf nodes 翻译成 叶节点,
+表示其不能再含有子节点; leaf nodes 如上所说, 可能是 inline 的, 也可能是 block 的——译者注).</p>
+
+<p data-en="The schema is allowed to specify more precise
+constraints on what may appear where—i.e. even though a node allows
+block content, that doesn't mean that it allows all block nodes as
+content." lang="cn"><a href="#schema">schema</a> 允许你可以对诸如”哪些元素允许出现在哪些地方”这种问题指定更多的约束条件.
+例如, 即使一个 node 允许 block content, 那也不意味着它允许 <em>所有的</em> block nodes 作为
+content(你可以通过 schema 手动指定例外——译者注).</p>
+<h3><a id="doc.identity_and_persistence"></a>Identity and persistence</h3>
+
+<p data-en="Another important difference between a DOM tree and a ProseMirror
+document is the way the objects that represent nodes behave. In the
+DOM, nodes are mutable objects with an identity, which means that a
+node can only appear in one parent node, and that the node object
+is mutated when it is updated." lang="cn">DOM 树与 ProseMirror document 的另一个不同是他们对 nodes 对象的表示方式.
+在 DOM 中, nodes 是带有 <em>identity</em> 的 mutable 对象(不知道 mutable 对象是啥的可以搜索下),
+这意味着一个 node 只能出现在它的父级 node 下(如果它出现在别处, 那它在此处就没了, 因为有 identity,
+所以唯一——译者注), 当这个 node 更新的时候, 它就 mutated 了(node 更新是在原来的 node上更新,
+此谓之 mutated 即突变. 表示在原有基础上修改, 修改前后始终是一个对象——译者注).</p>
+
+<p data-en="In ProseMirror, on the other hand, nodes are simply values, and
+should be approached much as you'd approach the value representing the
+number 3. 3 can appear in multiple data structures at the same time,
+it does not have a parent-link to the data structure it is currently
+part of, and if you add 1 to it, you get a new value, 4, without
+changing anything about the original 3." lang="cn">而在 Prosemirror 中却不同, nodes 仅仅是 values(区别于 DOM 的 mutable, values 是 unmutable 的),
+表示一个节点就像表示一个数字 3 一样. 3 可以同时出现在不同的数据结构中, 它不跟当前的数据结构绑定, 如果你对它增加 1,
+你将会得到一个新的 value: 4 而不用对原始的 3 做任何修改.</p>
+
+<p data-en="So it is with pieces of ProseMirror documents. They don't change, but
+can be used as a starting value to compute a modified piece of
+document. They don't know what data structures they are part of, but
+can be part of multiple structures, or even occur multiple times in a
+single structure. They are values, not stateful objects." lang="cn">所以这就是 Prosemirror document 的机制. 它的值不会改变, 而且可以被当做一个原始值去计算一个新的 document.
+这些 document 的 nodes 们不知道它所处的数据结构是什么, 因为它们可以存在于多个结构中, 甚至可以在一个结构中重复多次.
+它们是 <em>values</em>, 不是拥有状态的对象.</p>
+
+<p data-en="This means that every time you update a document, you get a new
+document value. That document value will share all sub-nodes that
+didn't change with the original document value, making it relatively
+cheap to create." lang="cn">这意味着每次你更新 document, 你就会得到一个新的 document. 这个新的 document 共享旧的 document 的所有没有在这次更新中改变的子 nodes 的 value, 这让新建一个 document 变得很廉价.</p>
+
+<p data-en="This has a bunch of advantages. It makes it impossible to have an
+editor in an invalid in-between state during an update, since the new
+state, with a new document, can be swapped in instantaneously. It also
+makes it easier to reason about documents in a somewhat mathematical
+way, which is really hard if your values keep changing underneath you.
+This helps make collaborative editing possible and allows ProseMirror
+to run a very efficient DOM update
+algorithm by comparing the last document it drew to the screen to the
+current document." lang="cn">这种机制有很多优点. 它让当 state 更新的时候编辑器始终可用, 因为新的 state 就代表了新的 document(如果更新未完成, 则 state 不会出现,
+因此 document 也没有, 编辑器仍然是之前的 state + document——译者注), 新旧状态可以瞬间切换(而没有中间状态).
+这种状态切换更可以以一种简单的数学推理的方式完成——而如果你的值在背后不断变化(指像 DOM 的节点一样突变——译者注),
+这种推理将非常困难. Prosemirror 的这种机制使得协同编辑成为可能, 而且能够通过比较之前绘制在屏幕上的 document 和当前的 document 算法来非常高效的 <a href="/docs/ref/#view.EditorView.update">update</a> DOM.</p>
+
+<p data-en="Because such nodes are represented by regular JavaScript objects, and
+explicitly
+freezing
+their properties hampers performance, it is actually possible to
+change them. But doing this is not supported, and will cause things to
+break, because they are almost always shared between multiple data
+structures. So be careful! And note that this also holds for the
+arrays and plain objects that are part of node objects, such as the
+objects used to store node attributes, or the arrays of child nodes in
+fragments." lang="cn">因为 nodes 都被表示为正常的 JavaScript 对象, 而明确 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze">freezing</a> 他们的属性(防止 mutate)非常影响性能,
+因此事实上虽然 Prosemirror 的 document 以一种非突变的机制运行, 但是你还是能够手动修改他们.
+只是 Prosemirror 不支持这么做, 如果你强行 mutate 这些数据结构的话, 编辑器可能会崩溃, 因为这些数据结构总是在多处共享使用(修改一处, 影响其他你不知道的地方——译者注). 因此, 务必小心!!! 同时记住, 这个道理对一些 node 对象上存储的数组和对象同样适用, 比如 node attributes 对象, 或者存在 fragments 上的子 nodes.</p>
+<h3><a id="doc.data_structures"></a>Data structures</h3>
+
+<p data-en="The object structure for a document looks something like this:" lang="cn">一个 document 的数据结构看起来像下面这样:</p>
+<style>
+  .classbox { border-radius: 8px; padding: 4px 10px; color: white; display: inline-block; vertical-align: middle; }
+  .classbox td { vertical-align: top; padding: 0; border-right: 5px solid transparent; }
+</style>
+<div class="classbox" style="background: #77e; margin-left: 20px">
+  <table style="cell-spacing: collapse">
+    <tbody><tr><td><strong>Node</strong></td></tr>
+    <tr>
+      <td>type:</td>
+      <td><div class="classbox" style="background: #446"><strong>NodeType</strong></div></td>
+    </tr>
+    <tr>
+      <td>content:</td>
+      <td><div class="classbox" style="background: #44e"><strong>Fragment</strong><br>
+        [<div class="classbox" style="background: #77e"><strong>Node</strong></div>,
+         <div class="classbox" style="background: #77e"><strong>Node</strong></div>, ...]</div></td>
+    </tr>
+    <tr>
+      <td>attrs:</td>
+      <td><div class="classbox" style="background: #99e"><strong>Object</strong></div></td>
+    </tr>
+    <tr>
+      <td>marks:</td>
+      <td>[<div class="classbox" style="background: #55b">
+        <table style="cell-spacing: collapse">
+          <tbody><tr><td><strong>Mark</strong></td></tr>
+          <tr>
+            <td>type:</td>
+            <td><div class="classbox" style="background: #446"><strong>MarkType</strong></div></td>
+          </tr>
+          <tr>
+           <td>attrs:</td>
+           <td><div class="classbox" style="background: #99e"><strong>Object</strong></div></td>
+         </tr>
+       </tbody></table></div>, ...]</td>
+    </tr>
+  </tbody></table>
+</div>
+
+<p data-en="Each node is represented by an instance of the Node
+class. It is tagged with a type, which knows the
+node's name, the attributes that are valid for it, and so on. Node
+types (and mark types) are created once per schema, and know which
+schema they are part of." lang="cn">每个 node 都是一个 <a href="/docs/ref/#model.Node"><code>Node</code></a> 类的实例. 它们用 type 属性进行归类, 通过 <a href="/docs/ref/#model.NodeType">type</a> 属性可以知道 node 的名字, 它可以使用的 attributes, 诸如此类的信息. Node types(和 mark types) 只会被每个 schema 创建一次, 它们知道自己是属于哪个 schema.</p>
+
+<p data-en="The content of a node is stored in an instance of
+Fragment, which holds a sequence of nodes. Even
+for nodes that don't have or don't allow content, this field is filled
+(with the shared empty fragment)." lang="cn">node 的 content 被存储在一个指向 <a href="/docs/ref/#model.Fragment"><code>Fragment</code></a> 实例的字段上, 它的内容是一个 nodes 数组.
+即使那些没有 content 或者不允许有 content 的 nodes 也是如此, 这些不许或没有 content 的节点被共享的 <a href="/docs/ref/#model.Fragment%5Eempty">empty fragment</a> 替代.</p>
+
+<p data-en="Some node types allow attributes, which are extra values stored with
+each node. For example, an image node might use these to store its alt
+text and the URL of the image." lang="cn">一些 nodes 类型允许有 attributes, 它们在每个 nodes 上以(不同于 content 的)额外的值存储着. 例如, 一个 image node 可能使用 attributes 存储 alt 文本信息和 URL 信息.</p>
+
+<p data-en="In addition, inline nodes hold a set of active marks—things like
+emphasis or being a link—which are represented as an array of
+Mark instances." lang="cn">除此之外, inline nodes 含有一些激活的 marks——marks 就是指那些像 emphasis 或者 一个 link 的东西——它们被表示成 <a href="/docs/ref/#model.Mark"><code>Mark</code></a> 实例.</p>
+
+<p data-en="A full document is just a node. The document content is represented as
+the top-level node's child nodes. Typically, it'll contain a series of
+block nodes, some of which may be textblocks that contain inline
+content. But the top-level node may also be a textblock itself, so
+that the document contains only inline content." lang="cn">整个 document 都是一个 node. document 的 content 作为顶级 node 的子 nodes.
+通常上来说, 这些顶级 node 的子 node 是一系列的 block nodes, 这些 block nodes 中有些可能包含 textblocks,
+这些 textblocks 有包含 inline content. 不过, 顶级 node 也可以只是一个 textblock,
+这样的话整个 document 就只包含 inline content.</p>
+
+<p data-en="What kind of node is allowed where is determined by the document's
+schema. To programatically create nodes, you must go
+through the schema, for example using the
+node and text
+methods." lang="cn">哪些 node 被允许出现在哪些位置是由 document 的 <a href="#schema">schema</a> 决定的. 为了用编程的方式(而不是直接对编辑器输入内容的方式——译者注)创建 nodes,
+你必须遍历 schema, 比如下面的使用 <a href="/docs/ref/#model.Schema.node"><code>node</code></a> 和 <a href="/docs/ref/#model.Schema.text"><code>text</code></a> 方法.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">schema</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-schema-basic"</span>
+
+<span class="hl-comment">// (The null arguments are where you can specify attributes, if necessary.)</span>
+<span class="hl-keyword">let</span> <span class="hl-def">doc</span> <span class="hl-operator">=</span> <span class="hl-variable">schema</span>.<span class="hl-property">node</span>(<span class="hl-string">"doc"</span>, <span class="hl-atom">null</span>, [
+  <span class="hl-variable">schema</span>.<span class="hl-property">node</span>(<span class="hl-string">"paragraph"</span>, <span class="hl-atom">null</span>, [<span class="hl-variable">schema</span>.<span class="hl-property">text</span>(<span class="hl-string">"One."</span>)]),
+  <span class="hl-variable">schema</span>.<span class="hl-property">node</span>(<span class="hl-string">"horizontal_rule"</span>),
+  <span class="hl-variable">schema</span>.<span class="hl-property">node</span>(<span class="hl-string">"paragraph"</span>, <span class="hl-atom">null</span>, [<span class="hl-variable">schema</span>.<span class="hl-property">text</span>(<span class="hl-string">"Two!"</span>)])
+])
+</code></pre>
+<h3><a id="doc.indexing"></a>Indexing</h3>
+
+<p data-en="ProseMirror nodes support two types of indexing—they can be treated as
+trees, using offsets into individual nodes, or they can be treated as
+a flat sequence of tokens." lang="cn">Prosemirror nodes 支持两种类型的 indexing——它们既可以被当成树类型, 因为它们使用 offsets 来区别每个 nodes; 也可以被当成一个具有一系列 token 的扁平的结构(token 可以理解为一个计数单位).</p>
+
+<p data-en="The first allows you to do things similar to what you'd do with the
+DOM—interacting with single nodes, directly accessing child nodes
+using the child method and
+childCount, writing recursive functions
+that scan through a document (if you just want to look at all nodes,
+use descendants or
+nodesBetween)." lang="cn">第一种 index 允许你像在 DOM 中那样, 与单个 nodes 进行交互, 使用 <a href="/docs/ref/#model.Node.child"><code>child</code> method</a> 和
+<a href="/docs/ref/#model.Node.childCount"><code>childCount</code></a> 直接访问 child nodes, 写递归函数去遍历 document(如果你想遍历所有的 nodes,
+使用 <a href="/docs/ref/#model.Node.descendants"><code>descendants</code></a> 和 <a href="/docs/ref/#model.Node.nodesBetween"><code>nodesBetween</code></a>).</p>
+
+<p data-en="The second is more useful when addressing a specific position in the
+document. It allows any document position to be represented as an
+integer—the index in the token sequence. These tokens don't actually
+exist as objects in memory—they are just a counting convention—but the
+document's tree shape, along with the fact that each node knows its
+size, is used to make by-position access cheap." lang="cn">第二种 index 当在文档定位一个指定的 position 的时候更有用. 它可以以一个整数表示文档中的任意位置——这个整数是 token 的顺序.
+这些 token 对象在内存中其实并不存在——它们只是用来计数方便——不过 document 的树状结构以及每个 node 都知道它们自己的大小尺寸使得按位置访问它们变得廉价.</p>
+<ul>
+<li>
+
+<p data-en="The start of the document, right before the first content, is
+position 0." lang="cn">Document 的起始位置, 在所有 content 的开头, 位置是 0.</p>
+</li>
+<li>
+
+<p data-en="Entering or leaving a node that is not a leaf node (i.e. supports
+content) counts as one token. So if the document starts with a
+paragraph, the start of that paragraph counts as position 1." lang="cn">进入或者离开不是 leaf node 的节点(比如能够包含内容的节点, 都算是非 leaf node)计为 1 个 token. 所以如果 document 以一个 paragraph(标签是 p) 开头, 在段落开头的 position 是 1(即</p><p> 之后的位置——译者注)</p>
+</li>
+<li>
+
+<p data-en="Each character in text nodes counts as one token. So if the
+paragraph at the start of the document contains the word “hi”,
+position 2 is after the “h”, position 3 after the “i”, and position
+4 after the whole paragraph." lang="cn">Text nodes 的每个字符记为 1 个 token. 所以如果在 document 的开头的 paragraph 包含单词 “hi”, 那么 position 2 在 “h” 之后, position 3 在 “i” 之后, position 4 在整个段落之后(即</p> 之后——译者注)<p></p>
+</li>
+<li>
+
+<p data-en="Leaf nodes that do not allow content (such as images) also count as
+a single token." lang="cn">Leaf nodes 如果不允许 content 的(比如图片节点), 计做 1 个 token.</p>
+</li>
+</ul>
+
+<p data-en="So if you have a document that, when expressed as HTML, would look
+like this:" lang="cn">因此, 如果你有一个 document, 表示成 HTML 就像下面这样:</p>
+<pre><code class="language-html"><span class="hl-tag hl-bracket">&lt;</span><span class="hl-tag">p</span><span class="hl-tag hl-bracket">&gt;</span>One<span class="hl-tag hl-bracket">&lt;/</span><span class="hl-tag">p</span><span class="hl-tag hl-bracket">&gt;</span>
+<span class="hl-tag hl-bracket">&lt;</span><span class="hl-tag">blockquote</span><span class="hl-tag hl-bracket">&gt;</span><span class="hl-tag hl-bracket">&lt;</span><span class="hl-tag">p</span><span class="hl-tag hl-bracket">&gt;</span>Two<span class="hl-tag hl-bracket">&lt;</span><span class="hl-tag">img</span> <span class="hl-attribute">src</span>=<span class="hl-string">"..."</span><span class="hl-tag hl-bracket">&gt;</span><span class="hl-tag hl-bracket">&lt;/</span><span class="hl-tag">p</span><span class="hl-tag hl-bracket">&gt;</span><span class="hl-tag hl-bracket">&lt;/</span><span class="hl-tag">blockquote</span><span class="hl-tag hl-bracket">&gt;</span>
+</code></pre>
+
+<p data-en="The token sequence, with positions, looks like this:" lang="cn">Token 顺序和 position 则看起来像下面这样:</p>
+<pre><code>0   1 2 3 4    5
+&nbsp;&lt;p&gt; O n e &lt;/p&gt;
+
+5            6   7 8 9 10    11   12            13
+ &lt;blockquote&gt; &lt;p&gt; T w o &lt;img&gt; &lt;/p&gt; &lt;/blockquote&gt;
+</code></pre>
+
+<p data-en="Each node has a nodeSize property that
+gives you the size of the entire node, and you can access
+.content.size to get the size of the node's
+content. Note that for the outer document node, the open and close
+tokens are not considered part of the document (because you can't put
+your cursor outside of the document), so the size of a document is
+doc.content.size, not doc.nodeSize." lang="cn">每个 node 都有一个 <a href="/docs/ref/#model.Node.nodeSize"><code>nodeSize</code></a> 属性表示整个 node 的尺寸大小, 你还可以通过 <a href="/docs/ref/#model.Fragment.size"><code>.content.size</code></a> 获得 node 的 <em>content</em> 的尺寸大小.
+需要注意的是对于 document 的外层节点(即 DOM 中 contenteditable 属性所处的节点, 是整个 document 的根节点——译者注)来说,
+开始和关闭 token 不被认为是 document 的一部分(因为你无法将光标放到 document 的外面), 因此 document 的尺寸是 <code>doc.content.size</code>,
+而<strong>不是</strong> <code>doc.nodeSize</code>(虽然 document 的开关标签不被认为是 document 的一部分, 但是仍然计数. 后者始终比前者大2——译者注).</p>
+
+<p data-en="Interpreting such position manually involves quite a lot of counting.
+You can call Node.resolve to get a more
+descriptive data structure for a position. This
+data structure will tell you what the parent node of the position is,
+what its offset into that parent is, what ancestors the parent has,
+and a few other things." lang="cn">如果手动计算这些位置涉及到相当数量的计算工作. (因此)你可以通过调用 <a href="/docs/ref/#model.Node.resolve"><code>Node.resolve</code></a> 来获得一个 position 的更多数据结构的描述.
+这个 <a href="/docs/ref/#model.ResolvedPos">数据结构</a> 将会告诉你当前 position 的父级 node 是什么, 它在父级 node 中的偏移量是多少, 它的父级 node 的祖先 nodes 有哪些, 和其他一些信息.</p>
+
+<p data-en="Take care to distinguish between child indices (as per
+childCount), document-wide positions, and
+node-local offsets (sometimes used in recursive functions to represent
+a position into the node that's currently being handled)." lang="cn">一定要注意区分子 node 的 index(比如每个 <a href="/docs/ref/#model.Node.childCount"><code>childCount</code></a>), document 范围的 position,
+和 node 的偏移(有时候这个偏移会用在一个递归函数表示当前处理的 node 的位置, 此时就涉及到 node 的偏移)之间的区别.</p>
+<h3><a id="doc.slices"></a>Slices</h3>
+
+<p data-en="To handle things like copy-paste and drag-drop, it is necessary to be
+able to talk about a slice of document, i.e. the content between two
+positions. Such a slice differs from a full node or fragment in that
+some of the nodes at its start or end may be ‘open’." lang="cn">对于用户的复制粘贴和拖拽之类的操作, 涉及到一个叫做 slice of document 的概念(文档片段——译者注),
+例如在两个 position 之间的 content 就是一个 slice. 这种 slice 与一个完整的 node 或者 fragment 不同,
+slice 可能是 “open”(意思即一个 slice 包含的标签可能没有关闭, 比如</p><p>123</p><p>456</p> 中, 一个 slice 可能是 23<p></p><p>45 ——译者注).</p>
+
+<p data-en="For example, if you select from the middle of one paragraph to the
+middle of the next one, the slice you've selected has two paragraphs
+in it, the first one open at the start, the second open at the end,
+whereas if you node-select a paragraph, you've selected a closed node.
+It may be the case that the content in such open nodes violates the
+schema constraints, if treated like the node's full content, because
+some required nodes fell outside of the slice." lang="cn">例如, 如果你用光标选择从一个段落的中间到另一个段落的中间, 那么你选择的 slice 就是含有两个段落,
+第一个在开始的地方 open, 第二个在结束的地方 open, 然后如果你使用接口(而不是通过与 view 交互——译者注)选择了一个段落 node,
+那你就选择了一个 close 的 node. 如果对待 slice 像普通的 node content 一样的话,
+它的 content 可能不符合 schema 的约束, 因为某些所需要的 nodes(如使 slice content 是一个完整的 node 的标签,
+如上例中的开始部分的</p><p> 和结束部分的 </p>) 落在了 slice 之外.<p></p>
+
+<p data-en="The Slice data structure is used to represent such
+slices. It stores a fragment along with an open
+depth on both sides. You can use the
+slice method on nodes to cut a slice out of a
+document." lang="cn"><a href="/docs/ref/#model.Slice"><code>Slice</code></a> 数据结构就是被用来表示这种的数据的.
+它存储了一个含有两侧 <a href="/docs/ref/#model.Slice.openStart">open depth</a> (意思就是相对于根节点的层级深度——译者注)信息的 <a href="/docs/ref/#model.Fragment">fragment</a>. 你可以在 nodes 上使用 <a href="/docs/ref/#model.Node.slice"><code>slice</code> 方法</a> 来从 document 上 “切” 出去一片 “slice”.</p>
+<pre><code class="language-javascript"><span class="hl-comment">// doc holds two paragraphs, containing text "a" and "b"</span>
+<span class="hl-keyword">let</span> <span class="hl-def">slice1</span> <span class="hl-operator">=</span> <span class="hl-variable">doc</span>.<span class="hl-property">slice</span>(<span class="hl-number">0</span>, <span class="hl-number">3</span>) <span class="hl-comment">// The first paragraph</span>
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">slice1</span>.<span class="hl-property">openStart</span>, <span class="hl-variable">slice1</span>.<span class="hl-property">openEnd</span>) <span class="hl-comment">// → 0 0</span>
+<span class="hl-keyword">let</span> <span class="hl-def">slice2</span> <span class="hl-operator">=</span> <span class="hl-variable">doc</span>.<span class="hl-property">slice</span>(<span class="hl-number">1</span>, <span class="hl-number">5</span>) <span class="hl-comment">// From start of first paragraph</span>
+                             <span class="hl-comment">// to end of second</span>
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">slice2</span>.<span class="hl-property">openStart</span>, <span class="hl-variable">slice2</span>.<span class="hl-property">openEnd</span>) <span class="hl-comment">// → 1 1</span>
+</code></pre>
+<h3><a id="doc.changing"></a>Changing</h3>
+
+<p data-en="Since nodes and fragments are
+persistent,
+you should never mutate them. If you have a handle to a document
+(or node, or fragment) that object will stay the same." lang="cn">因为 nodes 和 fragment 是一种 <a href="https://en.wikipedia.org/wiki/Persistent_data_structure">持久化</a> 的数据结构(意即 immutable ——译者注),
+你<strong>绝对不应该</strong>直接修改他们. 如果你需要操作 document, 那么它就应该一直不变(操作后产生新的 document,
+旧的 document 一直不变——译者注).</p>
+
+<p data-en="Most of the time, you'll use transformations to
+update documents, and won't have to directly touch the nodes. These
+also leave a record of the changes, which is necessary when the
+document is part of an editor state." lang="cn">大多数情况下, 你需要使用 <a href="#transform">transformations</a> 去更新 document 而不用直接修改 nodes.
+这也方便留下一个变化的记录, 变化的记录对作为编辑器 state 一部分的 document 是必要的.</p>
+
+<p data-en="In cases where you do want to 'manually' derive an updated document,
+there are some helper methods available on the Node
+and Fragment types. To create an updated version
+of a whole document, you'll usually want to use
+Node.replace, which replaces a given range
+of the document with a slice of new content. To
+update a node shallowly, you can use its copy
+method, which creates a similar node with new content. Fragments also
+have various updating methods, such as
+replaceChild or
+append." lang="cn">如果你非要去手动更新 document, Prosemirror 在 <a href="/docs/ref/#model.Node"><code>Node</code></a> 和 <a href="/docs/ref/#model.Fragment"><code>Fragment</code></a>
+上提供了一些有用的辅助函数去新建一个 document 的全新版本. 你可能会常常用到 <a href="/docs/ref/#model.Node.replace"><code>Node.replace</code></a> 方法,
+该方法用一个含有新的 content 的 <a href="/docs/ref/#model.Slice">slice</a> 替换指定 document 的 range 内的内容.
+如果想要浅更新一个 node, 你可以使用 <a href="/docs/ref/#model.Node.copy"><code>copy</code></a> 方法, 该方法新建了一个相同的 node,
+不过为这个相同的新 node 可以指定新的 content. Fragments 也有一些更新 document 的方法,
+比如 <a href="/docs/ref/#model.Fragment.replaceChild"><code>replaceChild</code></a> 和 <a href="/docs/ref/#model.Fragment.append"><code>append</code></a>.</p>
+<h2 id=schema>文档骨架</h2>
+<p data-en="Each ProseMirror document has a schema
+associated with it. The schema describes the kind of
+nodes that may occur in the document, and the way they
+are nested. For example, it might say that the top-level node can
+contain one or more blocks, and that paragraph nodes can contain any
+number of inline nodes, with any marks applied to
+them." lang="cn">每个 Prosemirror <a href="#doc">document</a> 都有一个与之相关的 <a href="/docs/ref/#model.Schema">schema</a>. 这个 schema 描述了存在于 document 中的 <a href="/docs/ref/#model.Node">nodes</a> 类型,
+和 nodes 们的嵌套关系. 例如, schema 可以规定, 顶级节点可以包含一个或者更多的 blocks,
+同时段落 paragraph nodes 可以包含含有任意数量的 inline nodes, 这些 inline nodes 可以含有任意数量的 <a href="/docs/ref/#model.Mark">marks</a>.</p>
+
+<p data-en="There is a package with a basic schema available,
+but the nice thing about ProseMirror is that it allows you to define
+your own schemas." lang="cn">关于 schema 的用法, 这里有一个 <a href="/docs/ref/#schema-basic">basic schema</a> 的包可以作为示例看一下,
+不过 Prosemirror 有个比较棒的点在于它允许你定义你自己的 schemas.</p>
+<h3><a id="schema.node_types"></a>Node Types</h3>
+
+<p data-en="Every node in a document has a type, which
+represents its semantic meaning and its properties, such as the way it
+is rendered in the editor." lang="cn">在 document 中的每个节点都有一个 <a href="/docs/ref/#model.NodeType">type</a>, 它代表了一个 node 的语义化上意思和 node 的属性, 这些属性包括在编辑器中的渲染方式.</p>
+
+<p data-en="When you define a schema, you enumerate the node types that may occur
+within it, describing each with a spec object:" lang="cn">当你定义一个 schema 的时候, 你需要列举每一个用到的 node types, 用一个 <a href="/docs/ref/#model.NodeSpec">spec object</a> 描述它们:</p>
+<pre><code class="language-javascript"><span class="hl-keyword">const</span> <span class="hl-def">trivialSchema</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Schema</span>({
+  <span class="hl-property">nodes</span>: {
+    <span class="hl-property">doc</span>: {<span class="hl-property">content</span>: <span class="hl-string">"paragraph+"</span>},
+    <span class="hl-property">paragraph</span>: {<span class="hl-property">content</span>: <span class="hl-string">"text*"</span>},
+    <span class="hl-property">text</span>: {<span class="hl-property">inline</span>: <span class="hl-atom">true</span>},
+    <span class="hl-comment">/* ... and so on */</span>
+  }
+})
+</code></pre>
+
+<p data-en="That defines a schema where the document may contain one or more
+paragraphs, and each paragraph can contain any amount of text." lang="cn">上述代码定义了一个允许 document 包含一个或更多 paragraphs 的 schema, 每个 paragraph 又能包含任意数量的 text.</p>
+
+<p data-en="Every schema must at least define a top-level node type (which
+defaults to the name &quot;doc&quot;, but you can
+configure that), and a &quot;text&quot; type for
+text content." lang="cn">每个 schema 至少得定义顶级 node 的 type(顶级 node 的名字默认是 “doc”, 不过你可以 <a href="/docs/ref/#model.Schema.topNodeType">configure</a> 它), 和规定 text content 的 “text” type.</p>
+
+<p data-en="Nodes that count as inline must declare this with the
+inline property (though for the text
+type, which is inline by definition, you may omit this)." lang="cn">作为 inline 类型来计算 index 等的 nodes 必须声明它的 <a href="/docs/ref/#model.NodeSpec.inline"><code>inline</code></a> 属性(回想一下 text 类型, 它就被定义成 inline 了——这一点你可能忽略了)</p>
+<h3><a id="schema.content_expressions"></a>Content Expressions</h3>
+
+<p data-en="The strings in the content fields in the
+example schema above are called content expressions. They control
+what sequences of child nodes are valid for this node type." lang="cn">上面 schema 示例代码中的 <a href="/docs/ref/#model.NodeSpec.content"><code>content</code></a> 字段的字符串值被叫做 <em>content expressions</em>. 他们控制着对于当前 type 的 node 来说, 哪些 child nodes 类型可用.</p>
+
+<p data-en="You can say, for example &quot;paragraph&quot; for “one paragraph”, or
+&quot;paragraph+&quot; to express “one or more paragraphs”. Similarly,
+&quot;paragraph*&quot; means “zero or more paragraphs” and &quot;caption?&quot; means
+“zero or one caption node”. You can also use regular-expression-like
+ranges, such as {2} (“exactly two”) {1, 5} (“one to five”) or
+{2,} (“two or more”) after node names." lang="cn">比如说, (content 字段的内容是) <code>"paragraph"</code> 意思就是 “一个 paragraph”,
+<code>"paragraph+"</code> 意思就是 “一个或者更多 paragraph”.与此相似, <code>"paragraph*"</code> 意思就是 “0 个或者更多 paragraph”,
+<code>"caption?"</code> 意思就是 “0 个或者 1 个 caption node”. 你也可以在 node 名字之后使用类似于正则表达式中表示范围含义的表达式,
+比如 <code>{2}</code>(正好 2 个), <code>{1, 5}</code>(1 个到 5 个), 或者<code>{2,}</code>(两个或更多).</p>
+
+<p data-en="Such expressions can be combined to create a sequence, for example
+&quot;heading paragraph+&quot; means ‘first a heading, then one or more
+paragraphs’. You can also use the pipe | operator to indicate a
+choice between two expressions, as in &quot;(paragraph | blockquote)+&quot;." lang="cn">这种表达式可以被联合起来创建一个系列, 例如 <code>"heading paragraph+"</code> 表示 “开头一个 heading,
+之后一个或更多 paragraphs”. 你也可以使用管道符号 <code>|</code> 操作符来表示在两个表达式中选择一个, 比如 <code>"(paragraph | blockquote)+"</code>.</p>
+
+<p data-en="Some groups of element types will appear multiple types in your
+schema—for example you might have a concept of “block” nodes, that may
+appear at the top level but also nested inside of blockquotes. You can
+create a node group by giving your node specs a
+group property, and then refer to that
+group by its name in your expressions." lang="cn">一些元素 type 的 group 可能在你的 schema 会出现多次, 比如你有一个 “block” 概念的 nodes,
+他们可以出现在顶级元素之下, 也可以嵌套进 blockquote 类型的 node 内. 你可以通过指定 schema 的 <a href="/docs/ref/#model.NodeSpec.group"><code>group</code></a>
+属性来创建一个 node group, 然后在你的其他表达式中填 group 的名字即可:</p>
+<pre><code class="language-javascript"><span class="hl-keyword">const</span> <span class="hl-def">groupSchema</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Schema</span>({
+  <span class="hl-property">nodes</span>: {
+    <span class="hl-property">doc</span>: {<span class="hl-property">content</span>: <span class="hl-string">"block+"</span>},
+    <span class="hl-property">paragraph</span>: {<span class="hl-property">group</span>: <span class="hl-string">"block"</span>, <span class="hl-property">content</span>: <span class="hl-string">"text*"</span>},
+    <span class="hl-property">blockquote</span>: {<span class="hl-property">group</span>: <span class="hl-string">"block"</span>, <span class="hl-property">content</span>: <span class="hl-string">"block+"</span>},
+    <span class="hl-property">text</span>: {}
+  }
+})
+</code></pre>
+
+<p data-en="Here &quot;block+&quot; is equivalent to &quot;(paragraph | blockquote)+&quot;." lang="cn">上面示例中, <code>"block+"</code> 等价于 <code>"(paragraph | blockquote)+"</code>.</p>
+
+<p data-en="It is recommended to always require at least one child node in nodes
+that have block content (such as &quot;doc&quot; and &quot;blockquote&quot; in the
+example above), because browsers will completely collapse the node
+when it's empty, making it rather hard to edit." lang="cn">建议在允许 block content 的 nodes(在示例中就是 <code>"doc"</code> 和 <code>"blockquote"</code>)中设置为至少有一个 child node,
+因为如果 node 为空的话浏览器将折叠它, 使它无法编辑(这句话的意思是, 如果上述 doc 或者 blockquote 的 content
+设置为 block* 而不是 block+ 就表示允许不存在 child nodes 存在的情况(它沿用了通用的正则符号: * 表示0个或更多,</p>
+<ul>
+<li>表示1个或更多), 那么此时编辑的话浏览器输入的是 text node, 是 inline 节点, 导致无法输入, 读者可以试试——译者注).</li>
+</ul>
+
+<p data-en="The order in which your nodes appear in an or-expression is
+significant. When creating a default instance for a non-optional node,
+for example to make sure a document still conforms to the schema after
+a replace step the first type in the
+expression will be used. If that is a group, the first type in the
+group (determined by the order in which the group's members appear in
+your nodes map) is used. If I switched the positions of
+&quot;paragraph&quot; and &quot;blockquote&quot; in the the example schema, you'd get
+a stack overflow as soon as the editor tried to create a block
+node—it'd create a &quot;blockquote&quot; node, whose content requires at
+least one block, so it'd try to create another &quot;blockquote&quot; as
+content, and so on." lang="cn">在 schema 中, nodes 的书写顺序很重要. 当对一个必选的 node 新建一个默认实例的时候,
+比如在应用了一个 <a href="/docs/ref/#transform.ReplaceStep">replace step</a> 之后, 为了保持当前文档仍然符合 schema 的约束,
+会使用能满足 schema 约束的第一个 node 的 expression. 如果 node 的 expression 是一个 group,
+则这个 group 的第一个 node type(决定于当前 group 的成员 node 出现在 schema 的 <code>nodes</code> 中的顺序)将被使用.
+如果我在上述的 schema 示例中调换了 <code>"paragraph"</code> 和 <code>"blockquote"</code> 的顺序,
+当编辑器试图新建一个 block node 的时候将会报 stack overflow——因为编辑器会首先尝试新建一个 <code>"blockquote"</code> node,
+但是这个 node 需要至少一个 block node, 于是它就首先又需要创建一个 <code>"blockquote"</code> node 作为内容, 以此往复.</p>
+
+<p data-en="Not every node-manipulating function in the library checks that it is
+dealing with valid content—higher level concepts like
+transforms do, but primitive node-creation methods
+usually don't and instead put the responsibility for providing sane
+input on their caller. It is perfectly possible to use, for example
+NodeType.create, to create a node with
+invalid content. For nodes that are ‘open’ on the edge of
+slices, this is even a reasonable thing to do. There
+is a separate createChecked
+method, as well as an after-the-fact
+check method that can be used to assert that a
+given node's content is valid." lang="cn">不是每个 Prosemirror 库中的 node 操作函数都会检查它当前处理 content 的可用性——高级概念例如 <a href="#transform">transforms</a> 会检查,
+但是底层的 node 新建方法通常不会, 这些底层方法通常将可用性检查交给它们的调用者. 它们(即使当前操作的 content 不可用,
+但是这些底层方法也)完全可能可用, 比如, <a href="/docs/ref/#model.NodeType.create"><code>NodeType.create</code></a>, 它会创建一个含有不可用 content 的节点.
+对于在一个 <a href="#doc.slices">slices</a> 的 “open” 一边的 node 而言, 这甚至是情有可原的(因为 slice 不是一个可用的节点,
+但是又需要直接操作 slice ——总不能让用户手动补全吧?——译者注). 有一个 <a href="/docs/ref/#model.NodeType.createChecked"><code>createChecked</code> method</a> 方法可以检查给定 content
+是否符合 schema, 也有一个 <a href="/docs/ref/#model.Node.check"><code>check</code> method</a> 方法来 assert 给定的 content 是否可用.</p>
+<h3><a id="schema.marks"></a>Marks</h3>
+
+<p data-en="Marks are used to add extra styling or other information to inline
+content. A schema must declare all mark types it allows in its
+schema. Mark types are objects
+much like node types, used to tag mark objects and provide additional
+information about them." lang="cn">Marks 通常被用来对 inline content 增加额外的样式和其他信息.
+<a href="/docs/ref/#model.Schema">schema</a> 必须声明当前 document 允许的所有 schema(就像声明 nodes 那样——译者注).
+<a href="/docs/ref/#model.MarkType">Mark types</a> 是一个有点像 node types 的对象, 它用来给不同的 mark 分类和提供额外的信息.</p>
+
+<p data-en="By default, nodes with inline content allow all marks defined in the
+schema to be applied to their children. You can configure this with
+the marks property on your node spec." lang="cn">默认情况下, 允许有 inline content 的 nodes 允许所有的定义在 schema 的 marks 应用于它的 child nodes.
+你可以在 node spec 中的 <a href="/docs/ref/#model.NodeSpec.marks"><code>marks</code></a> 字段配置之.</p>
+
+<p data-en="Here's a simple schema that supports strong and emphasis marks on
+text in paragraphs, but not in headings:" lang="cn">下面是一个简单的 schema 示例, 支持在 paragraphs 中设置文本的 strong 和 emphasis marks,
+不过 heading 则不允许设置这两种 marks.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">const</span> <span class="hl-def">markSchema</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Schema</span>({
+  <span class="hl-property">nodes</span>: {
+    <span class="hl-property">doc</span>: {<span class="hl-property">content</span>: <span class="hl-string">"block+"</span>},
+    <span class="hl-property">paragraph</span>: {<span class="hl-property">group</span>: <span class="hl-string">"block"</span>, <span class="hl-property">content</span>: <span class="hl-string">"text*"</span>, <span class="hl-property">marks</span>: <span class="hl-string">"_"</span>},
+    <span class="hl-property">heading</span>: {<span class="hl-property">group</span>: <span class="hl-string">"block"</span>, <span class="hl-property">content</span>: <span class="hl-string">"text*"</span>, <span class="hl-property">marks</span>: <span class="hl-string">""</span>},
+    <span class="hl-property">text</span>: {<span class="hl-property">inline</span>: <span class="hl-atom">true</span>}
+  },
+  <span class="hl-property">marks</span>: {
+    <span class="hl-property">strong</span>: {},
+    <span class="hl-property">em</span>: {}
+  }
+})
+</code></pre>
+
+<p data-en="The set of marks is interpreted as a space-separated string of mark
+names or mark groups—&quot;_&quot; acts as a wildcard, and the empty string
+corresponds to the empty set." lang="cn">marks 字段的值可以写成用逗号分隔开的 marks 名字, 或者 mark groups——<code>"_"</code>, 它是通配符的意思,
+允许所有的 marks. 空字符串表示不允许任何 marks.</p>
+<h3><a id="schema.attributes"></a>Attributes</h3>
+
+<p data-en="The document schema also defines which attributes each node or mark
+has. If your node type requires extra node-specific information to be
+stored, such as the level of a heading node, that is best done with an
+attribute." lang="cn">Document 的 schema 也定义了 node 和 mark 允许有哪些 <em>attributes</em>. 如果你的 node type 需要外的 node 专属的信息, 比如 heading node 的 level 信息(H1, H2等等——译者注), 此时适合使用 attribute.</p>
+
+<p data-en="Attribute sets are represented as plain objects with a predefined (per
+node or mark) set of properties holding any JSON-serializeable values.
+To specify what attributes it allows, use the optional attrs field
+in a node or mark spec." lang="cn">Attribute 是一个普通的纯对象, 它有一些预先定义好的(在每个 node 或 mark 上)属性, 指向可以被 JSON 序列化的值. 为了指定哪些 attributes 被允许出现, 可以在 node spec 和 mark 的 spec 中使用可选的 attr 属性:</p>
+<pre><code class="language-javascript">  <span class="hl-variable">heading</span>: {
+    <span class="hl-variable">content</span>: <span class="hl-string">"text*"</span>,
+    <span class="hl-variable">attrs</span>: {<span class="hl-variable">level</span>: {<span class="hl-keyword">default</span>: <span class="hl-number">1</span>}}
+  }
+</code></pre>
+
+<p data-en="In this schema, every instance of the heading node will have a
+level attribute under .attrs.level. If it isn't specified when the
+node is created, it will default to 1." lang="cn">在上面这个 schema 中, 每个 <code>heading</code> node 实例都有一个 <code>level</code> 属性通过 <code>.attrs.level</code> 访问.
+如果在 <a href="/docs/ref/#model.NodeType.create">created</a> heading 的时候没有指定, level 默认是 1.</p>
+
+<p data-en="When you don't give a default value for an
+attribute, an error will be raised when you attempt to create such a
+node without specifying that attribute." lang="cn"><a id="generatable"></a>如果你在定义 node 的时候没有给一个 attribute 默认值的话, 当新建这个 node 的时候, 如果没有显式传入 attribute 就会报错.</p>
+
+<p data-en="That will also make it impossible for the library to generate such
+nodes as filler to satisfy schema constraints during a transform or
+when calling createAndFill. This
+is why you are not allowed to put such nodes in a required position in
+the schema—in order to be able to enforce the schema constraints, the
+editor needs to be able to generate empty nodes to fill missing pieces
+in the content." lang="cn">这也让 Prosemirror 在调用一些接口如 <a href="/docs/ref/#model.NodeType.createAndFill"><code>createAndFill</code></a> 来生成满足 schema 约束的 node 的时候变得不可能.
+这就是为什么你不能将这样的节点放到一个必须的位置，因为编辑器需要能够生成一个空的节点以填充缺失的内容部分。</p>
+<h3><a id="schema.serialization_and_parsing"></a>Serialization and Parsing</h3>
+
+<p data-en="In order to be able to edit them in the browser, it must be possible
+to represent document nodes in the browser DOM. The easiest way to do
+that is to include information about each node's DOM representation in
+the schema using the toDOM field in the
+node spec." lang="cn">为了能在浏览器中编辑元素, 就必须使 document nodes 以 DOM 的形式展示出来.
+最简单的方式就是在 schema 中对每个 node 注明如何在 DOM 中显示.
+这可以在 schema 的每个 node spec 中指定 <a href="/docs/ref/#model.NodeSpec.toDOM"><code>toDOM</code> 字段</a> 来实现.</p>
+
+<p data-en="This field should hold a function that, when called with the node as
+argument, returns a description of the DOM structure for that node.
+This may either be a direct DOM node or an array describing
+it, for example:" lang="cn">这个字段应该指向一个函数, 这个函数将当前 node 作为参数, 返回 node 的 DOM 结构描述.
+这可以直接是一个 DOM node, 或者一个 <a href="/docs/ref/#model.DOMOutputSpec">array 描述它</a>, 例如:</p>
+<pre><code class="language-javascript"><span class="hl-keyword">const</span> <span class="hl-def">schema</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Schema</span>({
+  <span class="hl-property">nodes</span>: {
+    <span class="hl-property">doc</span>: {<span class="hl-property">content</span>: <span class="hl-string">"paragraph+"</span>},
+    <span class="hl-property">paragraph</span>: {
+      <span class="hl-property">content</span>: <span class="hl-string">"text*"</span>,
+      <span class="hl-property">toDOM</span>(<span class="hl-def">node</span>) { <span class="hl-keyword">return</span> [<span class="hl-string">"p"</span>, <span class="hl-number">0</span>] }
+    },
+    <span class="hl-property">text</span>: {}
+  }
+})
+</code></pre>
+
+<p data-en="The expression [&quot;p&quot;, 0] declares that a paragraph is rendered as an
+HTML <p> tag. The zero is the ‘hole’ where its content should be
+rendered. You may also include an object with HTML attributes after
+the tag name, for example [&quot;div&quot;, {class: &quot;c&quot;}, 0]. Leaf nodes don't
+need a hole in their DOM representation, since they don't have
+content." lang="cn">上面示例中, <code>["p", 0]</code> 的含义是 paragraph 节点在 HTML 中被渲染成 <code>&lt;p&gt;</code> 标签.
+0 代表一个 “hole”, 表示该 node 的内容应该被渲染的地方(意思就是如果这个节点预期是有内容的,
+就应该在数组最后写上 0). 你也可以在标签后面加上一个对象表示 HTML 的 attributes, 例如 <code>["div", {class: "c"}, 0]</code>. leaf nodes 不需要 “hole” 在它们的 DOM 中, 因为他们没有内容.</p>
+
+<p data-en="Mark specs allow a similar toDOM method,
+but they are required to render as a single tag that directly wraps
+the content, so the content always goes directly in the returned node,
+and the hole doesn't need to be specified." lang="cn">Mark 的 specs 有一个跟 nodes 相似的 <a href="/docs/ref/#model.MarkSpec.toDOM"><code>toDOM</code></a> 方法,
+不同的是他们需要渲染成单独的标签去直接包裹着 content, 所以这些 content 直接在返回的 node 中, 所以上面的 “hole” 就不用专门指定了.</p>
+
+<p data-en="You'll also often need to parse a document from DOM data, for
+example when the user pastes or drags something into the editor. The
+model module also comes with functionality for that, and you are
+encouraged to include parsing information directly in your schema with
+the parseDOM property." lang="cn">你也会经常 <em>格式化</em> HTML DOM 的内容为 Prosemirror 识别的 document. 例如, 当用户粘贴或者拖拽东西到编辑器中的时候.
+Prosemirror-model 模块有些函数来处理这些事情, 不过你也应该有勇气在 schema 中的 <a href="/docs/ref/#model.NodeSpec.parseDOM"><code>parseDOM</code> 属性</a> 中直接包含如何格式化的信息.</p>
+
+<p data-en="This may list an array of parse rules, which
+describe DOM constructs that map to a given node or mark. For example,
+the basic schema has these for the emphasis mark:" lang="cn">这里列出了一组 <a href="/docs/ref/#model.ParseRule"><em>parse rules</em></a>, 描述了 DOM 如何映射成 node 或者 mark. 例如, 基本的 schema 对于 emphasis mark 写成下面这样:</p>
+<pre><code class="language-javascript">  <span class="hl-variable">parseDOM</span>: [
+    {<span class="hl-property">tag</span>: <span class="hl-string">"em"</span>},                 <span class="hl-comment">// Match &lt;em&gt; nodes</span>
+    {<span class="hl-property">tag</span>: <span class="hl-string">"i"</span>},                  <span class="hl-comment">// and &lt;i&gt; nodes</span>
+    {<span class="hl-property">style</span>: <span class="hl-string">"font-style=italic"</span>} <span class="hl-comment">// and inline 'font-style: italic'</span>
+  ]
+</code></pre>
+
+<p data-en="The value given to tag in a parse rule can
+be a CSS selector, so you can do thing like &quot;div.myclass&quot; too.
+Similarly, style matches inline CSS
+styles." lang="cn">上面中的 parse rule 的 <a href="/docs/ref/#model.ParseRule.tag"><code>tag</code></a> 字段也可以是一个 CSS selector,
+所以你也可以传入类似于 <code>"div.myclass"</code> 这种的字符串. 与此相似, <a href="/docs/ref/#model.ParseRule.style"><code>style</code></a> 字段匹配行内 CSS 样式.</p>
+
+<p data-en="When a schema includes parseDOM annotations, you can create a
+DOMParser object for it with
+DOMParser.fromSchema. This is done
+by the editor to create the default clipboard parser, but you can
+also override that." lang="cn">当一个 schema 包含 <code>parseDOM</code> 字段时, 你可以使用 <a href="/docs/ref/#model.DOMParser%5EfromSchema"><code>DOMParser.fromSchema</code></a> 创建一个 <a href="/docs/ref/#model.DOMParser"><code>DOMParser</code></a> 对象.
+编辑器在新建默认的剪切板内容 parser 的时候就是这么干的, 不过你可以 <a href="/docs/ref/#view.EditorProps.clipboardParser">override</a> 它.</p>
+
+<p data-en="Documents also come with a built-in JSON serialization format. You can
+call toJSON on them to get an object that can
+safely be passed to
+JSON.stringify,
+and schema objects have a nodeFromJSON method
+that can parse this representation back into a document." lang="cn">Document 也有一个内置的 JSON 序列化方式. 你可以在 node 上调用 <a href="/docs/ref/#model.Node.toJSON"><code>toJSON</code></a>
+来生成一个可以安全地传给 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify"><code>JSON.stringify</code></a>
+函数的对象(感觉这个目的是为了方便调试?——译者注), 此外 schema 对象有一个 <a href="/docs/ref/#model.Schema.nodeFromJSON"><code>nodeFromJSON</code> 方法</a> 可以将 toJSON 的结果再转回原始的 node.</p>
+<h3><a id="schema.extending_a_schema"></a>Extending a schema</h3>
+
+<p data-en="The nodes and marks options passed to the Schema
+constructor take OrderedMap
+objects as well as
+plain JavaScript objects. The resulting schema's
+spec.nodes and spec.marks properties are
+always OrderedMaps, which can be used as the basis for further
+schemas." lang="cn">传给 <a href="/docs/ref/#model.Schema"><code>Schema</code> constructor</a> 构造器来设置 <code>nodes</code> 和 <code>marks</code> 选项的参数可以是
+<a href="https://github.com/marijnh/orderedmap#readme"><code>OrderedMap</code> objects</a> 类型的对象, 也可以是纯 JavaScript 对象.
+生成的 schema 上的 <a href="/docs/ref/#model.Schema.spec"><code>spec</code></a><code>.nodes</code> 和 <code>.spec.marks</code> 属性则总是 <code>OrderedMap</code>s, 它可以被用来作为其他 schemes 的基础.</p>
+
+<p data-en="Such maps support a number of methods to conveniently create updated
+versions. For example you could say
+schema.markSpec.remove(&quot;blockquote&quot;) to derive a set of nodes
+without the blockquote node, which can then be passed as the nodes
+field for a new schema." lang="cn">OrderedMaps 这种 map 支持很多方法去方便的新建新的 schema. 比如, 你可以通过调用
+<code>schema.markSpec.remove("blockquote")</code> 后, 将调用结果传给 Schema 构造器的参数的 <code>nodes</code> 字段,
+来生成一个没有 <code>blockquote</code> node 的 schema.</p>
+
+<p data-en="The schema-list module exports a convenience
+method to add the nodes exported by those
+modules to a nodeset." lang="cn"><a href="/docs/ref/#schema-list">schema-list</a> 模块导出了一个 <a href="/docs/ref/#schema-list.addListNodes">很方便的方法</a> 以添加由该模块导出的 nodes 到一个 node 集合中。</p>
+<h2 id=transform>文档转换</h2>
+<p data-en="Transforms are central to the way ProseMirror
+works. They form the basis for transactions,
+and are what makes history tracking and collaborative editing
+possible." lang="cn"><a href="/docs/ref/#transform.Transform">Transforms</a> 是 Prosemirror 的核心工作方式. 它是 <a href="#state.transactions">transactions</a> 的基础, 其使得编辑历史跟踪和协同编辑成为可能.</p>
+<h3><a id="transform.why"></a>Why?</h3>
+
+<p data-en="Why can't we just mutate the document and be done with it? Or at least
+create a new version of a document and just put that into the editor?" lang="cn">为什么我们不能直接对 document 进行修改(突变 mutate)? 或者至少新建一个全新版本的 document 然后将其放到编辑器中去呢?</p>
+
+<p data-en="There are several reasons. One is code clarity. Immutable data
+structures really do lead to simpler code. But the main thing the
+transform system does is to leave a trail of updates, in the form of
+values that represent the individual steps taken to go from an old
+version of the document to a new one." lang="cn">有好几个原因. 其中之一就是代码清晰度. Immutable 数据结构确实可以造就简单的代码.
+而且 transform 系统做的主要工作就是保留了 document 更新的 <em>痕迹</em>, transform 的一系列值代表了从旧的
+document 到新的 document 的每一个 steps 记录.</p>
+
+<p data-en="The undo history can save these steps and apply their
+inverse to go back in time (ProseMirror implements selective undo,
+which is more complicated than just rolling back to a previous state)." lang="cn"><a href="/docs/ref/#history">undo history</a> 可以保存这些 steps 然后在需要的时候反过来应用这些 steps ( Prosemirror 实现了可选择的 undo, 这比仅仅回滚之前的 state 状态更为复杂)</p>
+
+<p data-en="The collaborative
+editing
+system sends these steps to other editors and reorders them if
+necessary so that everyone ends up with the same document." lang="cn"><a href="http://marijnhaverbeke.nl/blog/collaborative-editing.html">collaborative editing</a> (协同编辑)系统发送这些 steps, 并在必要的时候记录这些 steps, 以便每个 document 编辑者都能够有相同的 document.</p>
+
+<p data-en="More generally, it is very useful for editor plugins to be able to
+inspect and react to each change as it comes in, in order to keep
+their own state consistent with the rest of the editor state." lang="cn">在大多数情况下, 能够对每个 document 改变(无论是来自自己还是来自协同编辑)做出相应反应对 editor plugin 来说是很有用的, 这始终能够让插件保持与 editor 的 state 同样的状态.</p>
+<h3><a id="transform.steps"></a>Steps</h3>
+
+<p data-en="Updates to documents are decomposed into steps
+that describe an update. You usually don't need to work with these
+directly, but it is useful to know how they work." lang="cn">对于 document 的更新会被分解成一个个的 <a href="/docs/ref/#transform.Step">steps</a>, 它描述了一个更新. 你一般情况下不需要直接与它打交道, 不过知道它们如何工作的原理是很有必要的.</p>
+
+<p data-en="Examples of steps are ReplaceStep to
+replace a piece of a document, or
+AddMarkStep to add a mark to a given
+range." lang="cn">Steps 的一个例子就是 Repla<a href="/docs/ref/#transform.ReplaceStep"><code>ReplaceStep</code></a>ceStep,
+它可以替换 document 的一小部分, 或者 <a href="/docs/ref/#transform.AddMarkStep"><code>AddMarkStep</code></a>, 可以对一个 range 应用 Mark.</p>
+
+<p data-en="A step can be applied to a document to
+produce a new document." lang="cn">一个 Step 可以被 <a href="/docs/ref/#transform.Step.apply">applied</a> 到一个 document, 然后产生一个新的 document</p>
+<pre><code class="language-javascript"><span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">myDoc</span>.<span class="hl-property">toString</span>()) <span class="hl-comment">// → p("hello")</span>
+<span class="hl-comment">// A step that deletes the content between positions 3 and 5</span>
+<span class="hl-keyword">let</span> <span class="hl-def">step</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">ReplaceStep</span>(<span class="hl-number">3</span>, <span class="hl-number">5</span>, <span class="hl-variable">Slice</span>.<span class="hl-property">empty</span>)
+<span class="hl-keyword">let</span> <span class="hl-def">result</span> <span class="hl-operator">=</span> <span class="hl-variable">step</span>.<span class="hl-property">apply</span>(<span class="hl-variable">myDoc</span>)
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">result</span>.<span class="hl-property">doc</span>.<span class="hl-property">toString</span>()) <span class="hl-comment">// → p("heo")</span>
+</code></pre>
+
+<p data-en="Applying a step is a relatively straightforward process—it doesn't do
+anything clever like inserting nodes to preserve schema constraints,
+or transforming the slice to make it fit. That means applying a step
+can fail, for example if you try to delete just the opening token of a
+node, that would leave the tokens unbalanced, which isn't a meaningful
+thing you can do. This is why apply
+returns a result object, which holds either
+a new document, or an error message." lang="cn">应用一个 step 想对来说是比较简单的过程——它不做一些诸如插入 nodes 以保持 schema 的约束,
+或者转换 slice 让其去适应 schema 之类的操作. 这意味着应用一个 setp 可能会失败.
+比如如果你试图删除一个 node 的其中一个 token(就是一个 node 的开或关标签——译者注),
+这将会使该 node 的另一个 token 未正确关闭, 这么做对你来说是没什么意义的.
+这也就是为什么 <a href="/docs/ref/#transform.Step.apply"><code>apply</code></a> 方法返回一个 <a href="/docs/ref/#transform.StepResult">result object</a>, (如果 step apply 成功则)保持对新的 document 的引用,
+或者(失败的时候)包含一个错误信息.</p>
+
+<p data-en="You'll usually want to let helper
+functions generate your steps for you,
+so that you don't have to worry about the details." lang="cn">你通常想要让 <a href="/docs/ref/#transform.Transform.replace">helper functions</a> 去为你生成 steps, 这样你就不用担心一些细节.</p>
+<h3><a id="transform.transforms"></a>Transforms</h3>
+<p>An editing action may produce one or more steps. The most convenient
+way to work with a sequence of steps is to create a <a href="/docs/ref/#transform.Transform"><code>Transform</code>
+object</a> (or, if you're working with a full
+editor state, a <a href="/docs/ref/#state.Transaction"><code>Transaction</code></a>, which is a
+subclass of <code>Transform</code>).</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">tr</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Transform</span>(<span class="hl-variable">myDoc</span>)
+<span class="hl-variable">tr</span>.<span class="hl-property">delete</span>(<span class="hl-number">5</span>, <span class="hl-number">7</span>) <span class="hl-comment">// Delete between position 5 and 7</span>
+<span class="hl-variable">tr</span>.<span class="hl-property">split</span>(<span class="hl-number">5</span>)     <span class="hl-comment">// Split the parent node at position 5</span>
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">tr</span>.<span class="hl-property">doc</span>.<span class="hl-property">toString</span>()) <span class="hl-comment">// The modified document</span>
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">tr</span>.<span class="hl-property">steps</span>.<span class="hl-property">length</span>)   <span class="hl-comment">// → 2</span>
+</code></pre>
+<p>Most transform methods return the transform itself, for convenient
+chaining (allowing you to do <code>tr.delete(5, 7).split(5)</code>).</p>
+<p>There are transform methods for
+<a href="/docs/ref/#transform.Transform.delete">deleting</a> and
+<a href="/docs/ref/#transform.Transform.replace">replacing</a>, for
+<a href="/docs/ref/#transform.Transform.addMark">adding</a> and <a href="/docs/ref/#transform.Transform.removeMark">removing
+marks</a>, for performing tree
+manipulation like <a href="/docs/ref/#transform.Transform.split">splitting</a>,
+<a href="/docs/ref/#transform.Transform.join">joining</a>,
+<a href="/docs/ref/#transform.Transform.lift">lifting</a>, and
+<a href="/docs/ref/#transform.Transform.wrap">wrapping</a>, and more.</p>
+<h3><a id="transform.mapping"></a>Mapping</h3>
+<p>When you make a change to a document, positions pointing into that
+document may become invalid or change meaning. For example, if you
+insert a character, all positions after that character now point one
+token before their old position. Similarly, if you delete all the
+content in a document, all positions pointing into that content are
+now invalid.</p>
+<p>We often do need to preserve positions across document changes, for
+example the selection boundaries. To help with this, steps can give
+you a <a href="/docs/ref/#transform.StepMap"><em>map</em></a> that can convert between positions
+in the document before and after applying the step.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">step</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">ReplaceStep</span>(<span class="hl-number">4</span>, <span class="hl-number">6</span>, <span class="hl-variable">Slice</span>.<span class="hl-property">empty</span>) <span class="hl-comment">// Delete 4-5</span>
+<span class="hl-keyword">let</span> <span class="hl-def">map</span> <span class="hl-operator">=</span> <span class="hl-variable">step</span>.<span class="hl-property">getMap</span>()
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">map</span>.<span class="hl-property">map</span>(<span class="hl-number">8</span>)) <span class="hl-comment">// → 6</span>
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">map</span>.<span class="hl-property">map</span>(<span class="hl-number">2</span>)) <span class="hl-comment">// → 2 (nothing changes before the change)</span>
+</code></pre>
+<p>Transform objects automatically
+<a href="/docs/ref/#transform.Transform.mapping">accumulate</a> a set of maps for the
+steps in them, using an abstraction called
+<a href="/docs/ref/#transform.Mapping"><code>Mapping</code></a>, which collects a series of step maps
+and allows you to map through them in one go.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">tr</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Transaction</span>(<span class="hl-variable">myDoc</span>)
+<span class="hl-variable">tr</span>.<span class="hl-property">split</span>(<span class="hl-number">10</span>)    <span class="hl-comment">// split a node, +2 tokens at 10</span>
+<span class="hl-variable">tr</span>.<span class="hl-property">delete</span>(<span class="hl-number">2</span>, <span class="hl-number">5</span>) <span class="hl-comment">// -3 tokens at 2</span>
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">tr</span>.<span class="hl-property">mapping</span>.<span class="hl-property">map</span>(<span class="hl-number">15</span>)) <span class="hl-comment">// → 14</span>
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">tr</span>.<span class="hl-property">mapping</span>.<span class="hl-property">map</span>(<span class="hl-number">6</span>))  <span class="hl-comment">// → 3</span>
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">tr</span>.<span class="hl-property">mapping</span>.<span class="hl-property">map</span>(<span class="hl-number">10</span>)) <span class="hl-comment">// → 9</span>
+</code></pre>
+<p>There are cases where it's not entirely clear what a given position
+should be mapped to. Consider the last line of the example above.
+Position 10 points precisely at the point where we split a node,
+inserting two tokens. Should it be mapped to the position <em>after</em> the
+inserted content, or stay in front of it? In the example, it is
+apparently moved after the inserted tokens.</p>
+<p>But sometimes you want the other behavior, which is why the <a href="/docs/ref/#transform.Mappable.map"><code>map</code>
+method</a> on step maps and mappings accepts a
+second parameter, <code>bias</code>, which you can set to -1 to keep your
+position in place when content is inserted on top of it.</p>
+<pre><code class="language-javascript"><span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">tr</span>.<span class="hl-property">mapping</span>.<span class="hl-property">map</span>(<span class="hl-number">10</span>, <span class="hl-operator">-</span><span class="hl-number">1</span>)) <span class="hl-comment">// → 7</span>
+</code></pre>
+<p>The reason that individual steps are defined as small, straightforward
+things is that it makes this kind of mapping possible, along with
+<a href="/docs/ref/#transform.Step.invert">inverting</a> steps in a lossless way, and
+mapping steps through each other's position maps.</p>
+<h3><a id="transform.rebasing"></a>Rebasing</h3>
+<p>When doing more complicated things with steps and position maps, for
+example to implement your own change tracking, or to integrate some
+feature with collaborative editing, you might run into the need to
+<em>rebase</em> steps.</p>
+<p>You might not want to bother studying this until you are sure you need
+it.</p>
+<p>Rebasing, in the simple case, is the process of taking two steps that
+start with the same document, and transform one of them so that it can
+be applied to the document created by the other instead. In pseudocode:</p>
+<pre><code>stepA(doc) = docA
+stepB(doc) = docB
+stepB(docA) = MISMATCH!
+rebase(stepB, mapA) = stepB'
+stepB'(docA) = docAB
+</code></pre>
+<p>Steps have a <a href="/docs/ref/#transform.Step.map"><code>map</code> method</a>, which, given a
+mapping, maps the whole step through it. This can fail, since some
+steps don't make sense anymore when, for example, the content they
+applied to has been deleted. But when it succeeds, you now have a step
+pointing into a new document, i.e. the one after the changes that you
+mapped through. So in the above example, <code>rebase(stepB, mapA)</code> can
+simply call <code>stepB.map(mapA)</code>.</p>
+<p>Things get more complicated when you want to rebase a chain of steps
+over another chain of steps.</p>
+<pre><code>stepA2(stepA1(doc)) = docA
+stepB2(stepB1(doc)) = docB
+???(docA) = docAB
+</code></pre>
+<p>We can map <code>stepB1</code> over <code>stepA1</code> and then <code>stepA2</code>, to get <code>stepB1'</code>.
+But with <code>stepB2</code>, which starts at the document produced by
+<code>stepB1(doc)</code>, and whose mapped version must apply to the document
+produced by <code>stepB1'(docA)</code>, things get more difficult. It must be
+mapped over the following chain of maps:</p>
+<pre><code>rebase(stepB2, [invert(mapB1), mapA1, mapA2, mapB1'])
+</code></pre>
+<p>I.e. first the inverse of the map for <code>stepB1</code> to get back to the
+original document, then through the pipeline of maps produced by
+applying <code>stepA1</code> and <code>stepA2</code>, and finally through the map produced
+by applying <code>stepB1'</code> to <code>docA</code>.</p>
+<p>If there was a <code>stepB3</code>, we'd get the pipeline for that one by taking
+the one above, prefixing it with <code>invert(mapB2)</code> and adding <code>mapB2'</code>
+to the end. And so on.</p>
+<p>But when <code>stepB1</code> inserted some content, and <code>stepB2</code> did something to
+that content, then mapping <code>stepB2</code> through <code>invert(mapB1)</code> will
+return <code>null</code>, because the inverse of <code>stepB1</code> <em>deletes</em> the content
+to which it applies. However, this content is reintroduced later in
+the pipeline, by <code>mapB1</code>. The <a href="/docs/ref/#transform.Mapping"><code>Mapping</code></a>
+abstraction provides a way to track such pipelines, including the
+inverse relations between the maps in it. You can map steps through it
+in such a way that they survive situations like the one above.</p>
+<p>Even if you have rebased a step, there is no guarantee that it can
+still be validly applied to the current document. For example, if your
+step adds a mark, but another step changed the parent node of your
+target content to be a node that doesn't allow marks, trying to apply
+your step will fail. The appropriate response to this is usually just
+to drop the step.</p>
+<h2 id=state>编辑器状态</h2><p>What makes up the state of an editor? You have your document, of
+course. And also the current selection. And there needs to be a way to
+store the fact that the current set of marks has changed, when you for
+example disable or enable a mark but haven't started typing with that
+mark yet.</p>
+<p>Those are the three main components of a ProseMirror state, and exist
+on state objects as <a href="/docs/ref/#state.EditorState.doc"><code>doc</code></a>,
+<a href="/docs/ref/#state.EditorState.selection"><code>selection</code></a>, and
+<a href="/docs/ref/#state.EditorState.selection"><code>storedMarks</code></a>.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">schema</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-schema-basic"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">EditorState</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-state"</span>
+
+<span class="hl-keyword">let</span> <span class="hl-def">state</span> <span class="hl-operator">=</span> <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({<span class="hl-property">schema</span>})
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">state</span>.<span class="hl-property">doc</span>.<span class="hl-property">toString</span>()) <span class="hl-comment">// An empty paragraph</span>
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">state</span>.<span class="hl-property">selection</span>.<span class="hl-property">from</span>) <span class="hl-comment">// 1, the start of the paragraph</span>
+</code></pre>
+<p>But plugins may also need to store state—for example, the undo history
+has to keep its history of changes. This is why the set of active
+plugins is also stored in the state, and these plugins can define
+additional slots for storing their own state.</p>
+<h3><a id="state.selection"></a>Selection</h3>
+<p>ProseMirror supports several types of selection (and allows 3rd-party
+code to define new selection types). Selections are represented by
+instances of (subclasses of) the <a href="/docs/ref/#state.Selection"><code>Selection</code></a>
+class. Like documents and other state-related values, they are
+immutable—to change the selection, you create a new selection object
+and a new state to hold it.</p>
+<p>Selections have, at the very least, a start
+(<a href="/docs/ref/#state.Selection.from"><code>.from</code></a>) and an end
+(<a href="/docs/ref/#state.Selection.to"><code>.to</code></a>), as positions pointing into the
+current document. Many selection types also distinguish between the
+<a href="/docs/ref/#state.Selection.anchor"><em>anchor</em></a> (unmoveable) and
+<a href="/docs/ref/#state.Selection.head"><em>head</em></a> (moveable) side of the selection, so
+those are also required to exist on every selection object.</p>
+<p>The most common type of selection is a <a href="/docs/ref/#state.TextSelection">text
+selection</a>, which is used for regular cursors
+(when <code>anchor</code> and <code>head</code> are the same) or selected text. Both
+endpoints of a text selection are required to be in inline positions,
+i.e. pointing into nodes that allow inline content.</p>
+<p>The core library also supports <a href="/docs/ref/#state.NodeSelection">node
+selections</a>, where a single document node is
+selected, which you get, for example, when you ctrl/cmd-click a node.
+Such a selection ranges from the position directly before the node to
+the position directly after it.</p>
+<h3><a id="state.transactions"></a>Transactions</h3>
+<p>During normal editing, new states will be derived from the state
+before them. You may in some situations, such as loading a new
+document, want to create a completely new state, but this is the
+exception.</p>
+<p>State updates happen by <a href="/docs/ref/#state.EditorState.apply">applying</a> a
+<a href="/docs/ref/#state.Transaction">transaction</a> to an existing state, producing a
+new state. Conceptually, they happen in a single shot: given the old
+state and the transaction, a new value is computed for each component
+of the state, and those are put together in a new state value.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">tr</span> <span class="hl-operator">=</span> <span class="hl-variable">state</span>.<span class="hl-property">tr</span>
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">tr</span>.<span class="hl-property">doc</span>.<span class="hl-property">content</span>.<span class="hl-property">size</span>) <span class="hl-comment">// 25</span>
+<span class="hl-variable">tr</span>.<span class="hl-property">insertText</span>(<span class="hl-string">"hello"</span>) <span class="hl-comment">// Replaces selection with 'hello'</span>
+<span class="hl-keyword">let</span> <span class="hl-def">newState</span> <span class="hl-operator">=</span> <span class="hl-variable">state</span>.<span class="hl-property">apply</span>(<span class="hl-variable">tr</span>)
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">tr</span>.<span class="hl-property">doc</span>.<span class="hl-property">content</span>.<span class="hl-property">size</span>) <span class="hl-comment">// 30</span>
+</code></pre>
+<p><a href="/docs/ref/#state.Transaction"><code>Transaction</code></a> is a subclass of
+<a href="/docs/ref/#transform.Transform"><code>Transform</code></a>, and inherits the way it builds
+up a new document by applying <a href="/docs/ref/#transform.Step">steps</a> to an initial
+document. In addition to this, transactions track selection and other
+state-related components, and get some selection-related convenience
+methods such as
+<a href="/docs/ref/#state.Transaction.replaceSelection"><code>replaceSelection</code></a>.</p>
+<p>The easiest way to create a transaction is with the <a href="/docs/ref/#state.EditorState.tr"><code>tr</code>
+getter</a> on an editor state object. This
+creates an empty transaction based on that state, to which you can
+then add steps and other updates.</p>
+<p>By default, the old selection is <a href="/docs/ref/#state.Selection.map">mapped</a>
+through each step to produce a new selection, but it is possible to
+use <a href="/docs/ref/#state.Transaction.setSelection"><code>setSelection</code></a> to explicitly
+set a new selection.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">tr</span> <span class="hl-operator">=</span> <span class="hl-variable">state</span>.<span class="hl-property">tr</span>
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">tr</span>.<span class="hl-property">selection</span>.<span class="hl-property">from</span>) <span class="hl-comment">// → 10</span>
+<span class="hl-variable">tr</span>.<span class="hl-property">delete</span>(<span class="hl-number">6</span>, <span class="hl-number">8</span>)
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">tr</span>.<span class="hl-property">selection</span>.<span class="hl-property">from</span>) <span class="hl-comment">// → 8 (moved back)</span>
+<span class="hl-variable">tr</span>.<span class="hl-property">setSelection</span>(<span class="hl-variable">TextSelection</span>.<span class="hl-property">create</span>(<span class="hl-variable">tr</span>.<span class="hl-property">doc</span>, <span class="hl-number">3</span>))
+<span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-variable">tr</span>.<span class="hl-property">selection</span>.<span class="hl-property">from</span>) <span class="hl-comment">// → 3</span>
+</code></pre>
+<p>Similarly, the <a href="/docs/ref/#state.EditorState.storedMarks">set of active marks</a>
+is automatically cleared after a document or selection change, and can
+be set using the
+<a href="/docs/ref/#state.Transaction.setStoredMarks"><code>setStoredMarks</code></a> or
+<a href="/docs/ref/#state.Transaction.ensureMarks"><code>ensureMarks</code></a> methods.</p>
+<p>Finally, the <a href="/docs/ref/#state.Transaction.scrollIntoView"><code>scrollIntoView</code></a>
+method can be used to ensure that, the next time the state is drawn,
+the selection is scrolled into view. You probably want to do that for
+most user actions.</p>
+<p>Like <code>Transform</code> methods, many <code>Transaction</code> methods return the
+transaction itself, for convenient chaining.</p>
+<h3><a id="state.plugins"></a>Plugins</h3>
+<p>When <a href="/docs/ref/#state.EditorState%5Ecreate">creating</a> a new state, you can
+provide an array of plugins to use. These will be stored in the state
+and any state that is derived from it, and can influence both the way
+transactions are applied and the way an editor based on this state
+behaves.</p>
+<p>Plugins are instances of the <a href="/docs/ref/#state.Plugin"><code>Plugin</code> class</a>, and can
+model a wide variety of features. The simplest ones just add some
+<a href="/docs/ref/#view.EditorProps">props</a> to the editor view, for example to respond
+to certain events. More complicated ones might add new state to the
+editor and update it based on transactions.</p>
+<p>When creating a plugin, you pass it <a href="/docs/ref/#state.PluginSpec">an object</a>
+specifying its behavior:</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">myPlugin</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Plugin</span>({
+  <span class="hl-property">props</span>: {
+    <span class="hl-property">handleKeyDown</span>(<span class="hl-def">view</span>, <span class="hl-def">event</span>) {
+      <span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-string">"A key was pressed!"</span>)
+      <span class="hl-keyword">return</span> <span class="hl-atom">false</span> <span class="hl-comment">// We did not handle this</span>
+    }
+  }
+})
+
+<span class="hl-keyword">let</span> <span class="hl-def">state</span> <span class="hl-operator">=</span> <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({<span class="hl-property">schema</span>, <span class="hl-property">plugins</span>: [<span class="hl-variable">myPlugin</span>]})
+</code></pre>
+<p>When a plugin needs its own state slot, that is defined with a
+<a href="/docs/ref/#state.PluginSpec.state"><code>state</code></a> property:</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">transactionCounter</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Plugin</span>({
+  <span class="hl-property">state</span>: {
+    <span class="hl-property">init</span>() { <span class="hl-keyword">return</span> <span class="hl-number">0</span> },
+    <span class="hl-property">apply</span>(<span class="hl-def">tr</span>, <span class="hl-def">value</span>) { <span class="hl-keyword">return</span> <span class="hl-variable-2">value</span> <span class="hl-operator">+</span> <span class="hl-number">1</span> }
+  }
+})
+
+<span class="hl-keyword">function</span> <span class="hl-def">getTransactionCount</span>(<span class="hl-def">state</span>) {
+  <span class="hl-keyword">return</span> <span class="hl-variable">transactionCounter</span>.<span class="hl-property">getState</span>(<span class="hl-variable-2">state</span>)
+}
+</code></pre>
+<p>The plugin in the example defines a very simple piece of state that
+simply counts the number of transactions that have been applied to a
+state. The helper function uses the plugin's
+<a href="/docs/ref/#state.Plugin.getState"><code>getState</code></a> method, which can be used to
+fetch the plugin state from a full editor state object.</p>
+<p>Because the editor state is a persistent (immutable) object, and
+plugin state is part of that object, plugin state values must be
+immutable. I.e. their <code>apply</code> method must return a new value, rather
+than changing the old, if they need to change, and no other code
+should change them.</p>
+<p>It is often useful for plugins to add some extra information to a
+transaction. For example, the undo history, when performing an actual
+undo, will mark the resulting transaction, so that when the plugin
+sees it, instead of doing the thing it normally does with changes
+(adding them to the undo stack), it treats it specially, removing the
+top item from the undo stack and adding this transaction to the redo
+stack instead.</p>
+<p>For this purpose, transactions allow
+<a href="/docs/ref/#state.Transaction.getMeta"><em>metadata</em></a> to be attached to them. We
+could update our transaction counter plugin to not count transactions
+that are marked, like this:</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">transactionCounter</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Plugin</span>({
+  <span class="hl-property">state</span>: {
+    <span class="hl-property">init</span>() { <span class="hl-keyword">return</span> <span class="hl-number">0</span> },
+    <span class="hl-property">apply</span>(<span class="hl-def">tr</span>, <span class="hl-def">value</span>) {
+      <span class="hl-keyword">if</span> (<span class="hl-variable-2">tr</span>.<span class="hl-property">getMeta</span>(<span class="hl-variable">transactionCounter</span>)) <span class="hl-keyword">return</span> <span class="hl-variable-2">value</span>
+      <span class="hl-keyword">else</span> <span class="hl-keyword">return</span> <span class="hl-variable-2">value</span> <span class="hl-operator">+</span> <span class="hl-number">1</span>
+    }
+  }
+})
+
+<span class="hl-keyword">function</span> <span class="hl-def">markAsUncounted</span>(<span class="hl-def">tr</span>) {
+  <span class="hl-variable-2">tr</span>.<span class="hl-property">setMeta</span>(<span class="hl-variable">transactionCounter</span>, <span class="hl-atom">true</span>)
+}
+</code></pre>
+<p>Keys for metadata properties can be strings, but to avoid name
+collisions, you are encouraged to use plugin objects. There are some
+string keys that are given a meaning by the library, for example
+<code>"addToHistory"</code> can be set to <code>false</code> to prevent a transaction from
+being undoable, and when handling a paste, the editor view will set
+the <code>"paste"</code> property on the resulting transaction to true.</p>
+<h2 id=view>视图组件</h2><style>
+  .box {
+    color: white;
+    display: inline-block;
+    border-radius: 5px;
+    padding: 6px 10px;
+    margin: 3px 0;
+    vertical-align: top;
+  }
+</style>
+<p>A ProseMirror <a href="/docs/ref/#view.EditorView">editor view</a> is a user interface
+component that displays an <a href="#state">editor state</a> to the user, and
+allows them to perform editing actions on it.</p>
+<p>The definition of <em>editing actions</em> used by the core view component is
+rather narrow—it handles direct interaction with the editing surface,
+such as typing, clicking, copying, pasting, and dragging, but not much
+beyond that. This means that things like displaying a menu, or even
+providing a full set of key bindings, lie outside of the
+responsibility of the core view component, and have to be arranged
+through plugins.</p>
+<h3><a id="view.editable_dom"></a>Editable DOM</h3>
+<p>Browsers allow us to specify that some parts of the DOM are
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/contentEditable">editable</a>,
+which has the effect of allowing focus and a selection in them, and
+making it possible to type into them. The view creates a DOM
+representation of its document (using your schema's <a href="/docs/ref/#model.NodeSpec.toDOM"><code>toDOM</code>
+methods</a> by default), and makes it editable.
+When the editable element is focused, ProseMirror makes sure that the
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/Selection">DOM
+selection</a>
+corresponds to the selection in the editor state.</p>
+<p>It also registers event handlers for many DOM events, which translate
+the events into the appropriate <a href="#state.transactions">transactions</a>.
+For example, when pasting, the pasted content is
+<a href="/docs/ref/#view.EditorProps.clipboardParser">parsed</a> as a ProseMirror document
+slice, and then inserted into the document.</p>
+<p>Many events are also let through as they are, and only <em>then</em>
+reinterpreted in terms of ProseMirror's data model. The browser is
+quite good at cursor and selection placement for example (which is a
+really difficult problem when you factor in bidirectional text), so
+most cursor-motion related keys and mouse actions are handled by the
+browser, after which ProseMirror checks what kind of <a href="/docs/ref/#state.TextSelection">text
+selection</a> the current DOM selection would
+correspond to. If that selection is different from the current
+selection, a transaction that updates the selection is dispatched.</p>
+<p>Even typing is usually left to the browser, because interfering with
+that tends to break spell-checking, autocapitalizing on some mobile
+interfaces, and other native features. When the browser updates the
+DOM, the editor notices, re-parses the changed part of the document,
+and translates the difference into a transaction.</p>
+<h3><a id="view.data_flow"></a>Data flow</h3>
+<p>So the editor view displays a given editor state, and when something
+happens, it creates a transaction and broadcasts this. This
+transaction is then, typically, used to create a new state, which is
+given to the view using its
+<a href="/docs/ref/#view.EditorView.updateState"><code>updateState</code></a> method.</p>
+<div style="text-align: center; font-size: 140%">
+  <div class="box" style="background: #c33;"><strong>DOM event</strong></div>
+  <div>↗<span style="width: 5em; display: inline-block;"></span>↘</div>
+  <div>
+    <div class="box" style="margin-right: 4em; background: #55b"><strong>EditorView</strong></div>
+    <div class="box" style="background: #77e"><strong>Transaction</strong></div>
+  </div>
+  <div>↖<span style="width: 5em; display: inline-block;"></span>↙</div>
+  <div class="box" style="background: #446;">new <strong>EditorState</strong></div>
+</div>
+<p>This creates a straightforward, cyclic data flow, as opposed to the
+classic approach (in the JavaScript world) of a host of imperative
+event handlers, which tends to create a much more complex web of data
+flows.</p>
+<p>It is possible to ‘intercept’ transactions as they are
+<a href="/docs/ref/#view.EditorView.dispatch">dispatched</a> with the
+<a href="/docs/ref/#view.DirectEditorProps.dispatchTransaction"><code>dispatchTransaction</code> prop</a>,
+in order to wire this cyclic data flow into a larger cycle—if your
+whole app is using a data flow model like this, as with
+<a href="https://github.com/reactjs/redux">Redux</a> and similar architectures,
+you can integrate ProseMirror's transactions in your main
+action-dispatching cycle, and keep ProseMirror's state in your
+application ‘store’.</p>
+<pre><code class="language-javascript"><span class="hl-comment">// The app's state</span>
+<span class="hl-keyword">let</span> <span class="hl-def">appState</span> <span class="hl-operator">=</span> {
+  <span class="hl-property">editor</span>: <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({<span class="hl-property">schema</span>}),
+  <span class="hl-property">score</span>: <span class="hl-number">0</span>
+}
+
+<span class="hl-keyword">let</span> <span class="hl-def">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>(<span class="hl-variable">document</span>.<span class="hl-property">body</span>, {
+  <span class="hl-property">state</span>: <span class="hl-variable">appState</span>.<span class="hl-property">editor</span>,
+  <span class="hl-property">dispatchTransaction</span>(<span class="hl-def">transaction</span>) {
+    <span class="hl-variable">update</span>({<span class="hl-property">type</span>: <span class="hl-string">"EDITOR_TRANSACTION"</span>, <span class="hl-property">transaction</span>})
+  }
+})
+
+<span class="hl-comment">// A crude app state update function, which takes an update object,</span>
+<span class="hl-comment">// updates the `appState`, and then refreshes the UI.</span>
+<span class="hl-keyword">function</span> <span class="hl-def">update</span>(<span class="hl-def">event</span>) {
+  <span class="hl-keyword">if</span> (<span class="hl-variable-2">event</span>.<span class="hl-property">type</span> <span class="hl-operator">==</span> <span class="hl-string">"EDITOR_TRANSACTION"</span>)
+    <span class="hl-variable">appState</span>.<span class="hl-property">editor</span> <span class="hl-operator">=</span> <span class="hl-variable">appState</span>.<span class="hl-property">editor</span>.<span class="hl-property">apply</span>(<span class="hl-variable-2">event</span>.<span class="hl-property">transaction</span>)
+  <span class="hl-keyword">else</span> <span class="hl-keyword">if</span> (<span class="hl-variable-2">event</span>.<span class="hl-property">type</span> <span class="hl-operator">==</span> <span class="hl-string">"SCORE_POINT"</span>)
+    <span class="hl-variable">appState</span>.<span class="hl-property">score</span><span class="hl-operator">++</span>
+  <span class="hl-variable">draw</span>()
+}
+
+<span class="hl-comment">// An even cruder drawing function</span>
+<span class="hl-keyword">function</span> <span class="hl-def">draw</span>() {
+  <span class="hl-variable">document</span>.<span class="hl-property">querySelector</span>(<span class="hl-string">"#score"</span>).<span class="hl-property">textContent</span> <span class="hl-operator">=</span> <span class="hl-variable">appState</span>.<span class="hl-property">score</span>
+  <span class="hl-variable">view</span>.<span class="hl-property">updateState</span>(<span class="hl-variable">appState</span>.<span class="hl-property">editor</span>)
+}
+</code></pre>
+<h3><a id="view.efficient_updating"></a>Efficient updating</h3>
+<p>One way to implement <a href="/docs/ref/#view.EditorView.updateState"><code>updateState</code></a>
+would be to simply redraw the document every time it is called. But
+for large documents, that would be really slow.</p>
+<p>Since, at the time of updating, the view has access to both the old
+document and the new, it can compare them, and leave the parts of the
+DOM that correspond to unchanged nodes alone. ProseMirror does this,
+allowing it to do very little work for typical updates.</p>
+<p>In some cases, like updates that correspond to typed text, which was
+already added to the DOM by the browser's own editing actions,
+ensuring the DOM and state are coherent doesn't require any DOM
+changes at all. (When such a transaction is canceled or modified
+somehow, the view <em>will</em> undo the DOM change to make sure the DOM and
+the state remain synchronized.)</p>
+<p>Similarly, the DOM selection is only updated when it is actually out
+of sync with the selection in the state, to avoid disrupting the
+various pieces of ‘hidden’ state that browsers keep along with the
+selection (such as that feature where when you arrow down or up past a
+short line, you horizontal position goes back to where it was when you
+enter the next long line).</p>
+<h3><a id="view.props"></a>Props</h3>
+<p>‘Props’ is a useful, if somewhat vague, term taken from
+<a href="https://facebook.github.io/react/docs/components-and-props.html">React</a>.
+Props are like parameters to a UI component. Ideally, the set of props
+that the component gets completely defines its behavior.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>({
+  <span class="hl-property">state</span>: <span class="hl-variable">myState</span>,
+  <span class="hl-property">editable</span>() { <span class="hl-keyword">return</span> <span class="hl-atom">false</span> }, <span class="hl-comment">// Enables read-only behavior</span>
+  <span class="hl-property">handleDoubleClick</span>() { <span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-string">"Double click!"</span>) }
+})
+</code></pre>
+<p>As such, the current <a href="/docs/ref/#view.DirectEditorProps.state">state</a> is one
+prop. The value of other props can also vary over time, if the code
+that controls the component <a href="/docs/ref/#view.EditorView.setProps">updates</a>
+them, but aren't considered <em>state</em>, because the component itself
+won't change them. The <a href="/docs/ref/#view.EditorView.updateState"><code>updateState</code></a>
+method is just a shorthand to updating the <a href="/docs/ref/#view.DirectEditorProps.state"><code>state</code>
+prop</a>.</p>
+<p>Plugins are also allowed to <a href="/docs/ref/#state.PluginSpec.props">declare</a> props,
+except for <a href="/docs/ref/#view.DirectEditorProps.state"><code>state</code></a> and
+<a href="/docs/ref/#view.DirectEditorProps.dispatchTransaction"><code>dispatchTransaction</code></a>,
+which can only be provided directly to the view.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">function</span> <span class="hl-def">maxSizePlugin</span>(<span class="hl-def">max</span>) {
+  <span class="hl-keyword">return</span> <span class="hl-keyword">new</span> <span class="hl-variable">Plugin</span>({
+    <span class="hl-property">props</span>: {
+      <span class="hl-property">editable</span>(<span class="hl-def">state</span>) { <span class="hl-keyword">return</span> <span class="hl-variable-2">state</span>.<span class="hl-property">doc</span>.<span class="hl-property">content</span>.<span class="hl-property">size</span> <span class="hl-operator">&lt;</span> <span class="hl-variable-2">max</span> }
+    }
+  })
+}
+</code></pre>
+<p>When a given prop is declared multiple times, how it is handled
+depends on the prop. In general, directly provided props take
+precedence, after which each plugin gets a turn, in order. For some
+props, such as <a href="/docs/ref/#view.EditorProps.domParser"><code>domParser</code></a>, the first
+value that is found is used, and others are ignored. For handler
+functions that return a boolean to indicate whether they handled the
+event, the first one that returns true gets to handle the event. And
+finally, for some props, such as
+<a href="/docs/ref/#view.EditorProps.attributes"><code>attributes</code></a> (which can be used to
+set attributes on the editable DOM node) and
+<a href="/docs/ref/#view.EditorProps.decorations"><code>decorations</code></a> (which we'll get to in
+the next section), the union of all provided values is used.</p>
+<h3><a id="view.decorations"></a>Decorations</h3>
+<p>Decorations give you some control over the way the view draws your
+document. They are created by returning values from the <a href="/docs/ref/#view.EditorProps.decorations"><code>decorations</code>
+prop</a>, and come in three types:</p>
+<ul>
+<li>
+<p><a href="/docs/ref/#view.Decoration%5Enode">Node decorations</a> add styling or other DOM
+attributes to a single node's DOM representation.</p>
+</li>
+<li>
+<p><a href="/docs/ref/#view.Decoration%5Ewidget">Widget decorations</a> <em>insert</em> a DOM node,
+which isn't part of the actual document, at a given position.</p>
+</li>
+<li>
+<p><a href="/docs/ref/#view.Decoration%5Einline">Inline decorations</a> add styling or
+attributes, much like node decorations, but to all inline nodes in
+a given range.</p>
+</li>
+</ul>
+<p>In order to be able to efficiently draw and compare decorations, they
+need to be provided as a <a href="/docs/ref/#view.DecorationSet">decoration set</a> (which
+is a data structure that mimics the tree shape of the actual
+document). You create one using the static <a href="/docs/ref/#view.DecorationSet%5Ecreate"><code>create</code>
+method</a>, providing the document and an
+array of decoration objects:</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">purplePlugin</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Plugin</span>({
+  <span class="hl-property">props</span>: {
+    <span class="hl-property">decorations</span>(<span class="hl-def">state</span>) {
+      <span class="hl-keyword">return</span> <span class="hl-variable">DecorationSet</span>.<span class="hl-property">create</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">doc</span>, [
+        <span class="hl-variable">Decoration</span>.<span class="hl-property">inline</span>(<span class="hl-number">0</span>, <span class="hl-variable-2">state</span>.<span class="hl-property">doc</span>.<span class="hl-property">content</span>.<span class="hl-property">size</span>, {<span class="hl-property">style</span>: <span class="hl-string">"color: purple"</span>})
+      ])
+    }
+  }
+})
+</code></pre>
+<p>When you have a lot of decorations, recreating the set on the fly for
+every redraw is likely to be too expensive. In such cases, the
+recommended way to maintain your decorations is to put the set in your
+plugin's state, <a href="/docs/ref/#view.DecorationSet.map">map</a> it forward through
+changes, and only change it when you need to.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">specklePlugin</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Plugin</span>({
+  <span class="hl-property">state</span>: {
+    <span class="hl-property">init</span>(<span class="hl-def">_</span>, {<span class="hl-def">doc</span>}) {
+      <span class="hl-keyword">let</span> <span class="hl-def">speckles</span> <span class="hl-operator">=</span> []
+      <span class="hl-keyword">for</span> (<span class="hl-keyword">let</span> <span class="hl-def">pos</span> <span class="hl-operator">=</span> <span class="hl-number">1</span>; <span class="hl-variable-2">pos</span> <span class="hl-operator">&lt;</span> <span class="hl-variable-2">doc</span>.<span class="hl-property">content</span>.<span class="hl-property">size</span>; <span class="hl-variable-2">pos</span> <span class="hl-operator">+=</span> <span class="hl-number">4</span>)
+        <span class="hl-variable-2">speckles</span>.<span class="hl-property">push</span>(<span class="hl-variable">Decoration</span>.<span class="hl-property">inline</span>(<span class="hl-variable-2">pos</span> <span class="hl-operator">-</span> <span class="hl-number">1</span>, <span class="hl-variable-2">pos</span>, {<span class="hl-property">style</span>: <span class="hl-string">"background: yellow"</span>}))
+      <span class="hl-keyword">return</span> <span class="hl-variable">DecorationSet</span>.<span class="hl-property">create</span>(<span class="hl-variable-2">doc</span>, <span class="hl-variable-2">speckles</span>)
+    },
+    <span class="hl-property">apply</span>(<span class="hl-def">tr</span>, <span class="hl-def">set</span>) { <span class="hl-keyword">return</span> <span class="hl-variable-2">set</span>.<span class="hl-property">map</span>(<span class="hl-variable-2">tr</span>.<span class="hl-property">mapping</span>, <span class="hl-variable-2">tr</span>.<span class="hl-property">doc</span>) }
+  },
+  <span class="hl-property">props</span>: {
+    <span class="hl-property">decorations</span>(<span class="hl-def">state</span>) { <span class="hl-keyword">return</span> <span class="hl-variable">specklePlugin</span>.<span class="hl-property">getState</span>(<span class="hl-variable-2">state</span>) }
+  }
+})
+</code></pre>
+<p>This plugin initializes its state to a decoration set that adds a
+yellow-background inline decoration to every 4th position. That's not
+terribly useful, but sort of resembles use cases like highlighting
+search matches or annotated regions.</p>
+<p>When a transaction is applied to the state, the plugin state's
+<a href="/docs/ref/#state.StateField.apply"><code>apply</code> method</a> maps the decoration set
+forward, causing the decorations to stay in place and ‘fit’ the new
+document shape. The mapping method is (for typical, local changes)
+made efficient by exploiting the tree shape of the decoration set—only
+the parts of the tree that are actually touched by the changes need to
+be rebuilt.</p>
+<p>(In a real-world plugin, the <code>apply</code> method would also be the place
+where you <a href="/docs/ref/#view.DecorationSet.add">add</a> or
+<a href="/docs/ref/#view.DecorationSet.remove">remove</a> decorations based on new events,
+possibly by inspecting the changes in the transaction, or based on
+plugin-specific metadata attached to the transaction.)</p>
+<p>Finally, the <code>decorations</code> prop simply returns the plugin state,
+causing the decorations to show up in the view.</p>
+<h3><a id="view.node_views"></a>Node views</h3>
+<p>There is one more way in which you can influence the way the editor
+view draws your document. <a href="/docs/ref/#view.NodeView">Node views</a> make it
+possible to <a href="/docs/ref/#view.EditorProps.nodeViews">define</a> a sort of miniature
+UI components for individual nodes in your document. They allow you to
+render their DOM, define the way they are updated, and write custom
+code to react to events.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>({
+  <span class="hl-property">state</span>,
+  <span class="hl-property">nodeViews</span>: {
+    <span class="hl-property">image</span>(<span class="hl-def">node</span>) { <span class="hl-keyword">return</span> <span class="hl-keyword">new</span> <span class="hl-variable">ImageView</span>(<span class="hl-variable-2">node</span>) }
+  }
+})
+
+<span class="hl-keyword">class</span> <span class="hl-def">ImageView</span> {
+  <span class="hl-property">constructor</span>(<span class="hl-def">node</span>) {
+    <span class="hl-comment">// The editor will use this as the node's DOM representation</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span> <span class="hl-operator">=</span> <span class="hl-variable">document</span>.<span class="hl-property">createElement</span>(<span class="hl-string">"img"</span>)
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">src</span> <span class="hl-operator">=</span> <span class="hl-variable-2">node</span>.<span class="hl-property">attrs</span>.<span class="hl-property">src</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">addEventListener</span>(<span class="hl-string">"click"</span>, <span class="hl-def">e</span> <span class="hl-operator">=&gt;</span> {
+      <span class="hl-variable">console</span>.<span class="hl-property">log</span>(<span class="hl-string">"You clicked me!"</span>)
+      <span class="hl-variable-2">e</span>.<span class="hl-property">preventDefault</span>()
+    })
+  }
+
+  <span class="hl-property">stopEvent</span>() { <span class="hl-keyword">return</span> <span class="hl-atom">true</span> }
+}
+</code></pre>
+<p>The view object that the example defines for image nodes creates its
+own custom DOM node for the image, with an event handler added, and
+declares, with a <code>stopEvent</code> method, that ProseMirror should ignore
+events coming from that DOM node.</p>
+<p>You'll often want interaction with the node to have some effect on the
+actual node in the document. But to create a transaction that changes
+a node, you first need to know where that node is. To help with that,
+node views get passed a getter function that can be used to query
+their current position in the document. Let's modify the example so
+that clicking on the node queries you to enter an alt text for the
+image:</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>({
+  <span class="hl-property">state</span>,
+  <span class="hl-property">nodeViews</span>: {
+    <span class="hl-property">image</span>(<span class="hl-def">node</span>, <span class="hl-def">view</span>, <span class="hl-def">getPos</span>) { <span class="hl-keyword">return</span> <span class="hl-keyword">new</span> <span class="hl-variable">ImageView</span>(<span class="hl-variable-2">node</span>, <span class="hl-variable-2">view</span>, <span class="hl-variable-2">getPos</span>) }
+  }
+})
+
+<span class="hl-keyword">class</span> <span class="hl-def">ImageView</span> {
+  <span class="hl-property">constructor</span>(<span class="hl-def">node</span>, <span class="hl-def">view</span>, <span class="hl-def">getPos</span>) {
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span> <span class="hl-operator">=</span> <span class="hl-variable">document</span>.<span class="hl-property">createElement</span>(<span class="hl-string">"img"</span>)
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">src</span> <span class="hl-operator">=</span> <span class="hl-variable-2">node</span>.<span class="hl-property">attrs</span>.<span class="hl-property">src</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">alt</span> <span class="hl-operator">=</span> <span class="hl-variable-2">node</span>.<span class="hl-property">attrs</span>.<span class="hl-property">alt</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">addEventListener</span>(<span class="hl-string">"click"</span>, <span class="hl-def">e</span> <span class="hl-operator">=&gt;</span> {
+      <span class="hl-variable-2">e</span>.<span class="hl-property">preventDefault</span>()
+      <span class="hl-keyword">let</span> <span class="hl-def">alt</span> <span class="hl-operator">=</span> <span class="hl-variable">prompt</span>(<span class="hl-string">"New alt text:"</span>, <span class="hl-string">""</span>)
+      <span class="hl-keyword">if</span> (<span class="hl-variable-2">alt</span>) <span class="hl-variable-2">view</span>.<span class="hl-property">dispatch</span>(<span class="hl-variable-2">view</span>.<span class="hl-property">state</span>.<span class="hl-property">tr</span>.<span class="hl-property">setNodeMarkup</span>(<span class="hl-variable-2">getPos</span>(), <span class="hl-atom">null</span>, {
+        <span class="hl-property">src</span>: <span class="hl-variable-2">node</span>.<span class="hl-property">attrs</span>.<span class="hl-property">src</span>,
+        <span class="hl-property">alt</span>
+      }))
+    })
+  }
+
+  <span class="hl-property">stopEvent</span>() { <span class="hl-keyword">return</span> <span class="hl-atom">true</span> }
+}
+</code></pre>
+<p><a href="/docs/ref/#transform.Transform.setNodeMarkup"><code>setNodeMarkup</code></a> is a method that
+can be used to change the type or set of attributes for the node at a
+given position. In the example, we use <code>getPos</code> to find our image's
+current position, and give it a new attribute object with the new alt
+text.</p>
+<p>When a node is updated, the default behavior is to leave its outer DOM
+structure intact and compare its children to the new set of children,
+updating or replacing those as needed. A node view can override this
+with custom behavior, which allows us to do something like changing
+the class of a paragraph based on its content.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>({
+  <span class="hl-property">state</span>,
+  <span class="hl-property">nodeViews</span>: {
+    <span class="hl-property">paragraph</span>(<span class="hl-def">node</span>) { <span class="hl-keyword">return</span> <span class="hl-keyword">new</span> <span class="hl-variable">ParagraphView</span>(<span class="hl-variable-2">node</span>) }
+  }
+})
+
+<span class="hl-keyword">class</span> <span class="hl-def">ParagraphView</span> {
+  <span class="hl-property">constructor</span>(<span class="hl-def">node</span>) {
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">contentDOM</span> <span class="hl-operator">=</span> <span class="hl-variable">document</span>.<span class="hl-property">createElement</span>(<span class="hl-string">"p"</span>)
+    <span class="hl-keyword">if</span> (<span class="hl-variable-2">node</span>.<span class="hl-property">content</span>.<span class="hl-property">size</span> <span class="hl-operator">==</span> <span class="hl-number">0</span>) <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">classList</span>.<span class="hl-property">add</span>(<span class="hl-string">"empty"</span>)
+  }
+
+  <span class="hl-property">update</span>(<span class="hl-def">node</span>) {
+    <span class="hl-keyword">if</span> (<span class="hl-variable-2">node</span>.<span class="hl-property">type</span>.<span class="hl-property">name</span> <span class="hl-operator">!=</span> <span class="hl-string">"paragraph"</span>) <span class="hl-keyword">return</span> <span class="hl-atom">false</span>
+    <span class="hl-keyword">if</span> (<span class="hl-variable-2">node</span>.<span class="hl-property">content</span>.<span class="hl-property">size</span> <span class="hl-operator">&gt;</span> <span class="hl-number">0</span>) <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">classList</span>.<span class="hl-property">remove</span>(<span class="hl-string">"empty"</span>)
+    <span class="hl-keyword">else</span> <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">classList</span>.<span class="hl-property">add</span>(<span class="hl-string">"empty"</span>)
+    <span class="hl-keyword">return</span> <span class="hl-atom">true</span>
+  }
+}
+</code></pre>
+<p>Images never have content, so in our previous example, we didn't need
+to worry about how that would be rendered. But paragraphs do have
+content. Node views support two approaches to handling content: you
+can let the ProseMirror library manage it, or you can manage it
+entirely yourself. If you provide a <a href="/docs/ref/#view.NodeView.contentDOM"><code>contentDOM</code>
+property</a>, the library will render the
+node's content into that, and handle content updates. If you don't,
+the content becomes a black box to the editor, and how you display it
+and let the user interact with it is entirely up to you.</p>
+<p>In this case, we want paragraph content to behave like regular
+editable text, so the <code>contentDOM</code> property is defined to be the same
+as the <code>dom</code> property, since the content needs to be rendered directly
+into the outer node.</p>
+<p>The magic happens in the <a href="/docs/ref/#view.NodeView.update"><code>update</code> method</a>.
+Firstly, this method is responsible for deciding whether the node view
+<em>can</em> be updated to show the new node at all. This new node may be
+anything that the editor's update algorithm might try to draw here, so
+you must verify that this is a node that this node view can handle.</p>
+<p>The <code>update</code> method in the example first checks whether the new node
+is a paragraph, and bails out if that's not the case. Then it makes
+sure that the <code>"empty"</code> class is present or absent, depending on the
+content of the new node, and returns true, to indicate that the update
+succeeded (at which point the node's content will be updated).</p>
+<h2 id=commands>命令</h2><p>In ProseMirror jargon, a <em>command</em> is a function that implements an
+editing action, which the user can perform by pressing some key
+combination or interacting with the menu.</p>
+<p>For practical reasons, commands have a slightly convoluted interface.
+In their simple form, they are functions taking an <a href="#state">editor
+state</a> and a <em>dispatch function</em>
+(<a href="/docs/ref/#view.EditorView.dispatch"><code>EditorView.dispatch</code></a> or some other
+function that takes transactions), and return a boolean. Here's a
+very simple example:</p>
+<pre><code class="language-javascript"><span class="hl-keyword">function</span> <span class="hl-def">deleteSelection</span>(<span class="hl-def">state</span>, <span class="hl-def">dispatch</span>) {
+  <span class="hl-keyword">if</span> (<span class="hl-variable-2">state</span>.<span class="hl-property">selection</span>.<span class="hl-property">empty</span>) <span class="hl-keyword">return</span> <span class="hl-atom">false</span>
+  <span class="hl-variable-2">dispatch</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">tr</span>.<span class="hl-property">deleteSelection</span>())
+  <span class="hl-keyword">return</span> <span class="hl-atom">true</span>
+}
+</code></pre>
+<p>When a command isn't applicable, it should return false and do
+nothing. When it is, it should dispatch a transaction and return true.
+This is used, for example, by the <a href="/docs/ref/#keymap">keymap plugin</a> to stop
+further handling of key events when the command bound to that key has
+been applied.</p>
+<p>To be able to query whether a command is applicable for a given state,
+without actually executing it, the <code>dispatch</code> argument is
+optional—commands should simply return true without doing anything
+when they are applicable but no <code>dispatch</code> argument is given. So the
+example command should actually look like this:</p>
+<pre><code class="language-javascript"><span class="hl-keyword">function</span> <span class="hl-def">deleteSelection</span>(<span class="hl-def">state</span>, <span class="hl-def">dispatch</span>) {
+  <span class="hl-keyword">if</span> (<span class="hl-variable-2">state</span>.<span class="hl-property">selection</span>.<span class="hl-property">empty</span>) <span class="hl-keyword">return</span> <span class="hl-atom">false</span>
+  <span class="hl-keyword">if</span> (<span class="hl-variable-2">dispatch</span>) <span class="hl-variable-2">dispatch</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">tr</span>.<span class="hl-property">deleteSelection</span>())
+  <span class="hl-keyword">return</span> <span class="hl-atom">true</span>
+}
+</code></pre>
+<p>To figure out whether a selection can currently be deleted, you'd call
+<code>deleteSelection(view.state, null)</code>, whereas to actually execute the
+command, you'd do something like <code>deleteSelection(view.state, view.dispatch)</code>. A menu bar could use this to determine which menu
+items to gray out.</p>
+<p>In this form, commands do not get access to the actual editor
+view—most commands don't need that, and in this way they can be
+applied and tested in settings that don't have a view available. But
+some commands do need to interact with the DOM—they might need to
+<a href="/docs/ref/#view.EditorView.endOfTextblock">query</a> whether a given position is
+at the end of a textblock, or want to open a dialog positioned
+relative to the view. For this purpose, most plugins that call
+commands will give them a <em>third</em> argument, which is the whole view.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">function</span> <span class="hl-def">blinkView</span>(<span class="hl-def">_state</span>, <span class="hl-def">dispatch</span>, <span class="hl-def">view</span>) {
+  <span class="hl-keyword">if</span> (<span class="hl-variable-2">dispatch</span>) {
+    <span class="hl-variable-2">view</span>.<span class="hl-property">dom</span>.<span class="hl-property">style</span>.<span class="hl-property">background</span> <span class="hl-operator">=</span> <span class="hl-string">"yellow"</span>
+    <span class="hl-variable">setTimeout</span>(() <span class="hl-operator">=&gt;</span> <span class="hl-variable-2">view</span>.<span class="hl-property">dom</span>.<span class="hl-property">style</span>.<span class="hl-property">background</span> <span class="hl-operator">=</span> <span class="hl-string">""</span>, <span class="hl-number">1000</span>)
+  }
+  <span class="hl-keyword">return</span> <span class="hl-atom">true</span>
+}
+</code></pre>
+<p>That (rather useless) example shows that commands don't <em>have</em> to
+dispatch a transaction—they are called for their side effect, which is
+<em>usually</em> to dispatch a transaction, but may also be something else,
+such as popping up a dialog.</p>
+<p>The <a href="/docs/ref/#commands"><code>prosemirror-commands</code></a> module provides a number of
+editing commands, from simple ones such as a variant of the
+<a href="/docs/ref/#commands.deleteSelection"><code>deleteSelection</code></a> command, to rather
+complicated ones such as <a href="/docs/ref/#commands.joinBackward"><code>joinBackward</code></a>,
+which implements the block-joining behavior that should happen when
+you press backspace at the start of a textblock. It also comes with a
+<a href="/docs/ref/#commands.baseKeymap">basic keymap</a> that binds a number of
+schema-agnostic commands to the keys that are usually used for them.</p>
+<p>When possible, different behavior, even when usually bound to a single
+key, is put in different commands. The utility function
+<a href="/docs/ref/#commands.chainCommands"><code>chainCommands</code></a> can be used to combine a
+number of commands—they will be tried one after the other until one
+return true.</p>
+<p>For example, the base keymap binds backspace to the command chain
+<a href="/docs/ref/#commands.deleteSelection"><code>deleteSelection</code></a> (which kicks in when
+the selection isn't empty), <a href="/docs/ref/#commands.joinBackward"><code>joinBackward</code></a>
+(when the cursor is at the start of a textblock), and
+<a href="/docs/ref/#commands.selectNodeBackward"><code>selectNodeBackward</code></a> (which selects
+the node before the selection, in case the schema forbids the regular
+joining behavior). When none of these apply, the browser is allowed to
+run its own backspace behavior, which is the appropriate thing for
+backspacing things out inside a textblock (so that native spell-check
+and such don't get confused).</p>
+<p>The commands module also exports a number of command constructors,
+such as <a href="/docs/ref/#commands.toggleMark"><code>toggleMark</code></a>, which takes a mark type
+and optionally a set of attributes, and returns a command function
+that toggles that mark on the current selection.</p>
+<p>Some other modules also export command functions—for example
+<a href="/docs/ref/#history.undo"><code>undo</code></a> and <a href="/docs/ref/#history.redo"><code>redo</code></a> from the history
+module. To customize your editor, or to allow users to interact with
+custom document nodes, you'll likely want to write your own custom
+commands as well.</p>
+<h2 id=collab>协同编辑</h2><p>Real-time collaborative editing allows multiple people to edit the
+same document at the same time. Changes they make are applied
+immediately to their local document, and then sent to peers, which
+merge in these changes automatically (without manual conflict
+resolution), so that editing can proceed uninterrupted, and the
+documents keep converging.</p>
+<p>This guide describes how to wire up ProseMirror's collaborative
+editing functionality.</p>
+<h3><a id="collab.algorithm"></a>Algorithm</h3>
+<p>ProseMirror's collaborative editing system employs a central authority
+which determines in which order changes are applied. If two editors
+make changes concurrently, they will both go to this authority with
+their changes. The authority will accept the changes from one of them,
+and broadcast these changes to all editors. The other's changes will
+not be accepted, and when that editor receives new changes from the
+server, it'll have to <a href="#transform.rebasing">rebase</a> its local
+changes on top of those from the other editor, and try to submit them
+again.</p>
+<h3><a id="collab.the_authority"></a>The Authority</h3>
+<p>The role of the central authority is actually rather simple. It must...</p>
+<ul>
+<li>
+<p>Track a current document version</p>
+</li>
+<li>
+<p>Accept changes from editors, and when these can be applied, add
+them to its list of changes</p>
+</li>
+<li>
+<p>Provide a way for editors to receive changes since a given version</p>
+</li>
+</ul>
+<p>Let's implement a trivial central authority that runs in the same
+JavaScript environment as the editors.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">class</span> <span class="hl-def">Authority</span> {
+  <span class="hl-property">constructor</span>(<span class="hl-def">doc</span>) {
+    <span class="hl-keyword">this</span>.<span class="hl-property">doc</span> <span class="hl-operator">=</span> <span class="hl-variable-2">doc</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">steps</span> <span class="hl-operator">=</span> []
+    <span class="hl-keyword">this</span>.<span class="hl-property">stepClientIDs</span> <span class="hl-operator">=</span> []
+    <span class="hl-keyword">this</span>.<span class="hl-property">onNewSteps</span> <span class="hl-operator">=</span> []
+  }
+
+  <span class="hl-property">receiveSteps</span>(<span class="hl-def">version</span>, <span class="hl-def">steps</span>, <span class="hl-def">clientID</span>) {
+    <span class="hl-keyword">if</span> (<span class="hl-variable-2">version</span> <span class="hl-operator">!=</span> <span class="hl-keyword">this</span>.<span class="hl-property">steps</span>.<span class="hl-property">length</span>) <span class="hl-keyword">return</span>
+
+    <span class="hl-comment">// Apply and accumulate new steps</span>
+    <span class="hl-variable-2">steps</span>.<span class="hl-property">forEach</span>(<span class="hl-def">step</span> <span class="hl-operator">=&gt;</span> {
+      <span class="hl-keyword">this</span>.<span class="hl-property">doc</span> <span class="hl-operator">=</span> <span class="hl-variable-2">step</span>.<span class="hl-property">apply</span>(<span class="hl-keyword">this</span>.<span class="hl-property">doc</span>).<span class="hl-property">doc</span>
+      <span class="hl-keyword">this</span>.<span class="hl-property">steps</span>.<span class="hl-property">push</span>(<span class="hl-variable-2">step</span>)
+      <span class="hl-keyword">this</span>.<span class="hl-property">stepClientIDs</span>.<span class="hl-property">push</span>(<span class="hl-variable-2">clientID</span>)
+    })
+    <span class="hl-comment">// Signal listeners</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">onNewSteps</span>.<span class="hl-property">forEach</span>(<span class="hl-keyword">function</span>(<span class="hl-def">f</span>) { <span class="hl-variable-2">f</span>() })
+  }
+
+  <span class="hl-property">stepsSince</span>(<span class="hl-def">version</span>) {
+    <span class="hl-keyword">return</span> {
+      <span class="hl-property">steps</span>: <span class="hl-keyword">this</span>.<span class="hl-property">steps</span>.<span class="hl-property">slice</span>(<span class="hl-variable-2">version</span>),
+      <span class="hl-property">clientIDs</span>: <span class="hl-keyword">this</span>.<span class="hl-property">stepClientIDs</span>.<span class="hl-property">slice</span>(<span class="hl-variable-2">version</span>)
+    }
+  }
+}
+</code></pre>
+<p>When an editor wants to try and submit their changes to the authority,
+they can call <code>receiveSteps</code> on it, passing the last version number
+they received, along with the new changes they added, and their client
+ID (which is a way for them to later recognize which changes came from
+them).</p>
+<p>When the steps are accepted, the client will notice because the
+authority notifies them that new steps are available, and then give
+them <em>their own</em> steps. In a real implementation, you could also have
+<code>receiveSteps</code> return a status, and immediately confirm the sent
+steps, as an optimization. But the mechanism used here is necessary to
+guarantee synchronization on unreliable connections, so you should
+always use it as the base case.</p>
+<p>This implementation of an authority keeps an endlessly growing array
+of steps, the length of which denotes its current version.</p>
+<h3><a id="collab.the_collab_module"></a>The <code>collab</code> Module</h3>
+<p>The <a href="/docs/ref/#collab"><code>collab</code></a> module exports a <a href="/docs/ref/#collab.collab"><code>collab</code></a>
+function which returns a plugin that takes care of tracking local
+changes, receiving remote changes, and indicating when something has
+to be sent to the central authority.</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">EditorState</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-state"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">EditorView</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-view"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">schema</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-schema-basic"</span>
+<span class="hl-keyword">import</span> <span class="hl-def">collab</span> <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-collab"</span>
+
+<span class="hl-keyword">function</span> <span class="hl-def">collabEditor</span>(<span class="hl-def">authority</span>, <span class="hl-def">place</span>) {
+  <span class="hl-keyword">let</span> <span class="hl-def">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>(<span class="hl-variable-2">place</span>, {
+    <span class="hl-property">state</span>: <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({
+      <span class="hl-property">doc</span>: <span class="hl-variable-2">authority</span>.<span class="hl-property">doc</span>,
+      <span class="hl-property">plugins</span>: [<span class="hl-variable">collab</span>.<span class="hl-property">collab</span>({<span class="hl-property">version</span>: <span class="hl-variable-2">authority</span>.<span class="hl-property">steps</span>.<span class="hl-property">length</span>})]
+    }),
+    <span class="hl-property">dispatchTransaction</span>(<span class="hl-def">transaction</span>) {
+      <span class="hl-keyword">let</span> <span class="hl-def">newState</span> <span class="hl-operator">=</span> <span class="hl-variable-2">view</span>.<span class="hl-property">state</span>.<span class="hl-property">apply</span>(<span class="hl-variable-2">transaction</span>)
+      <span class="hl-variable-2">view</span>.<span class="hl-property">updateState</span>(<span class="hl-variable-2">newState</span>)
+      <span class="hl-keyword">let</span> <span class="hl-def">sendable</span> <span class="hl-operator">=</span> <span class="hl-variable">collab</span>.<span class="hl-property">sendableSteps</span>(<span class="hl-variable-2">newState</span>)
+      <span class="hl-keyword">if</span> (<span class="hl-variable-2">sendable</span>)
+        <span class="hl-variable-2">authority</span>.<span class="hl-property">receiveSteps</span>(<span class="hl-variable-2">sendable</span>.<span class="hl-property">version</span>, <span class="hl-variable-2">sendable</span>.<span class="hl-property">steps</span>,
+                               <span class="hl-variable-2">sendable</span>.<span class="hl-property">clientID</span>)
+    }
+  })
+
+  <span class="hl-variable-2">authority</span>.<span class="hl-property">onNewSteps</span>.<span class="hl-property">push</span>(<span class="hl-keyword">function</span>() {
+    <span class="hl-keyword">let</span> <span class="hl-def">newData</span> <span class="hl-operator">=</span> <span class="hl-variable-2">authority</span>.<span class="hl-property">stepsSince</span>(<span class="hl-variable">collab</span>.<span class="hl-property">getVersion</span>(<span class="hl-variable-2">view</span>.<span class="hl-property">state</span>))
+    <span class="hl-variable-2">view</span>.<span class="hl-property">dispatch</span>(
+      <span class="hl-variable">collab</span>.<span class="hl-property">receiveTransaction</span>(<span class="hl-variable-2">view</span>.<span class="hl-property">state</span>, <span class="hl-variable-2">newData</span>.<span class="hl-property">steps</span>, <span class="hl-variable-2">newData</span>.<span class="hl-property">clientIDs</span>))
+  })
+
+  <span class="hl-keyword">return</span> <span class="hl-variable-2">view</span>
+}
+</code></pre>
+<p>The <code>collabEditor</code> function creates an editor view that has the
+<code>collab</code> plugin loaded. Whenever the state is updated, it checks
+whether there is anything to send to the authority. If so, it sends
+it.</p>
+<p>It also registers a function that the authority should call when new
+steps are available, and which creates a <a href="/docs/ref/#state.Transaction">transaction</a>
+that updates our local editor state to reflect those steps.</p>
+<p>When a set of steps gets rejected by the authority, they will remain
+unconfirmed until, supposedly soon after, we receive new steps from
+the authority. After that happens, because the <code>onNewSteps</code> callback
+calls <code>dispatch</code>, which will call our <code>dispatchTransaction</code> function,
+the code will try to submit its changes again.</p>
+<p>That's all there is to it. Of course, with asynchronous data channels
+(such as long polling in
+<a href="https://github.com/ProseMirror/website/blob/master/src/collab/client/collab.js">the collab demo</a>
+or web sockets), you'll need somewhat more complicated communication
+and synchronization code. And you'll probably also want your authority
+to start throwing away steps at some point, so that its memory
+consumption doesn't grow without bound. But the general approach is
+fully described by this little example.</p>
+</article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>

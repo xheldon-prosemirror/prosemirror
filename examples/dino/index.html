@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror 恐龙示例</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" class=active>示例</a>
+      <a href="/docs/" >文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><article><h1>文档中的恐龙</h1>
+<p>产品给了你一个需求：你需要在你的文档中包含一些独家的文档元素。
+用户可以操作这些元素或者开发者自己可以生成这些元素。下面的例子就展示给你这样一个「独家」的恐龙元素。</p>
+<p>ProseMirror 允许你定义你自己的 schemas，它包含了自定义的文档元素。你可以在文档中使用任何你放到 schema 中的元素，当然如果 schema 中没有的元素你是不能够用的。</p>
+<style>
+  img.dinosaur { height: 40px; vertical-align: bottom; border: 1px solid #0ae; border-radius: 4px; background: #ddf6ff }
+</style>
+<div id="editor"></div>
+<div id="content" style="display: none">
+  <p>这就是你的支持插入「恐龙元素」的编辑器。</p>
+  <p>例如 <img class="dinosaur" dino-type="stegosaurus">，这个段落
+  <img class="dinosaur" dino-type="triceratops">
+  都是 <img class="dinosaur" dino-type="tyrannosaurus"> 恐龙。</p>
+  <p>恐龙节点可以被选中，复制，粘贴，拖拽等。</p>
+</div>
+<p><a href="https://glitch.com/edit/#!/remix/prosemirror-demo-dino"><img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg" alt="Remix on Glitch"></a></p>
+<p>在这个示例中，我们扩展了 <a href="https://github.com/xheldon-prosemirror/prosemirror-schema-basic">basic</a> schema，将一个单独的新的节点加入其中。
+首先，我们定义一个 <a href="/docs/ref/#model.NodeSpec">node spec</a>，它描述了节点的行为和它的 DOM 表现形式。</p>
+<pre><code class="language-javascript"><span class="hl-comment">// 支持的恐龙类型</span>
+<span class="hl-keyword">const</span> <span class="hl-def">dinos</span> <span class="hl-operator">=</span> [<span class="hl-string">"brontosaurus"</span>, <span class="hl-string">"stegosaurus"</span>, <span class="hl-string">"triceratops"</span>,
+               <span class="hl-string">"tyrannosaurus"</span>, <span class="hl-string">"pterodactyl"</span>]
+
+<span class="hl-keyword">const</span> <span class="hl-def">dinoNodeSpec</span> <span class="hl-operator">=</span> {
+  <span class="hl-comment">// 恐龙只有一个属性，那就是它的类型，而且必须是上面的类型之一</span>
+  <span class="hl-comment">// Brontosaurs 是默认的类型</span>
+  <span class="hl-property">attrs</span>: {<span class="hl-property">type</span>: {<span class="hl-property">default</span>: <span class="hl-string">"brontosaurus"</span>}},
+  <span class="hl-property">inline</span>: <span class="hl-atom">true</span>,
+  <span class="hl-property">group</span>: <span class="hl-string">"inline"</span>,
+  <span class="hl-property">draggable</span>: <span class="hl-atom">true</span>,
+
+  <span class="hl-comment">// 这些节点以一个带有 `dino-type` 属性的 images 节点进行渲染</span>
+  <span class="hl-comment">// 在 /img/dino/ 目录下有所有的恐龙图片</span>
+  <span class="hl-property">toDOM</span>: <span class="hl-def">node</span> <span class="hl-operator">=&gt;</span> [<span class="hl-string">"img"</span>, {<span class="hl-string hl-property">"dino-type"</span>: <span class="hl-variable-2">node</span>.<span class="hl-property">attrs</span>.<span class="hl-property">type</span>,
+                          <span class="hl-property">src</span>: <span class="hl-string">"/img/dino/"</span> <span class="hl-operator">+</span> <span class="hl-variable-2">node</span>.<span class="hl-property">attrs</span>.<span class="hl-property">type</span> <span class="hl-operator">+</span> <span class="hl-string">".png"</span>,
+                          <span class="hl-property">title</span>: <span class="hl-variable-2">node</span>.<span class="hl-property">attrs</span>.<span class="hl-property">type</span>,
+                          <span class="hl-property">class</span>: <span class="hl-string">"dinosaur"</span>}],
+  <span class="hl-comment">// 当格式化一个 image DOM 的时候，如果它的 type 属性是上面所述的恐龙类型之一，那么它就会被转换成一个 dino 节点</span>
+  <span class="hl-property">parseDOM</span>: [{
+    <span class="hl-property">tag</span>: <span class="hl-string">"img[dino-type]"</span>,
+    <span class="hl-property">getAttrs</span>: <span class="hl-def">dom</span> <span class="hl-operator">=&gt;</span> {
+      <span class="hl-keyword">let</span> <span class="hl-def">type</span> <span class="hl-operator">=</span> <span class="hl-variable-2">dom</span>.<span class="hl-property">getAttribute</span>(<span class="hl-string">"dino-type"</span>)
+      <span class="hl-keyword">return</span> <span class="hl-variable">dinos</span>.<span class="hl-property">indexOf</span>(<span class="hl-variable-2">type</span>) <span class="hl-operator">&gt;</span> <span class="hl-operator">-</span><span class="hl-number">1</span> <span class="hl-operator">?</span> {<span class="hl-property">type</span>} : <span class="hl-atom">false</span>
+    }
+  }]
+}
+</code></pre>
+<p>之后，我们创建了一个真实的 schema 来包含这个节点，然后使用它去格式化 HTML 到 ProseMirror 文档：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">Schema</span>, <span class="hl-def">DOMParser</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-model"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">schema</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-schema-basic"</span>
+
+<span class="hl-keyword">const</span> <span class="hl-def">dinoSchema</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Schema</span>({
+  <span class="hl-property">nodes</span>: <span class="hl-variable">schema</span>.<span class="hl-property">spec</span>.<span class="hl-property">nodes</span>.<span class="hl-property">addBefore</span>(<span class="hl-string">"image"</span>, <span class="hl-string">"dino"</span>, <span class="hl-variable">dinoNodeSpec</span>),
+  <span class="hl-property">marks</span>: <span class="hl-variable">schema</span>.<span class="hl-property">spec</span>.<span class="hl-property">marks</span>
+})
+
+<span class="hl-keyword">let</span> <span class="hl-def">content</span> <span class="hl-operator">=</span> <span class="hl-variable">document</span>.<span class="hl-property">querySelector</span>(<span class="hl-string">"#content"</span>)
+<span class="hl-keyword">let</span> <span class="hl-def">startDoc</span> <span class="hl-operator">=</span> <span class="hl-variable">DOMParser</span>.<span class="hl-property">fromSchema</span>(<span class="hl-variable">dinoSchema</span>).<span class="hl-property">parse</span>(<span class="hl-variable">content</span>)
+</code></pre>
+<p>这个示例再次使用了 <a href="https://github.com/xheldon-prosemirror/prosemirror-example-setup">example setup</a> 模块，以提供一些基本的编辑行为。
+不过我们在菜单栏需要一个新的菜单项，来插入该节点。所以首先，定义一个 <a href="/docs/guide/#commands">command</a> 来处理恐龙的插入：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">dinoType</span> <span class="hl-operator">=</span> <span class="hl-variable">dinoSchema</span>.<span class="hl-property">nodes</span>.<span class="hl-property">dino</span>
+
+<span class="hl-keyword">function</span> <span class="hl-def">insertDino</span>(<span class="hl-def">type</span>) {
+  <span class="hl-keyword">return</span> <span class="hl-keyword">function</span>(<span class="hl-def">state</span>, <span class="hl-def">dispatch</span>) {
+    <span class="hl-keyword">let</span> {<span class="hl-def">$from</span>} <span class="hl-operator">=</span> <span class="hl-variable-2">state</span>.<span class="hl-property">selection</span>, <span class="hl-def">index</span> <span class="hl-operator">=</span> <span class="hl-variable-2">$from</span>.<span class="hl-property">index</span>()
+    <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-variable-2">$from</span>.<span class="hl-property">parent</span>.<span class="hl-property">canReplaceWith</span>(<span class="hl-variable-2">index</span>, <span class="hl-variable-2">index</span>, <span class="hl-variable">dinoType</span>))
+      <span class="hl-keyword">return</span> <span class="hl-atom">false</span>
+    <span class="hl-keyword">if</span> (<span class="hl-variable-2">dispatch</span>)
+      <span class="hl-variable-2">dispatch</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">tr</span>.<span class="hl-property">replaceSelectionWith</span>(<span class="hl-variable">dinoType</span>.<span class="hl-property">create</span>({<span class="hl-property">type</span>})))
+    <span class="hl-keyword">return</span> <span class="hl-atom">true</span>
+  }
+}
+</code></pre>
+<p>然后，新建一个菜单项来调用我们的命令：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">MenuItem</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-menu"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">buildMenuItems</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-example-setup"</span>
+
+<span class="hl-comment">// 让 example-setup 去 build 它的基本菜单</span>
+<span class="hl-keyword">let</span> <span class="hl-def">menu</span> <span class="hl-operator">=</span> <span class="hl-variable">buildMenuItems</span>(<span class="hl-variable">dinoSchema</span>)
+<span class="hl-comment">// 增加一个插入恐龙节点的按钮</span>
+<span class="hl-variable">dinos</span>.<span class="hl-property">forEach</span>(<span class="hl-def">name</span> <span class="hl-operator">=&gt;</span> <span class="hl-variable">menu</span>.<span class="hl-property">insertMenu</span>.<span class="hl-property">content</span>.<span class="hl-property">push</span>(<span class="hl-keyword">new</span> <span class="hl-variable">MenuItem</span>({
+  <span class="hl-property">title</span>: <span class="hl-string">"Insert "</span> <span class="hl-operator">+</span> <span class="hl-variable-2">name</span>,
+  <span class="hl-property">label</span>: <span class="hl-variable-2">name</span>.<span class="hl-property">charAt</span>(<span class="hl-number">0</span>).<span class="hl-property">toUpperCase</span>() <span class="hl-operator">+</span> <span class="hl-variable-2">name</span>.<span class="hl-property">slice</span>(<span class="hl-number">1</span>),
+  <span class="hl-property">enable</span>(<span class="hl-def">state</span>) { <span class="hl-keyword">return</span> <span class="hl-variable">insertDino</span>(<span class="hl-variable-2">name</span>)(<span class="hl-variable-2">state</span>) },
+  <span class="hl-property">run</span>: <span class="hl-variable">insertDino</span>(<span class="hl-variable-2">name</span>)
+})))
+</code></pre>
+<p>现在，就只剩下用我们自定义的 schema 和 menu 来创建一个编辑器 state 和 view：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">EditorState</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-state"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">EditorView</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-view"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">exampleSetup</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-example-setup"</span>
+
+<span class="hl-variable">window</span>.<span class="hl-property">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>(<span class="hl-variable">document</span>.<span class="hl-property">querySelector</span>(<span class="hl-string">"#editor"</span>), {
+  <span class="hl-property">state</span>: <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({
+    <span class="hl-property">doc</span>: <span class="hl-variable">startDoc</span>,
+    <span class="hl-comment">// 传给 exampleSetup 和 我们创建的 menu</span>
+    <span class="hl-property">plugins</span>: <span class="hl-variable">exampleSetup</span>({<span class="hl-property">schema</span>: <span class="hl-variable">dinoSchema</span>, <span class="hl-property">menuContent</span>: <span class="hl-variable">menu</span>.<span class="hl-property">fullMenu</span>})
+  })
+})
+</code></pre>
+<link rel=stylesheet href="../../css/editor.css">
+<script src="../prosemirror.js"></script>
+<script src="example.js"></script></article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>

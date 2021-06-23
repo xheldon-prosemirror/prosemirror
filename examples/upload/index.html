@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror 图片上传示例</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" class=active>示例</a>
+      <a href="/docs/" >文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><article><h1>处理上传</h1>
+<p>一些编辑涉及到异步的操作，但是你想要将它们作为单个动作呈现为给用户，例如，当用户从本地插入图片，你只能在
+用户上传到服务端完成并拿到了 URL 后才能访问实际的图片。但是你不想让用户经历先上传图片，然后等待上传图片后再将图片插入的漫长过程。</p>
+<p>理想情况下，选择图片后，你应该立即在文档中插入一个占位符以开始上传。然后，当上传完成后将占位符替换为最终图片。</p>
+<style>
+  placeholder {
+    display: inline;
+    border: 1px solid #ccc;
+    color: #ccc;
+  }
+  placeholder:after {
+    content: "☁";
+    font-size: 200%;
+    line-height: 0.1;
+    font-weight: bold;
+  }
+  .ProseMirror img { max-width: 100px }
+</style>
+<div id="editor" style="margin-bottom: 0"></div>
+<div>插入图片: <input type="file" id="image-upload"></div>
+<div style="display: none" id="content">
+  <p>这个段落需要一个图片，在线等，挺急的。</p>
+</div>
+<p><a href="https://glitch.com/edit/#!/remix/prosemirror-demo-upload"><img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg" alt="Remix on Glitch"></a></p>
+<p>由于上传可能需要一点时间，因此用户可能在等待的时候对文档做出其他更改，所以这个占位符应该随着上下文的更改进行移动，当最终的图片插入成功后，它应该替换掉此时占位符的位置。</p>
+<p>实现这个方案最简单的方式是将占位符作为一个 <a href="/docs/guide/#view.decorations">decoration</a> ，这样的话它就仅存在于用户的 UI 界面。让我们从写一个管理这个 decoration 的 plugin 开始：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">Plugin</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-state"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">Decoration</span>, <span class="hl-def">DecorationSet</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-view"</span>
+
+<span class="hl-keyword">let</span> <span class="hl-def">placeholderPlugin</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Plugin</span>({
+  <span class="hl-property">state</span>: {
+    <span class="hl-property">init</span>() { <span class="hl-keyword">return</span> <span class="hl-variable">DecorationSet</span>.<span class="hl-property">empty</span> },
+    <span class="hl-property">apply</span>(<span class="hl-def">tr</span>, <span class="hl-def">set</span>) {
+      <span class="hl-comment">// 调整因为 decoration 的位置，以适应 transaction 引起的文档的改变</span>
+      <span class="hl-variable-2">set</span> <span class="hl-operator">=</span> <span class="hl-variable-2">set</span>.<span class="hl-property">map</span>(<span class="hl-variable-2">tr</span>.<span class="hl-property">mapping</span>, <span class="hl-variable-2">tr</span>.<span class="hl-property">doc</span>)
+      <span class="hl-comment">// 查看 transaction 是否增加或者删除任何占位符了</span>
+      <span class="hl-keyword">let</span> <span class="hl-def">action</span> <span class="hl-operator">=</span> <span class="hl-variable-2">tr</span>.<span class="hl-property">getMeta</span>(<span class="hl-keyword">this</span>)
+      <span class="hl-keyword">if</span> (<span class="hl-variable-2">action</span> <span class="hl-operator">&amp;&amp;</span> <span class="hl-variable-2">action</span>.<span class="hl-property">add</span>) {
+        <span class="hl-keyword">let</span> <span class="hl-def">widget</span> <span class="hl-operator">=</span> <span class="hl-variable">document</span>.<span class="hl-property">createElement</span>(<span class="hl-string">"placeholder"</span>)
+        <span class="hl-keyword">let</span> <span class="hl-def">deco</span> <span class="hl-operator">=</span> <span class="hl-variable">Decoration</span>.<span class="hl-property">widget</span>(<span class="hl-variable-2">action</span>.<span class="hl-property">add</span>.<span class="hl-property">pos</span>, <span class="hl-variable-2">widget</span>, {<span class="hl-property">id</span>: <span class="hl-variable-2">action</span>.<span class="hl-property">add</span>.<span class="hl-property">id</span>})
+        <span class="hl-variable-2">set</span> <span class="hl-operator">=</span> <span class="hl-variable-2">set</span>.<span class="hl-property">add</span>(<span class="hl-variable-2">tr</span>.<span class="hl-property">doc</span>, [<span class="hl-variable-2">deco</span>])
+      } <span class="hl-keyword">else</span> <span class="hl-keyword">if</span> (<span class="hl-variable-2">action</span> <span class="hl-operator">&amp;&amp;</span> <span class="hl-variable-2">action</span>.<span class="hl-property">remove</span>) {
+        <span class="hl-variable-2">set</span> <span class="hl-operator">=</span> <span class="hl-variable-2">set</span>.<span class="hl-property">remove</span>(<span class="hl-variable-2">set</span>.<span class="hl-property">find</span>(<span class="hl-atom">null</span>, <span class="hl-atom">null</span>,
+                                  <span class="hl-def">spec</span> <span class="hl-operator">=&gt;</span> <span class="hl-variable-2">spec</span>.<span class="hl-property">id</span> <span class="hl-operator">==</span> <span class="hl-variable-2">action</span>.<span class="hl-property">remove</span>.<span class="hl-property">id</span>))
+      }
+      <span class="hl-keyword">return</span> <span class="hl-variable-2">set</span>
+    }
+  },
+  <span class="hl-property">props</span>: {
+    <span class="hl-property">decorations</span>(<span class="hl-def">state</span>) { <span class="hl-keyword">return</span> <span class="hl-keyword">this</span>.<span class="hl-property">getState</span>(<span class="hl-variable-2">state</span>) }
+  }
+})
+</code></pre>
+<p>这是一个 <a href="/docs/ref/#view.DecorationSet">decoration set</a> 的简单包裹--它必须是一个 <em>集合</em> ，因为多个上传可能同时发生。
+plugin 的 meta 信息可以被用来通过 ID 增加或者删除 widget decoration。</p>
+<p>该 plugin 有个通过给定 ID 返回占位符当前位置的函数（如果该占位符仍然存在的话）：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">function</span> <span class="hl-def">findPlaceholder</span>(<span class="hl-def">state</span>, <span class="hl-def">id</span>) {
+  <span class="hl-keyword">let</span> <span class="hl-def">decos</span> <span class="hl-operator">=</span> <span class="hl-variable">placeholderPlugin</span>.<span class="hl-property">getState</span>(<span class="hl-variable-2">state</span>)
+  <span class="hl-keyword">let</span> <span class="hl-def">found</span> <span class="hl-operator">=</span> <span class="hl-variable-2">decos</span>.<span class="hl-property">find</span>(<span class="hl-atom">null</span>, <span class="hl-atom">null</span>, <span class="hl-def">spec</span> <span class="hl-operator">=&gt;</span> <span class="hl-variable-2">spec</span>.<span class="hl-property">id</span> <span class="hl-operator">==</span> <span class="hl-variable-2">id</span>)
+  <span class="hl-keyword">return</span> <span class="hl-variable-2">found</span>.<span class="hl-property">length</span> <span class="hl-operator">?</span> <span class="hl-variable-2">found</span>[<span class="hl-number">0</span>].<span class="hl-property">from</span> : <span class="hl-atom">null</span>
+}
+</code></pre>
+<p>当编辑器下方的选择文件按钮被点击之后，事件处理函数会检查一些条件，然后在一些情况下触发上传：</p>
+<pre><code class="language-javascript"><span class="hl-variable">document</span>.<span class="hl-property">querySelector</span>(<span class="hl-string">"#image-upload"</span>).<span class="hl-property">addEventListener</span>(<span class="hl-string">"change"</span>, <span class="hl-def">e</span> <span class="hl-operator">=&gt;</span> {
+  <span class="hl-keyword">if</span> (<span class="hl-variable">view</span>.<span class="hl-property">state</span>.<span class="hl-property">selection</span>.<span class="hl-property">$from</span>.<span class="hl-property">parent</span>.<span class="hl-property">inlineContent</span> <span class="hl-operator">&amp;&amp;</span> <span class="hl-variable-2">e</span>.<span class="hl-property">target</span>.<span class="hl-property">files</span>.<span class="hl-property">length</span>)
+    <span class="hl-variable">startImageUpload</span>(<span class="hl-variable">view</span>, <span class="hl-variable-2">e</span>.<span class="hl-property">target</span>.<span class="hl-property">files</span>[<span class="hl-number">0</span>])
+  <span class="hl-variable">view</span>.<span class="hl-property">focus</span>()
+})
+</code></pre>
+<p>核心的功能发生在 <code>startImageUpload</code> 函数中。工具函数 <code>uploadFile</code> 会返回一个 promise，它最终会 resolve 文件的 URL
+（在这个 Demo 中，它实际上只是等待了一会儿然后返回了一个 <code>data:</code> URL)：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">function</span> <span class="hl-def">startImageUpload</span>(<span class="hl-def">view</span>, <span class="hl-def">file</span>) {
+  <span class="hl-comment">// 为 upload 构建一个空的对象来存放占位符们的 ID</span>
+  <span class="hl-keyword">let</span> <span class="hl-def">id</span> <span class="hl-operator">=</span> {}
+
+  <span class="hl-comment">// 用占位符替换选区</span>
+  <span class="hl-keyword">let</span> <span class="hl-def">tr</span> <span class="hl-operator">=</span> <span class="hl-variable-2">view</span>.<span class="hl-property">state</span>.<span class="hl-property">tr</span>
+  <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-variable-2">tr</span>.<span class="hl-property">selection</span>.<span class="hl-property">empty</span>) <span class="hl-variable-2">tr</span>.<span class="hl-property">deleteSelection</span>()
+  <span class="hl-variable-2">tr</span>.<span class="hl-property">setMeta</span>(<span class="hl-variable">placeholderPlugin</span>, {<span class="hl-property">add</span>: {<span class="hl-property">id</span>, <span class="hl-property">pos</span>: <span class="hl-variable-2">tr</span>.<span class="hl-property">selection</span>.<span class="hl-property">from</span>}})
+  <span class="hl-variable-2">view</span>.<span class="hl-property">dispatch</span>(<span class="hl-variable-2">tr</span>)
+
+  <span class="hl-variable">uploadFile</span>(<span class="hl-variable-2">file</span>).<span class="hl-property">then</span>(<span class="hl-def">url</span> <span class="hl-operator">=&gt;</span> {
+    <span class="hl-keyword">let</span> <span class="hl-def">pos</span> <span class="hl-operator">=</span> <span class="hl-variable">findPlaceholder</span>(<span class="hl-variable-2">view</span>.<span class="hl-property">state</span>, <span class="hl-variable-2">id</span>)
+    <span class="hl-comment">// 如果占位符周围的内容都被删除了，那就删除这个占位符所代表的图片</span>
+    <span class="hl-keyword">if</span> (<span class="hl-variable-2">pos</span> <span class="hl-operator">==</span> <span class="hl-atom">null</span>) <span class="hl-keyword">return</span>
+    <span class="hl-comment">// 否则的话，将图片插入占位符所在的位置，然后移除占位符</span>
+    <span class="hl-variable-2">view</span>.<span class="hl-property">dispatch</span>(<span class="hl-variable-2">view</span>.<span class="hl-property">state</span>.<span class="hl-property">tr</span>
+                  .<span class="hl-property">replaceWith</span>(<span class="hl-variable-2">pos</span>, <span class="hl-variable-2">pos</span>, <span class="hl-variable">schema</span>.<span class="hl-property">nodes</span>.<span class="hl-property">image</span>.<span class="hl-property">create</span>({<span class="hl-property">src</span>: <span class="hl-variable-2">url</span>}))
+                  .<span class="hl-property">setMeta</span>(<span class="hl-variable">placeholderPlugin</span>, {<span class="hl-property">remove</span>: {<span class="hl-property">id</span>}}))
+  }, () <span class="hl-operator">=&gt;</span> {
+    <span class="hl-comment">// 如果上传失败，简单移除占位符就好</span>
+    <span class="hl-variable-2">view</span>.<span class="hl-property">dispatch</span>(<span class="hl-variable-2">tr</span>.<span class="hl-property">setMeta</span>(<span class="hl-variable">placeholderPlugin</span>, {<span class="hl-property">remove</span>: {<span class="hl-property">id</span>}}))
+  })
+}
+</code></pre>
+<p>因为 placeholder plugin 通过一个 transaction <a href="/docs/ref/#view.DecorationSet.map">maps(映射)</a> 它的 decorations，因此，
+即使文档在文件上传期间被修改过，<code>findPlaceholder</code> 也会得到图片的正确位置。</p>
+<link rel=stylesheet href="../../css/editor.css">
+<script src="../prosemirror.js"></script>
+<script src="example.js"></script></article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>

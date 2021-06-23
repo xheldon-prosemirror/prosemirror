@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror schema 示例</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" class=active>示例</a>
+      <a href="/docs/" >文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><article><h1>从零开始写一个 Schema</h1>
+<p>ProseMirror 的 <a href="/docs/guide/#schema">schemas</a> 为文档提供了类似语法一样的东西--他们决定哪些文档结构是有效可用的。</p>
+<p>最简单的 schema 可能仅仅是一个有文本节点组成的文档：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">Schema</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-model"</span>
+
+<span class="hl-keyword">const</span> <span class="hl-def">textSchema</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Schema</span>({
+  <span class="hl-property">nodes</span>: {
+    <span class="hl-property">text</span>: {},
+    <span class="hl-property">doc</span>: {<span class="hl-property">content</span>: <span class="hl-string">"text*"</span>}
+  }
+})
+</code></pre>
+<p>你可以使用它来编辑行内元素。<span id="text-editor"></span> (ProseMirror 的 view 可以 <a href="/docs/ref/#view.EditorView.constructor">mounted(挂载)</a> 在任何节点，包括行内节点)</p>
+<h2>块级节点</h2>
+<p>为了添加更多文档结构，你通常想要添加一些块级节点。比如，下面这个 schema 包含一些备忘信息节点，它可以（可选的）与其他备忘信息组成一个备忘信息组节点，以分组显示：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">const</span> <span class="hl-def">noteSchema</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Schema</span>({
+  <span class="hl-property">nodes</span>: {
+    <span class="hl-property">text</span>: {},
+    <span class="hl-property">note</span>: {
+      <span class="hl-property">content</span>: <span class="hl-string">"text*"</span>,
+      <span class="hl-property">toDOM</span>() { <span class="hl-keyword">return</span> [<span class="hl-string">"note"</span>, <span class="hl-number">0</span>] },
+      <span class="hl-property">parseDOM</span>: [{<span class="hl-property">tag</span>: <span class="hl-string">"note"</span>}]
+    },
+    <span class="hl-property">notegroup</span>: {
+      <span class="hl-property">content</span>: <span class="hl-string">"note+"</span>,
+      <span class="hl-property">toDOM</span>() { <span class="hl-keyword">return</span> [<span class="hl-string">"notegroup"</span>, <span class="hl-number">0</span>] },
+      <span class="hl-property">parseDOM</span>: [{<span class="hl-property">tag</span>: <span class="hl-string">"notegroup"</span>}]
+    },
+    <span class="hl-property">doc</span>: {
+      <span class="hl-property">content</span>: <span class="hl-string">"(note | notegroup)+"</span>
+    }
+  }
+})
+</code></pre>
+<p>对于不是 text 或者顶级节点的节点来说，提供一个 <a href="/docs/ref/#model.NodeSpec.toDOM"><code>toDOM</code></a> 方法是<a href="/docs/guide/#schema.serialization_and_parsing">必要的</a>，
+这样一来，编辑器可以渲染这些节点；以及提供一个 <a href="/docs/ref/#model.NodeSpec.parseDOM"><code>parseDOM</code></a> 方法，这样 DOM 节点可以被 parse 成 ProseMirror 的 node。
+下面的 schema 使用自定义的 <code>&lt;note&gt;</code> 和 <code>&lt;notegroup&gt;</code> 这两个 DOM 元素来代表 ProseMirror 中对应的节点：</p>
+<style>
+  #text-editor { background-color: rgba(0, 0, 0, 0.05); padding: 0 }
+  .ProseMirror { min-height: none !important }
+  .ProseMirror a { text-decoration: underline; }
+  note, notegroup { display: block; border: 1px solid silver; border-radius: 3px; padding: 3px 6px; margin: 5px 0; }
+  notegroup { border-color: #66f }
+  p.boring { background: #eee; color: #444; }
+  shouting { display: inline; text-transform: uppercase; font-weight: bold; }
+  star { display: inline; font-size: 190%; line-height: 1; vertical-align: -10%; color: #a8f; -webkit-text-stroke: 1px #75b; }
+</style>
+<div id="note-editor"></div>
+<p>你可以选中几个 notes 后按 ctrl-space 来将他们成组。要实现这个效果，你首先应该实现一个自定义的 <a href="/docs/guide/#commands">编辑命令</a>，就像下面这样：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">findWrapping</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-transform"</span>
+
+<span class="hl-keyword">function</span> <span class="hl-def">makeNoteGroup</span>(<span class="hl-def">state</span>, <span class="hl-def">dispatch</span>) {
+  <span class="hl-comment">// 获取选择的节点的 ranges</span>
+  <span class="hl-keyword">let</span> <span class="hl-def">range</span> <span class="hl-operator">=</span> <span class="hl-variable-2">state</span>.<span class="hl-property">selection</span>.<span class="hl-property">$from</span>.<span class="hl-property">blockRange</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">selection</span>.<span class="hl-property">$to</span>)
+  <span class="hl-comment">// 查看是否允许用 note group 包裹这个 ranges</span>
+  <span class="hl-keyword">let</span> <span class="hl-def">wrapping</span> <span class="hl-operator">=</span> <span class="hl-variable">findWrapping</span>(<span class="hl-variable-2">range</span>, <span class="hl-variable">noteSchema</span>.<span class="hl-property">nodes</span>.<span class="hl-property">notegroup</span>)
+  <span class="hl-comment">// 如果不允许的话，命令不会执行</span>
+  <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-variable-2">wrapping</span>) <span class="hl-keyword">return</span> <span class="hl-atom">false</span>
+  <span class="hl-comment">// 否则，dispatch 一个 transaction，使用 `wrap` 方法开创建一个实现实际的包裹行为的 step</span>
+  <span class="hl-keyword">if</span> (<span class="hl-variable-2">dispatch</span>) <span class="hl-variable-2">dispatch</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">tr</span>.<span class="hl-property">wrap</span>(<span class="hl-variable-2">range</span>, <span class="hl-variable-2">wrapping</span>).<span class="hl-property">scrollIntoView</span>())
+  <span class="hl-keyword">return</span> <span class="hl-atom">true</span>
+}
+</code></pre>
+<p>一个像 <code>keymap({"Ctrl-Space": makeNoteGroup})</code> 一样的 <a href="/docs/ref/#keymap">keymap</a> 可以启用该命令。</p>
+<p>对于 enter 和 backspace 按键的 <a href="/docs/ref/#commands.baseKeymap">通用按键绑定</a> 在这个 schema 中可以正常运行--
+enter 将会分隔在光标两侧的文本 block，或者如果光标所在的位置为空文本 block，则会试着将其脱离其父级节点，
+因此可以用来从当前 notes group 中退出，然后创建一个新的 notes。在一个文本 block 的开头按 backspace 会将文本 block 脱离其父级节点，
+这样也可以用来将一个 note 中 note group 中移除。</p>
+<h2>Groups and marks（节点组和 marks）</h2>
+<p>让我们再做一次，伴随着 start 和 shouting（不知道啥意思）。</p>
+<p>下面这个 schema 不仅有文本作为 inline 节点，<em>start</em> 也是 inline 的节点。
+为了能够容易的引用我们的这两个 inline 节点，他们可以被归为一组（仍然叫做 <code>「inline」</code>）。
+这个 schema 将遇到的两种 block 节点一视同仁，一个是 <code>paragraph</code> 类型，它允许任何 inline 内容，
+另一种是 <code>boring_paragraph</code> 类型，它只允许没有 mark 设置的文本内容：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">let</span> <span class="hl-def">starSchema</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Schema</span>({
+  <span class="hl-property">nodes</span>: {
+    <span class="hl-property">text</span>: {
+      <span class="hl-property">group</span>: <span class="hl-string">"inline"</span>,
+    },
+    <span class="hl-property">star</span>: {
+      <span class="hl-property">inline</span>: <span class="hl-atom">true</span>,
+      <span class="hl-property">group</span>: <span class="hl-string">"inline"</span>,
+      <span class="hl-property">toDOM</span>() { <span class="hl-keyword">return</span> [<span class="hl-string">"star"</span>, <span class="hl-string">"🟊"</span>] },
+      <span class="hl-property">parseDOM</span>: [{<span class="hl-property">tag</span>: <span class="hl-string">"star"</span>}]
+    },
+    <span class="hl-property">paragraph</span>: {
+      <span class="hl-property">group</span>: <span class="hl-string">"block"</span>,
+      <span class="hl-property">content</span>: <span class="hl-string">"inline*"</span>,
+      <span class="hl-property">toDOM</span>() { <span class="hl-keyword">return</span> [<span class="hl-string">"p"</span>, <span class="hl-number">0</span>] },
+      <span class="hl-property">parseDOM</span>: [{<span class="hl-property">tag</span>: <span class="hl-string">"p"</span>}]
+    },
+    <span class="hl-property">boring_paragraph</span>: {
+      <span class="hl-property">group</span>: <span class="hl-string">"block"</span>,
+      <span class="hl-property">content</span>: <span class="hl-string">"text*"</span>,
+      <span class="hl-property">marks</span>: <span class="hl-string">""</span>,
+      <span class="hl-property">toDOM</span>() { <span class="hl-keyword">return</span> [<span class="hl-string">"p"</span>, {<span class="hl-property">class</span>: <span class="hl-string">"boring"</span>}, <span class="hl-number">0</span>] },
+      <span class="hl-property">parseDOM</span>: [{<span class="hl-property">tag</span>: <span class="hl-string">"p.boring"</span>, <span class="hl-property">priority</span>: <span class="hl-number">60</span>}]
+    },
+    <span class="hl-property">doc</span>: {
+      <span class="hl-property">content</span>: <span class="hl-string">"block+"</span>
+    }
+  },
+</code></pre>
+<p>因为文本 block 类型的节点默认情况下允许 marks，因此 <code>boring_paragraph</code> 节点将 <a href="/docs/ref/#model.NodeSpec.marks"><code>marks</code></a> 设置为空字符串，以明确禁止它。</p>
+<p>下面这个 schema 定义了两种类型的 marks，<code>shouted text</code> 和 <code>links</code>。前者类似于普通的加粗 marks，它只所在的内容上添加一点信息，而没有任何 attributes。
+它在 DOM 中被渲染成 <code>&lt;shouting&gt;</code> 标签（样式被设置为内联、加粗和大写），同时有该名字的 DOM 标签应该被 parse 成这个 mark：</p>
+<pre><code class="language-javascript">  <span class="hl-variable">marks</span>: {
+    <span class="hl-variable">shouting</span>: {
+      <span class="hl-variable">toDOM</span>() { <span class="hl-keyword">return</span> [<span class="hl-string">"shouting"</span>, <span class="hl-number">0</span>] },
+      <span class="hl-variable">parseDOM</span>: [{<span class="hl-property">tag</span>: <span class="hl-string">"shouting"</span>}]
+    },
+    <span class="hl-variable">link</span>: {
+      <span class="hl-variable">attrs</span>: {<span class="hl-variable">href</span>: {}},
+      <span class="hl-variable">toDOM</span>(<span class="hl-variable">node</span>) { <span class="hl-keyword">return</span> [<span class="hl-string">"a"</span>, {<span class="hl-property">href</span>: <span class="hl-variable">node</span>.<span class="hl-property">attrs</span>.<span class="hl-property">href</span>}, <span class="hl-number">0</span>] },
+      <span class="hl-variable">parseDOM</span>: [{<span class="hl-property">tag</span>: <span class="hl-string">"a"</span>, <span class="hl-property">getAttrs</span>(<span class="hl-def">dom</span>) { <span class="hl-keyword">return</span> {<span class="hl-property">href</span>: <span class="hl-variable-2">dom</span>.<span class="hl-property">href</span>} }}],
+      <span class="hl-variable">inclusive</span>: <span class="hl-atom">false</span>
+    }
+  }
+})
+</code></pre>
+<p>Links 则确实有一个 attributes--它们的 url，因此它们的 DOM 序列化的方法需要输出这个 attributes
+（从 <code>toDOM</code> 函数返回的数组中的第二个元素如果是一个普通对象的话，会提供一个 DOM attributes 集合），同时它们的 DOM parser 需要读取这个 attributes。</p>
+<p>默认情况下，marks 需要 <em>inclusice</em> 属性，它表示该 mark 会应用到直接插入在它们后面的内容（如果这些 marks 位于它们父级节点的开始位置的话，也一样会应用）。
+对于 link 类型的 marks，这通常不是预期的行为，因此设置到此类 marks 上的 <a href="/docs/ref/#model.MarkSpec.inclusive"><code>inclusive</code></a> 属性可以被设置为 false 以禁止此行为。</p>
+<p>译者注：假设有 mark b： <code>&lt;b&gt;abc&lt;/b&gt;</code>，然后输入 <code>d</code>。如果其 <code>inclusive</code> 属性是 true，则光标放到 <code>c</code> 后面的时候输入的内容也被当成是 b mark 的一部分，即变成了 <code>&lt;b&gt;abcd&lt;/&gt;</code>；
+同理，如果 b 是其父节点的第一个 mark 的话，如 <code>&lt;p&gt;&lt;b&gt;abc&lt;/b&gt;&lt;/p&gt;</code>，则得到 <code>&lt;p&gt;&lt;b&gt;dabc&lt;/b&gt;&lt;/p&gt;</code>。
+如果 b 的 mark 是 <code>inclusive</code> 是 false，则光标放到 <code>c</code> 后面输入内容 <code>d</code>，则会得到结果 <code>&lt;b&gt;abc&lt;/b&gt;d</code>，
+同理，若是其父节点的第一个 mark 的话， 则得到：<code>&lt;p&gt;d&lt;b&gt;abc&lt;/b&gt;&lt;/p&gt;</code>：</p>
+<div id="star-editor" class="editor"></div>
+<div style="display: none">
+  <div id="text-content">Such as this sentence.</div>
+  <div id="note-content">
+    <note>Do laundry</note>
+    <note>Water the tomatoes</note>
+    <notegroup>
+      <note>Buy flour</note>
+      <note>Get toilet paper</note>
+    </notegroup>
+  </div>
+  <div id="star-content">
+    <p>This is a <star></star>nice<star></star> paragraph, it can have <shouting>anything</shouting> in it.</p>
+    <p class="boring">This paragraph is boring, it can't have anything.</p>
+    <p>Press ctrl/cmd-space to insert a star, ctrl/cmd-b to toggle shouting, and ctrl/cmd-q to add or remove a link.</p>
+  </div>
+</div>
+<p><a href="https://glitch.com/edit/#!/remix/prosemirror-demo-schema"><img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg" alt="Remix on Glitch"></a></p>
+<p>为了能与这些元素进行交互，我们再一次的需要一个自定义的 keymap。对于打开/关闭 marks，有一个直接使用的命令辅助函数，这样我们就可以直接对 shouting mark 使用这个辅助函数了：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">toggleMark</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-commands"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">keymap</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-keymap"</span>
+
+<span class="hl-keyword">let</span> <span class="hl-def">starKeymap</span> <span class="hl-operator">=</span> <span class="hl-variable">keymap</span>({
+  <span class="hl-string hl-property">"Ctrl-b"</span>: <span class="hl-variable">toggleMark</span>(<span class="hl-variable">starSchema</span>.<span class="hl-property">marks</span>.<span class="hl-property">shouting</span>),
+  <span class="hl-string hl-property">"Ctrl-q"</span>: <span class="hl-variable">toggleLink</span>,
+  <span class="hl-string hl-property">"Ctrl-Space"</span>: <span class="hl-variable">insertStar</span>
+})
+</code></pre>
+<p>打开/关闭一个 link 实际上是有点复杂的。当什么也没选中的时候，启用或者禁用一个 inclusive 为 false 的 marks 没有任何意义，因为你不能将内容「输入进」这种 marks（就像 inclusive 为 true 做的那样）。
+此外我们还需要让用户输入一个 URL--但是前提是得先添加一个 link。因此打开/关闭 links 的命令会在请求用户输入 URL 之前使用 <a href="/docs/ref/#model.Node.rangeHasMark"><code>rangeHasMark</code></a> 去检查 link mark 是否将要被添加或者移除。</p>
+<p>（<code>请求用户</code> 这种交互逻辑可能在真实的系统是并不是你想要的。当使用一个异步的方法让用户输入一些信息然后应用的时候，你需要确保该时刻使用的是 <em>当前最新的</em> state，而不是当命令被调用时刻的 state。）</p>
+<pre><code class="language-javascript"><span class="hl-keyword">function</span> <span class="hl-def">toggleLink</span>(<span class="hl-def">state</span>, <span class="hl-def">dispatch</span>) {
+  <span class="hl-keyword">let</span> {<span class="hl-def">doc</span>, <span class="hl-def">selection</span>} <span class="hl-operator">=</span> <span class="hl-variable-2">state</span>
+  <span class="hl-keyword">if</span> (<span class="hl-variable-2">selection</span>.<span class="hl-property">empty</span>) <span class="hl-keyword">return</span> <span class="hl-atom">false</span>
+  <span class="hl-keyword">let</span> <span class="hl-def">attrs</span> <span class="hl-operator">=</span> <span class="hl-atom">null</span>
+  <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-variable-2">doc</span>.<span class="hl-property">rangeHasMark</span>(<span class="hl-variable-2">selection</span>.<span class="hl-property">from</span>, <span class="hl-variable-2">selection</span>.<span class="hl-property">to</span>, <span class="hl-variable">starSchema</span>.<span class="hl-property">marks</span>.<span class="hl-property">link</span>)) {
+    <span class="hl-variable-2">attrs</span> <span class="hl-operator">=</span> {<span class="hl-property">href</span>: <span class="hl-variable">prompt</span>(<span class="hl-string">"Link to where?"</span>, <span class="hl-string">""</span>)}
+    <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-variable-2">attrs</span>.<span class="hl-property">href</span>) <span class="hl-keyword">return</span> <span class="hl-atom">false</span>
+  }
+  <span class="hl-keyword">return</span> <span class="hl-variable">toggleMark</span>(<span class="hl-variable">starSchema</span>.<span class="hl-property">marks</span>.<span class="hl-property">link</span>, <span class="hl-variable-2">attrs</span>)(<span class="hl-variable-2">state</span>, <span class="hl-variable-2">dispatch</span>)
+}
+</code></pre>
+<p>插入一个 star 的命令首先检查 schema 是否允许一个 star 插入光标所在的位置（使用 <a href="/docs/ref/#model.Node.canReplaceWith"><code>canReplaceWith</code></a> 方法），如果允许的话，
+则用新创建的 star 节点替换选区：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">function</span> <span class="hl-def">insertStar</span>(<span class="hl-def">state</span>, <span class="hl-def">dispatch</span>) {
+  <span class="hl-keyword">let</span> <span class="hl-def">type</span> <span class="hl-operator">=</span> <span class="hl-variable">starSchema</span>.<span class="hl-property">nodes</span>.<span class="hl-property">star</span>
+  <span class="hl-keyword">let</span> {<span class="hl-def">$from</span>} <span class="hl-operator">=</span> <span class="hl-variable-2">state</span>.<span class="hl-property">selection</span>
+  <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-variable-2">$from</span>.<span class="hl-property">parent</span>.<span class="hl-property">canReplaceWith</span>(<span class="hl-variable-2">$from</span>.<span class="hl-property">index</span>(), <span class="hl-variable-2">$from</span>.<span class="hl-property">index</span>(), <span class="hl-variable-2">type</span>))
+    <span class="hl-keyword">return</span> <span class="hl-atom">false</span>
+  <span class="hl-variable-2">dispatch</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">tr</span>.<span class="hl-property">replaceSelectionWith</span>(<span class="hl-variable-2">type</span>.<span class="hl-property">create</span>()))
+  <span class="hl-keyword">return</span> <span class="hl-atom">true</span>
+}
+</code></pre>
+<link rel=stylesheet href="../../css/editor.css">
+<script src="../prosemirror.js"></script>
+<script src="example.js"></script></article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>

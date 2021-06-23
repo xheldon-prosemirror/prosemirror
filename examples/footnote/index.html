@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror 脚注示例</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" class=active>示例</a>
+      <a href="/docs/" >文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><article><h1>编辑脚注</h1>
+<p>这个示例演示了如何在 ProseMirror 中实现类似脚注一样的东西：</p>
+<style>
+  .ProseMirror {
+    counter-reset: prosemirror-footnote;
+  }
+  footnote {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+  }
+  footnote::after {
+    content: counter(prosemirror-footnote);
+    vertical-align: super;
+    font-size: 75%;
+    counter-increment: prosemirror-footnote;
+  }
+  .ProseMirror-hideselection .footnote-tooltip *::selection { background-color: transparent; }
+  .ProseMirror-hideselection .footnote-tooltip *::-moz-selection { background-color: transparent; }
+  .footnote-tooltip {
+    cursor: auto;
+    position: absolute;
+    left: -30px;
+    top: calc(100% + 10px);
+    background: silver;
+    padding: 3px;
+    border-radius: 2px;
+    width: 500px;
+  }
+  .footnote-tooltip::before {
+    border: 5px solid silver;
+    border-top-width: 0px;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    position: absolute;
+    top: -5px;
+    left: 27px;
+    content: " ";
+    height: 0;
+    width: 0;
+  }
+</style>
+<div id="editor"></div>
+<div id="content" style="display: none">
+  <p>这个段落有一个脚注<footnote>它是一个个文本碎片被放在一个页面或者章节的底部，提供额外的 <em>评论</em> 或者 <em>引用</em> 信息。</footnote> 。和其他脚注 <footnote>更多脚注信息</footnote> 。</p>
+  <p>移动光标到脚注，或者点击以编辑它。</p>
+</div>
+<p><a href="https://glitch.com/edit/#!/remix/prosemirror-demo-footnote"><img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg" alt="Remix on Glitch"></a></p>
+<p>脚注看起来应该被实现为一种带有内容的内联节点--他们出现在其他内联内容之间，但是它的内容并不是它外层文本 block 的内容。
+因此让我们先像下面一样定义它们：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">schema</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-schema-basic"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">Schema</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-model"</span>
+
+<span class="hl-keyword">const</span> <span class="hl-def">footnoteSpec</span> <span class="hl-operator">=</span> {
+  <span class="hl-property">group</span>: <span class="hl-string">"inline"</span>,
+  <span class="hl-property">content</span>: <span class="hl-string">"inline*"</span>,
+  <span class="hl-property">inline</span>: <span class="hl-atom">true</span>,
+  <span class="hl-comment">// 这个设置让 view 将该节点当成是一个叶子节点对待，即使它从技术上讲，是有内容的</span>
+  <span class="hl-property">atom</span>: <span class="hl-atom">true</span>,
+  <span class="hl-property">toDOM</span>: () <span class="hl-operator">=&gt;</span> [<span class="hl-string">"footnote"</span>, <span class="hl-number">0</span>],
+  <span class="hl-property">parseDOM</span>: [{<span class="hl-property">tag</span>: <span class="hl-string">"footnote"</span>}]
+}
+
+<span class="hl-keyword">const</span> <span class="hl-def">footnoteSchema</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">Schema</span>({
+  <span class="hl-property">nodes</span>: <span class="hl-variable">schema</span>.<span class="hl-property">spec</span>.<span class="hl-property">nodes</span>.<span class="hl-property">addBefore</span>(<span class="hl-string">"image"</span>, <span class="hl-string">"footnote"</span>, <span class="hl-variable">footnoteSpec</span>),
+  <span class="hl-property">marks</span>: <span class="hl-variable">schema</span>.<span class="hl-property">spec</span>.<span class="hl-property">marks</span>
+})
+</code></pre>
+<p>对于有内容的内联节点，ProseMirror 处理的并不太好，至少默认并不支持这种类型。
+所以你需要为这种类型的节点写一个 <a href="/docs/guide/#view.node_views">node view</a>，
+它可以以某种方式管理这种带内容的内联节点出现在编辑器中的方式。</p>
+<p>因此这就是我们将要做的事情。本示例中的脚注以一个数字的形式显示在文档中。而事实上，
+他们仅仅是 <code>&lt;footnote&gt;</code> 节点，我们需要依赖 CSS 来将数字添加上去：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">StepMap</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-transform"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">keymap</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-keymap"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">undo</span>, <span class="hl-def">redo</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-history"</span>
+
+<span class="hl-keyword">class</span> <span class="hl-def">FootnoteView</span> {
+  <span class="hl-property">constructor</span>(<span class="hl-def">node</span>, <span class="hl-def">view</span>, <span class="hl-def">getPos</span>) {
+    <span class="hl-comment">// 我们后面需要这些</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">node</span> <span class="hl-operator">=</span> <span class="hl-variable-2">node</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">outerView</span> <span class="hl-operator">=</span> <span class="hl-variable-2">view</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">getPos</span> <span class="hl-operator">=</span> <span class="hl-variable-2">getPos</span>
+
+    <span class="hl-comment">// 这个是该节点在编辑器中的 DOM 结构（目前为止是空的）</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span> <span class="hl-operator">=</span> <span class="hl-variable">document</span>.<span class="hl-property">createElement</span>(<span class="hl-string">"footnote"</span>)
+    <span class="hl-comment">// 这个是当脚注被选中的时候有用</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">innerView</span> <span class="hl-operator">=</span> <span class="hl-atom">null</span>
+  }
+</code></pre>
+<p>只有当 node view 被选中的时候，用户才可以与它的内容做交互（它将在用户的光标放到上去的时候或者鼠标点击的时候才会被选中，
+因为我们对这种类型的节点设置了 <a href="/docs/ref/#model.NodeSpec.atom"><code>atom</code></a> 属性)。下面这两种方法处理 node view 被选中和取消选中时候的逻辑：</p>
+<pre><code class="language-javascript">  <span class="hl-variable">selectNode</span>() {
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">classList</span>.<span class="hl-property">add</span>(<span class="hl-string">"ProseMirror-selectednode"</span>)
+    <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-keyword">this</span>.<span class="hl-property">innerView</span>) <span class="hl-keyword">this</span>.<span class="hl-property">open</span>()
+  }
+
+  <span class="hl-variable">deselectNode</span>() {
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">classList</span>.<span class="hl-property">remove</span>(<span class="hl-string">"ProseMirror-selectednode"</span>)
+    <span class="hl-keyword">if</span> (<span class="hl-keyword">this</span>.<span class="hl-property">innerView</span>) <span class="hl-keyword">this</span>.<span class="hl-property">close</span>()
+  }
+</code></pre>
+<p>当选中的时候，我们需要做的是弹出一个小的子编辑器，它本身是一个 ProseMirror view，内容是节点的内容。在子编辑器中的 Transaction 被特殊的由父编辑器的 <code>dispatchInner</code> 方法处理。</p>
+<p>Mod-z 和 y 按键被绑定到 <em>父编辑器</em> 的 undo 和 redo 功能上。我们一会儿再来看它是如何做到的：</p>
+<pre><code class="language-javascript">  <span class="hl-variable">open</span>() {
+    <span class="hl-comment">// 附加一个 tooltip 到外部节点</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">tooltip</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">appendChild</span>(<span class="hl-variable">document</span>.<span class="hl-property">createElement</span>(<span class="hl-string">"div"</span>))
+    <span class="hl-variable-2">tooltip</span>.<span class="hl-property">className</span> <span class="hl-operator">=</span> <span class="hl-string">"footnote-tooltip"</span>
+    <span class="hl-comment">// 然后在其内添加一个子 ProseMirror 编辑器</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">innerView</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>(<span class="hl-variable-2">tooltip</span>, {
+      <span class="hl-comment">// 你可以用任何节点作为这个子编辑器的 doc 节点</span>
+      <span class="hl-property">state</span>: <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({
+        <span class="hl-property">doc</span>: <span class="hl-keyword">this</span>.<span class="hl-property">node</span>,
+        <span class="hl-property">plugins</span>: [<span class="hl-variable">keymap</span>({
+          <span class="hl-string hl-property">"Mod-z"</span>: () <span class="hl-operator">=&gt;</span> <span class="hl-variable">undo</span>(<span class="hl-keyword">this</span>.<span class="hl-property">outerView</span>.<span class="hl-property">state</span>, <span class="hl-keyword">this</span>.<span class="hl-property">outerView</span>.<span class="hl-property">dispatch</span>),
+          <span class="hl-string hl-property">"Mod-y"</span>: () <span class="hl-operator">=&gt;</span> <span class="hl-variable">redo</span>(<span class="hl-keyword">this</span>.<span class="hl-property">outerView</span>.<span class="hl-property">state</span>, <span class="hl-keyword">this</span>.<span class="hl-property">outerView</span>.<span class="hl-property">dispatch</span>)
+        })]
+      }),
+      <span class="hl-comment">// 魔法发生在这个地方</span>
+      <span class="hl-property">dispatchTransaction</span>: <span class="hl-keyword">this</span>.<span class="hl-property">dispatchInner</span>.<span class="hl-property">bind</span>(<span class="hl-keyword">this</span>),
+      <span class="hl-property">handleDOMEvents</span>: {
+        <span class="hl-property">mousedown</span>: () <span class="hl-operator">=&gt;</span> {
+          <span class="hl-comment">// 为了避免出现问题，当父编辑器 focus 的时候，脚注的编辑器也要 focus。</span>
+          <span class="hl-keyword">if</span> (<span class="hl-keyword">this</span>.<span class="hl-property">outerView</span>.<span class="hl-property">hasFocus</span>()) <span class="hl-keyword">this</span>.<span class="hl-property">innerView</span>.<span class="hl-property">focus</span>()
+        }
+      }
+    })
+  }
+
+  <span class="hl-variable">close</span>() {
+    <span class="hl-keyword">this</span>.<span class="hl-property">innerView</span>.<span class="hl-property">destroy</span>()
+    <span class="hl-keyword">this</span>.<span class="hl-property">innerView</span> <span class="hl-operator">=</span> <span class="hl-atom">null</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span>.<span class="hl-property">textContent</span> <span class="hl-operator">=</span> <span class="hl-string">""</span>
+  }
+</code></pre>
+<p>当子编辑器的内容改变的时候应该如何处理？我们可以仅仅是拿到内容，然后将在外部编辑器的脚注的内容给重置为该内容，但是这对于 undo 历史和协同编辑来说并不可行。</p>
+<p>一个更好的实现是简单的将自于子编辑器的 setps，加上合适的偏移位置，应用到外部文档中去。</p>
+<p>我们需要小心的处理 <a href="/docs/ref/#state.PluginSpec.appendTransaction">appended transactions</a>，同时需要能够处理来自外部编辑器的更新而不造成一个无限循环，
+下面代码也同样理解 transaction 的 <code>「fromOutside」</code> 的含义，会在它出现的时候不让其向外传播（冒泡）：</p>
+<pre><code class="language-javascript">  <span class="hl-variable">dispatchInner</span>(<span class="hl-variable">tr</span>) {
+    <span class="hl-keyword">let</span> {<span class="hl-def">state</span>, <span class="hl-def">transactions</span>} <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">innerView</span>.<span class="hl-property">state</span>.<span class="hl-property">applyTransaction</span>(<span class="hl-variable">tr</span>)
+    <span class="hl-keyword">this</span>.<span class="hl-property">innerView</span>.<span class="hl-property">updateState</span>(<span class="hl-variable-2">state</span>)
+
+    <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-variable">tr</span>.<span class="hl-property">getMeta</span>(<span class="hl-string">"fromOutside"</span>)) {
+      <span class="hl-keyword">let</span> <span class="hl-def">outerTr</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">outerView</span>.<span class="hl-property">state</span>.<span class="hl-property">tr</span>, <span class="hl-def">offsetMap</span> <span class="hl-operator">=</span> <span class="hl-variable">StepMap</span>.<span class="hl-property">offset</span>(<span class="hl-keyword">this</span>.<span class="hl-property">getPos</span>() <span class="hl-operator">+</span> <span class="hl-number">1</span>)
+      <span class="hl-keyword">for</span> (<span class="hl-keyword">let</span> <span class="hl-def">i</span> <span class="hl-operator">=</span> <span class="hl-number">0</span>; <span class="hl-variable-2">i</span> <span class="hl-operator">&lt;</span> <span class="hl-variable-2">transactions</span>.<span class="hl-property">length</span>; <span class="hl-variable-2">i</span><span class="hl-operator">++</span>) {
+        <span class="hl-keyword">let</span> <span class="hl-def">steps</span> <span class="hl-operator">=</span> <span class="hl-variable-2">transactions</span>[<span class="hl-variable-2">i</span>].<span class="hl-property">steps</span>
+        <span class="hl-keyword">for</span> (<span class="hl-keyword">let</span> <span class="hl-def">j</span> <span class="hl-operator">=</span> <span class="hl-number">0</span>; <span class="hl-variable-2">j</span> <span class="hl-operator">&lt;</span> <span class="hl-variable-2">steps</span>.<span class="hl-property">length</span>; <span class="hl-variable-2">j</span><span class="hl-operator">++</span>)
+          <span class="hl-variable-2">outerTr</span>.<span class="hl-property">step</span>(<span class="hl-variable-2">steps</span>[<span class="hl-variable-2">j</span>].<span class="hl-property">map</span>(<span class="hl-variable-2">offsetMap</span>))
+      }
+      <span class="hl-keyword">if</span> (<span class="hl-variable-2">outerTr</span>.<span class="hl-property">docChanged</span>) <span class="hl-keyword">this</span>.<span class="hl-property">outerView</span>.<span class="hl-property">dispatch</span>(<span class="hl-variable-2">outerTr</span>)
+    }
+  }
+</code></pre>
+<p>为了能够干净的处理来自外部编辑器的更新（比如协同编辑或者由外部编辑器处理的用户 undo 的一些操作的时候），node view 的 <a href="/docs/ref/#view.NodeView.update"><code>update</code></a>
+方法将会仔细的查看当前内容和节点内容的不同。它只替换掉发生变化的部分，尽可能的保证光标在原地不动：</p>
+<pre><code class="language-javascript">  <span class="hl-variable">update</span>(<span class="hl-variable">node</span>) {
+    <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-variable">node</span>.<span class="hl-property">sameMarkup</span>(<span class="hl-keyword">this</span>.<span class="hl-property">node</span>)) <span class="hl-keyword">return</span> <span class="hl-atom">false</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">node</span> <span class="hl-operator">=</span> <span class="hl-variable">node</span>
+    <span class="hl-keyword">if</span> (<span class="hl-keyword">this</span>.<span class="hl-property">innerView</span>) {
+      <span class="hl-keyword">let</span> <span class="hl-def">state</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">innerView</span>.<span class="hl-property">state</span>
+      <span class="hl-keyword">let</span> <span class="hl-def">start</span> <span class="hl-operator">=</span> <span class="hl-variable">node</span>.<span class="hl-property">content</span>.<span class="hl-property">findDiffStart</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">doc</span>.<span class="hl-property">content</span>)
+      <span class="hl-keyword">if</span> (<span class="hl-variable-2">start</span> <span class="hl-operator">!=</span> <span class="hl-atom">null</span>) {
+        <span class="hl-keyword">let</span> {<span class="hl-property">a</span>: <span class="hl-def">endA</span>, <span class="hl-property">b</span>: <span class="hl-def">endB</span>} <span class="hl-operator">=</span> <span class="hl-variable">node</span>.<span class="hl-property">content</span>.<span class="hl-property">findDiffEnd</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">doc</span>.<span class="hl-property">content</span>)
+        <span class="hl-keyword">let</span> <span class="hl-def">overlap</span> <span class="hl-operator">=</span> <span class="hl-variable-2">start</span> <span class="hl-operator">-</span> <span class="hl-variable">Math</span>.<span class="hl-property">min</span>(<span class="hl-variable-2">endA</span>, <span class="hl-variable-2">endB</span>)
+        <span class="hl-keyword">if</span> (<span class="hl-variable-2">overlap</span> <span class="hl-operator">&gt;</span> <span class="hl-number">0</span>) { <span class="hl-variable-2">endA</span> <span class="hl-operator">+=</span> <span class="hl-variable-2">overlap</span>; <span class="hl-variable-2">endB</span> <span class="hl-operator">+=</span> <span class="hl-variable-2">overlap</span> }
+        <span class="hl-keyword">this</span>.<span class="hl-property">innerView</span>.<span class="hl-property">dispatch</span>(
+          <span class="hl-variable-2">state</span>.<span class="hl-property">tr</span>
+            .<span class="hl-property">replace</span>(<span class="hl-variable-2">start</span>, <span class="hl-variable-2">endB</span>, <span class="hl-variable">node</span>.<span class="hl-property">slice</span>(<span class="hl-variable-2">start</span>, <span class="hl-variable-2">endA</span>))
+            .<span class="hl-property">setMeta</span>(<span class="hl-string">"fromOutside"</span>, <span class="hl-atom">true</span>))
+      }
+    }
+    <span class="hl-keyword">return</span> <span class="hl-atom">true</span>
+  }
+</code></pre>
+<p>最后，nodevidw 需要处理销毁事件，以及告诉外部编辑器应该处理哪些来自于 node view 的事件和变化：</p>
+<pre><code class="language-javascript">  <span class="hl-variable">destroy</span>() {
+    <span class="hl-keyword">if</span> (<span class="hl-keyword">this</span>.<span class="hl-property">innerView</span>) <span class="hl-keyword">this</span>.<span class="hl-property">close</span>()
+  }
+
+  <span class="hl-variable">stopEvent</span>(<span class="hl-variable">event</span>) {
+    <span class="hl-keyword">return</span> <span class="hl-keyword">this</span>.<span class="hl-property">innerView</span> <span class="hl-operator">&amp;&amp;</span> <span class="hl-keyword">this</span>.<span class="hl-property">innerView</span>.<span class="hl-property">dom</span>.<span class="hl-property">contains</span>(<span class="hl-variable">event</span>.<span class="hl-property">target</span>)
+  }
+
+  <span class="hl-variable">ignoreMutation</span>() { <span class="hl-keyword">return</span> <span class="hl-atom">true</span> }
+}
+</code></pre>
+<p>我们可以像下面这样启用 schema 和 node view，以创建一个真实编辑器：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">EditorState</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-state"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">DOMParser</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-model"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">EditorView</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-view"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">exampleSetup</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-example-setup"</span>
+
+<span class="hl-variable">window</span>.<span class="hl-property">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">EditorView</span>(<span class="hl-variable">document</span>.<span class="hl-property">querySelector</span>(<span class="hl-string">"#editor"</span>), {
+  <span class="hl-property">state</span>: <span class="hl-variable">EditorState</span>.<span class="hl-property">create</span>({
+    <span class="hl-property">doc</span>: <span class="hl-variable">DOMParser</span>.<span class="hl-property">fromSchema</span>(<span class="hl-variable">footnoteSchema</span>).<span class="hl-property">parse</span>(<span class="hl-variable">document</span>.<span class="hl-property">querySelector</span>(<span class="hl-string">"#content"</span>)),
+    <span class="hl-property">plugins</span>: <span class="hl-variable">exampleSetup</span>({<span class="hl-property">schema</span>: <span class="hl-variable">footnoteSchema</span>, <span class="hl-property">menuContent</span>: <span class="hl-variable">menu</span>.<span class="hl-property">fullMenu</span>})
+  }),
+  <span class="hl-property">nodeViews</span>: {
+    <span class="hl-property">footnote</span>(<span class="hl-def">node</span>, <span class="hl-def">view</span>, <span class="hl-def">getPos</span>) { <span class="hl-keyword">return</span> <span class="hl-keyword">new</span> <span class="hl-variable">FootnoteView</span>(<span class="hl-variable-2">node</span>, <span class="hl-variable-2">view</span>, <span class="hl-variable-2">getPos</span>) }
+  }
+})
+</code></pre>
+<link rel=stylesheet href="../../css/editor.css">
+<script src="../prosemirror.js"></script>
+<script src="example.js"></script></article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>

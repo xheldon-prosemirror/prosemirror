@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror 内嵌编辑器示例</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" class=active>示例</a>
+      <a href="/docs/" >文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><article><link rel="stylesheet" href="../../css/codemirror.css">
+<h1>嵌入一个代码编辑器</h1>
+<p>某些节点以一个编辑器内嵌的文档节点来表示可能会比较有用，比如代码块、数学公式，或者甚至是图片，以展示专门针对此类节点的自定义控制组件。
+<a href="/docs/ref/#view.NodeView">Node views</a> 就是 ProseMirror 用来实现此类效果的一个 feature。</p>
+<p>将 node view 和 keymap 放到一个编辑器中的效果就像下面这样：</p>
+<div id="editor"></div>
+<div id="content" style="display: none">
+<h3>这个代码块是一个代码编辑器</h3>
+<p>当前编辑器封装了将代码块渲染为代码编辑器 <a href="http://codemirror.net">CodeMirror</a> 的实例，CodeMirror 提供了语法高亮，自动缩进等功能。</p>
+<pre>function max(a, b) {
+  return a &gt; b ? a : b
+}</pre>
+<p>代码编辑器的内容与在富文本编辑器中代码块节点的内容保持同步，这样一来你编辑代码就好像直接在编辑外部的富文本编辑器的内容一样</p>
+</div>
+<style>
+  .CodeMirror {
+    border: 1px solid #eee;
+    height: auto;
+  }
+  .CodeMirror pre { white-space: pre !important }
+</style>
+<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+<p>在这个示例中，我们设置了一个代码块，它们在 <a href="/docs/ref/#schema-basic">basic schema</a> 中已经提供了。
+它被渲染成一个 <a href="http://codemirror.net">CodeMirror</a> 的实例，也即一个代码编辑器组件。大致思路与 <a href="../footnote/">footnote example</a> 类似，
+不过区别是代码块不用用户选择某个节点，它总是会显示出来。</p>
+<p>将 CodeMirror 放到 ProseMirror 的 node view 中的适配代码其实有点复杂，因为我们需要在两种不同文档中相互转换--ProseMirror 的树状文档与 CodeMirror 的纯文本文档：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> <span class="hl-def">CodeMirror</span> <span class="hl-keyword">from</span> <span class="hl-string">"codemirror"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">exitCode</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-commands"</span>
+<span class="hl-keyword">import</span> {<span class="hl-def">undo</span>, <span class="hl-def">redo</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-history"</span>
+
+<span class="hl-keyword">class</span> <span class="hl-def">CodeBlockView</span> {
+  <span class="hl-property">constructor</span>(<span class="hl-def">node</span>, <span class="hl-def">view</span>, <span class="hl-def">getPos</span>) {
+    <span class="hl-comment">// Store for later</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">node</span> <span class="hl-operator">=</span> <span class="hl-variable-2">node</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">view</span> <span class="hl-operator">=</span> <span class="hl-variable-2">view</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">getPos</span> <span class="hl-operator">=</span> <span class="hl-variable-2">getPos</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">incomingChanges</span> <span class="hl-operator">=</span> <span class="hl-atom">false</span>
+
+    <span class="hl-comment">// 新建一个 CodeMirror 实例</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">cm</span> <span class="hl-operator">=</span> <span class="hl-keyword">new</span> <span class="hl-variable">CodeMirror</span>(<span class="hl-atom">null</span>, {
+      <span class="hl-property">value</span>: <span class="hl-keyword">this</span>.<span class="hl-property">node</span>.<span class="hl-property">textContent</span>,
+      <span class="hl-property">lineNumbers</span>: <span class="hl-atom">true</span>,
+      <span class="hl-property">extraKeys</span>: <span class="hl-keyword">this</span>.<span class="hl-property">codeMirrorKeymap</span>()
+    })
+
+    <span class="hl-comment">// 代码编辑器的最外层节点是就是我们代码块的的 DOM 节点</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">dom</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">getWrapperElement</span>()
+    <span class="hl-comment">// CodeMirror 需要在 DOM 中被合适的初始化，因此设置个定时器让它更新自身</span>
+    <span class="hl-variable">setTimeout</span>(() <span class="hl-operator">=&gt;</span> <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">refresh</span>(), <span class="hl-number">20</span>)
+    <span class="hl-comment">// 这个标记用来避免在外部编辑器和内部编辑器之间的循环更新</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">updating</span> <span class="hl-operator">=</span> <span class="hl-atom">false</span>
+    <span class="hl-comment">// 追踪是否改变已经发生，但是还没有传递出去</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">on</span>(<span class="hl-string">"beforeChange"</span>, () <span class="hl-operator">=&gt;</span> <span class="hl-keyword">this</span>.<span class="hl-property">incomingChanges</span> <span class="hl-operator">=</span> <span class="hl-atom">true</span>)
+    <span class="hl-comment">// 将代码编辑器的更新传递给外层的 ProseMirror</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">on</span>(<span class="hl-string">"cursorActivity"</span>, () <span class="hl-operator">=&gt;</span> {
+      <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-keyword">this</span>.<span class="hl-property">updating</span> <span class="hl-operator">&amp;&amp;</span> <span class="hl-operator">!</span><span class="hl-keyword">this</span>.<span class="hl-property">incomingChanges</span>) <span class="hl-keyword">this</span>.<span class="hl-property">forwardSelection</span>()
+    })
+    <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">on</span>(<span class="hl-string">"changes"</span>, () <span class="hl-operator">=&gt;</span> {
+      <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-keyword">this</span>.<span class="hl-property">updating</span>) {
+        <span class="hl-keyword">this</span>.<span class="hl-property">valueChanged</span>()
+        <span class="hl-keyword">this</span>.<span class="hl-property">forwardSelection</span>()
+      }
+      <span class="hl-keyword">this</span>.<span class="hl-property">incomingChanges</span> <span class="hl-operator">=</span> <span class="hl-atom">false</span>
+    })
+    <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">on</span>(<span class="hl-string">"focus"</span>, () <span class="hl-operator">=&gt;</span> <span class="hl-keyword">this</span>.<span class="hl-property">forwardSelection</span>())
+  }
+</code></pre>
+<p>当代码编辑器被 focus 的时候，我们可以将外部编辑器的选区与内部的代码编辑器选区保持同步，这样我们在外部编辑器执行任何命令的话就能看到一个正确的选区：</p>
+<pre><code class="language-javascript">  <span class="hl-variable">forwardSelection</span>() {
+    <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">hasFocus</span>()) <span class="hl-keyword">return</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">state</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">view</span>.<span class="hl-property">state</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">selection</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">asProseMirrorSelection</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">doc</span>)
+    <span class="hl-keyword">if</span> (<span class="hl-operator">!</span><span class="hl-variable-2">selection</span>.<span class="hl-property">eq</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">selection</span>))
+      <span class="hl-keyword">this</span>.<span class="hl-property">view</span>.<span class="hl-property">dispatch</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">tr</span>.<span class="hl-property">setSelection</span>(<span class="hl-variable-2">selection</span>))
+  }
+</code></pre>
+<p>辅助函数负责将 CodeMirror 的选区转换成 ProseMirror 的选区。因为 CodeMirror 使用一个基于行/列的索引系统，因此 <code>indexFromPos</code> 被用来将其转换成 ProseMirror 的字符索引：</p>
+<pre><code class="language-javascript">  <span class="hl-variable">asProseMirrorSelection</span>(<span class="hl-variable">doc</span>) {
+    <span class="hl-keyword">let</span> <span class="hl-def">offset</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">getPos</span>() <span class="hl-operator">+</span> <span class="hl-number">1</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">anchor</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">indexFromPos</span>(<span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">getCursor</span>(<span class="hl-string">"anchor"</span>)) <span class="hl-operator">+</span> <span class="hl-variable-2">offset</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">head</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">indexFromPos</span>(<span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">getCursor</span>(<span class="hl-string">"head"</span>)) <span class="hl-operator">+</span> <span class="hl-variable-2">offset</span>
+    <span class="hl-keyword">return</span> <span class="hl-variable">TextSelection</span>.<span class="hl-property">create</span>(<span class="hl-variable">doc</span>, <span class="hl-variable-2">anchor</span>, <span class="hl-variable-2">head</span>)
+  }
+</code></pre>
+<p>选区也可以以另一种方式同步，比如将 ProseMirror 的选区转换成 CodeMirror 的选区，这时要使用 <a href="/docs/ref/#view.NodeView.setSelection"><code>setSelection</code></a> 方法来实现：</p>
+<pre><code class="language-javascript">  <span class="hl-variable">setSelection</span>(<span class="hl-variable">anchor</span>, <span class="hl-variable">head</span>) {
+    <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">focus</span>()
+    <span class="hl-keyword">this</span>.<span class="hl-property">updating</span> <span class="hl-operator">=</span> <span class="hl-atom">true</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">setSelection</span>(<span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">posFromIndex</span>(<span class="hl-variable">anchor</span>),
+                         <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">posFromIndex</span>(<span class="hl-variable">head</span>))
+    <span class="hl-keyword">this</span>.<span class="hl-property">updating</span> <span class="hl-operator">=</span> <span class="hl-atom">false</span>
+  }
+</code></pre>
+<p>当代码编辑器的内容发生变化的时候，在 node view 的构造函数中注册了该变化的事件处理函数将会被调用。
+它将会对代码块节点的当前值和编辑器中的值进行比较，如果有不同，则会 dispatch 一个 transaction：</p>
+<pre><code class="language-javascript">  <span class="hl-variable">valueChanged</span>() {
+    <span class="hl-keyword">let</span> <span class="hl-def">change</span> <span class="hl-operator">=</span> <span class="hl-variable">computeChange</span>(<span class="hl-keyword">this</span>.<span class="hl-property">node</span>.<span class="hl-property">textContent</span>, <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">getValue</span>())
+    <span class="hl-keyword">if</span> (<span class="hl-variable-2">change</span>) {
+      <span class="hl-keyword">let</span> <span class="hl-def">start</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">getPos</span>() <span class="hl-operator">+</span> <span class="hl-number">1</span>
+      <span class="hl-keyword">let</span> <span class="hl-def">tr</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">view</span>.<span class="hl-property">state</span>.<span class="hl-property">tr</span>.<span class="hl-property">replaceWith</span>(
+        <span class="hl-variable-2">start</span> <span class="hl-operator">+</span> <span class="hl-variable-2">change</span>.<span class="hl-property">from</span>, <span class="hl-variable-2">start</span> <span class="hl-operator">+</span> <span class="hl-variable-2">change</span>.<span class="hl-property">to</span>,
+        <span class="hl-variable-2">change</span>.<span class="hl-property">text</span> <span class="hl-operator">?</span> <span class="hl-variable">schema</span>.<span class="hl-property">text</span>(<span class="hl-variable-2">change</span>.<span class="hl-property">text</span>) : <span class="hl-atom">null</span>)
+      <span class="hl-keyword">this</span>.<span class="hl-property">view</span>.<span class="hl-property">dispatch</span>(<span class="hl-variable-2">tr</span>)
+    }
+  }
+</code></pre>
+<p>像这样的嵌套编辑器，比较棘手的地方是处理光标在内部编辑器边缘移动的情况。node view 必须允许用户能够将光标移出代码编辑器。
+为了实现这个目的，它设置了一个按键映射以绑定方向键处理函数，以检查是否用户进一步的操作将会「脱离」代码编辑器的控制，如果是的话，返回这个选区，然后 focus 外部编辑器。</p>
+<p>上述的按键映射也同样绑定了撤销和重做，外部编辑器将会处理该事件。对于 ctrl-enter 按键来说，在 ProseMirror 的基础按键绑定中，将会在代码块后面创建一个新的段落节点。</p>
+<pre><code class="language-javascript">  <span class="hl-variable">codeMirrorKeymap</span>() {
+    <span class="hl-keyword">let</span> <span class="hl-def">view</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">view</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">mod</span> <span class="hl-operator">=</span> <span class="hl-string-2">/Mac/</span>.<span class="hl-property">test</span>(<span class="hl-variable">navigator</span>.<span class="hl-property">platform</span>) <span class="hl-operator">?</span> <span class="hl-string">"Cmd"</span> : <span class="hl-string">"Ctrl"</span>
+    <span class="hl-keyword">return</span> <span class="hl-variable">CodeMirror</span>.<span class="hl-property">normalizeKeyMap</span>({
+      <span class="hl-property">Up</span>: () <span class="hl-operator">=&gt;</span> <span class="hl-keyword">this</span>.<span class="hl-property">maybeEscape</span>(<span class="hl-string">"line"</span>, <span class="hl-operator">-</span><span class="hl-number">1</span>),
+      <span class="hl-property">Left</span>: () <span class="hl-operator">=&gt;</span> <span class="hl-keyword">this</span>.<span class="hl-property">maybeEscape</span>(<span class="hl-string">"char"</span>, <span class="hl-operator">-</span><span class="hl-number">1</span>),
+      <span class="hl-property">Down</span>: () <span class="hl-operator">=&gt;</span> <span class="hl-keyword">this</span>.<span class="hl-property">maybeEscape</span>(<span class="hl-string">"line"</span>, <span class="hl-number">1</span>),
+      <span class="hl-property">Right</span>: () <span class="hl-operator">=&gt;</span> <span class="hl-keyword">this</span>.<span class="hl-property">maybeEscape</span>(<span class="hl-string">"char"</span>, <span class="hl-number">1</span>),
+      <span class="hl-string hl-property">"Ctrl-Enter"</span>: () <span class="hl-operator">=&gt;</span> {
+        <span class="hl-keyword">if</span> (<span class="hl-variable">exitCode</span>(<span class="hl-variable-2">view</span>.<span class="hl-property">state</span>, <span class="hl-variable-2">view</span>.<span class="hl-property">dispatch</span>)) <span class="hl-variable-2">view</span>.<span class="hl-property">focus</span>()
+      },
+      [<span class="hl-string-2">`${</span><span class="hl-variable-2">mod</span><span class="hl-string-2">}</span><span class="hl-string-2">-Z`</span>]: () <span class="hl-operator">=&gt;</span> <span class="hl-variable">undo</span>(<span class="hl-variable-2">view</span>.<span class="hl-property">state</span>, <span class="hl-variable-2">view</span>.<span class="hl-property">dispatch</span>),
+      [<span class="hl-string-2">`Shift-${</span><span class="hl-variable-2">mod</span><span class="hl-string-2">}</span><span class="hl-string-2">-Z`</span>]: () <span class="hl-operator">=&gt;</span> <span class="hl-variable">redo</span>(<span class="hl-variable-2">view</span>.<span class="hl-property">state</span>, <span class="hl-variable-2">view</span>.<span class="hl-property">dispatch</span>),
+      [<span class="hl-string-2">`${</span><span class="hl-variable-2">mod</span><span class="hl-string-2">}</span><span class="hl-string-2">-Y`</span>]: () <span class="hl-operator">=&gt;</span> <span class="hl-variable">redo</span>(<span class="hl-variable-2">view</span>.<span class="hl-property">state</span>, <span class="hl-variable-2">view</span>.<span class="hl-property">dispatch</span>),
+    })
+  }
+
+  <span class="hl-variable">maybeEscape</span>(<span class="hl-variable">unit</span>, <span class="hl-variable">dir</span>) {
+    <span class="hl-keyword">let</span> <span class="hl-def">pos</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">getCursor</span>()
+    <span class="hl-keyword">if</span> (<span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">somethingSelected</span>() <span class="hl-operator">||</span>
+        <span class="hl-variable-2">pos</span>.<span class="hl-property">line</span> <span class="hl-operator">!=</span> (<span class="hl-variable">dir</span> <span class="hl-operator">&lt;</span> <span class="hl-number">0</span> <span class="hl-operator">?</span> <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">firstLine</span>() : <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">lastLine</span>()) <span class="hl-operator">||</span>
+        (<span class="hl-variable">unit</span> <span class="hl-operator">==</span> <span class="hl-string">"char"</span> <span class="hl-operator">&amp;&amp;</span>
+         <span class="hl-variable-2">pos</span>.<span class="hl-property">ch</span> <span class="hl-operator">!=</span> (<span class="hl-variable">dir</span> <span class="hl-operator">&lt;</span> <span class="hl-number">0</span> <span class="hl-operator">?</span> <span class="hl-number">0</span> : <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">getLine</span>(<span class="hl-variable-2">pos</span>.<span class="hl-property">line</span>).<span class="hl-property">length</span>)))
+      <span class="hl-keyword">return</span> <span class="hl-variable">CodeMirror</span>.<span class="hl-property">Pass</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">view</span>.<span class="hl-property">focus</span>()
+    <span class="hl-keyword">let</span> <span class="hl-def">targetPos</span> <span class="hl-operator">=</span> <span class="hl-keyword">this</span>.<span class="hl-property">getPos</span>() <span class="hl-operator">+</span> (<span class="hl-variable">dir</span> <span class="hl-operator">&lt;</span> <span class="hl-number">0</span> <span class="hl-operator">?</span> <span class="hl-number">0</span> : <span class="hl-keyword">this</span>.<span class="hl-property">node</span>.<span class="hl-property">nodeSize</span>)
+    <span class="hl-keyword">let</span> <span class="hl-def">selection</span> <span class="hl-operator">=</span> <span class="hl-variable">Selection</span>.<span class="hl-property">near</span>(<span class="hl-keyword">this</span>.<span class="hl-property">view</span>.<span class="hl-property">state</span>.<span class="hl-property">doc</span>.<span class="hl-property">resolve</span>(<span class="hl-variable-2">targetPos</span>), <span class="hl-variable">dir</span>)
+    <span class="hl-keyword">this</span>.<span class="hl-property">view</span>.<span class="hl-property">dispatch</span>(<span class="hl-keyword">this</span>.<span class="hl-property">view</span>.<span class="hl-property">state</span>.<span class="hl-property">tr</span>.<span class="hl-property">setSelection</span>(<span class="hl-variable-2">selection</span>).<span class="hl-property">scrollIntoView</span>())
+    <span class="hl-keyword">this</span>.<span class="hl-property">view</span>.<span class="hl-property">focus</span>()
+  }
+</code></pre>
+<p>当一个代码编辑器中的内容更新的时候，比如做了一个撤销操作，我们在某种程度上需要去做一些与这些 <code>valueChanges（值变化）</code> 相反的操作（译者注：即添加的要被删除掉，删除的要被添加上等），
+即检查文本变化，如果发生了变化，将这些变化从外部编辑器传递到内部编辑器（译者注：即当修改了内部代码编辑器的内容后，按撤销的时候，ProseMirror 需要将修改反转的变化同步到 CodeMirror ）：</p>
+<pre><code class="language-javascript">  <span class="hl-variable">update</span>(<span class="hl-variable">node</span>) {
+    <span class="hl-keyword">if</span> (<span class="hl-variable">node</span>.<span class="hl-property">type</span> <span class="hl-operator">!=</span> <span class="hl-keyword">this</span>.<span class="hl-property">node</span>.<span class="hl-property">type</span>) <span class="hl-keyword">return</span> <span class="hl-atom">false</span>
+    <span class="hl-keyword">this</span>.<span class="hl-property">node</span> <span class="hl-operator">=</span> <span class="hl-variable">node</span>
+    <span class="hl-keyword">let</span> <span class="hl-def">change</span> <span class="hl-operator">=</span> <span class="hl-variable">computeChange</span>(<span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">getValue</span>(), <span class="hl-variable">node</span>.<span class="hl-property">textContent</span>)
+    <span class="hl-keyword">if</span> (<span class="hl-variable-2">change</span>) {
+      <span class="hl-keyword">this</span>.<span class="hl-property">updating</span> <span class="hl-operator">=</span> <span class="hl-atom">true</span>
+      <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">replaceRange</span>(<span class="hl-variable-2">change</span>.<span class="hl-property">text</span>, <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">posFromIndex</span>(<span class="hl-variable-2">change</span>.<span class="hl-property">from</span>),
+                           <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">posFromIndex</span>(<span class="hl-variable-2">change</span>.<span class="hl-property">to</span>))
+      <span class="hl-keyword">this</span>.<span class="hl-property">updating</span> <span class="hl-operator">=</span> <span class="hl-atom">false</span>
+    }
+    <span class="hl-keyword">return</span> <span class="hl-atom">true</span>
+  }
+</code></pre>
+<p><code>updating</code> 属性用来禁用在代码编辑器上的事件处理函数：</p>
+<pre><code class="language-javascript">
+  <span class="hl-variable">selectNode</span>() { <span class="hl-keyword">this</span>.<span class="hl-property">cm</span>.<span class="hl-property">focus</span>() }
+  <span class="hl-variable">stopEvent</span>() { <span class="hl-keyword">return</span> <span class="hl-atom">true</span> }
+}
+</code></pre>
+<p><code>computeChange</code> 用来比较两个字符串，寻找他们之间的最小差异，就像下面这样：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">function</span> <span class="hl-def">computeChange</span>(<span class="hl-def">oldVal</span>, <span class="hl-def">newVal</span>) {
+  <span class="hl-keyword">if</span> (<span class="hl-variable-2">oldVal</span> <span class="hl-operator">==</span> <span class="hl-variable-2">newVal</span>) <span class="hl-keyword">return</span> <span class="hl-atom">null</span>
+  <span class="hl-keyword">let</span> <span class="hl-def">start</span> <span class="hl-operator">=</span> <span class="hl-number">0</span>, <span class="hl-def">oldEnd</span> <span class="hl-operator">=</span> <span class="hl-variable-2">oldVal</span>.<span class="hl-property">length</span>, <span class="hl-def">newEnd</span> <span class="hl-operator">=</span> <span class="hl-variable-2">newVal</span>.<span class="hl-property">length</span>
+  <span class="hl-keyword">while</span> (<span class="hl-variable-2">start</span> <span class="hl-operator">&lt;</span> <span class="hl-variable-2">oldEnd</span> <span class="hl-operator">&amp;&amp;</span> <span class="hl-variable-2">oldVal</span>.<span class="hl-property">charCodeAt</span>(<span class="hl-variable-2">start</span>) <span class="hl-operator">==</span> <span class="hl-variable-2">newVal</span>.<span class="hl-property">charCodeAt</span>(<span class="hl-variable-2">start</span>)) <span class="hl-operator">++</span><span class="hl-variable-2">start</span>
+  <span class="hl-keyword">while</span> (<span class="hl-variable-2">oldEnd</span> <span class="hl-operator">&gt;</span> <span class="hl-variable-2">start</span> <span class="hl-operator">&amp;&amp;</span> <span class="hl-variable-2">newEnd</span> <span class="hl-operator">&gt;</span> <span class="hl-variable-2">start</span> <span class="hl-operator">&amp;&amp;</span>
+         <span class="hl-variable-2">oldVal</span>.<span class="hl-property">charCodeAt</span>(<span class="hl-variable-2">oldEnd</span> <span class="hl-operator">-</span> <span class="hl-number">1</span>) <span class="hl-operator">==</span> <span class="hl-variable-2">newVal</span>.<span class="hl-property">charCodeAt</span>(<span class="hl-variable-2">newEnd</span> <span class="hl-operator">-</span> <span class="hl-number">1</span>)) { <span class="hl-variable-2">oldEnd</span><span class="hl-operator">--</span>; <span class="hl-variable-2">newEnd</span><span class="hl-operator">--</span> }
+  <span class="hl-keyword">return</span> {<span class="hl-property">from</span>: <span class="hl-variable-2">start</span>, <span class="hl-property">to</span>: <span class="hl-variable-2">oldEnd</span>, <span class="hl-property">text</span>: <span class="hl-variable-2">newVal</span>.<span class="hl-property">slice</span>(<span class="hl-variable-2">start</span>, <span class="hl-variable-2">newEnd</span>)}
+}
+</code></pre>
+<p>它从字符串的开始迭代寻找，一直到结尾，直到找到一个不同之处，然后返回返回一个对象，含有改变的起始位置，终止位置以及替换的文本，或者 <code>null</code>，表示没有变化。</p>
+<p>处理从外部编辑器到内部代码编辑器的光标的移动必须由外部编辑器通过按键映射完成。<code>arrowHandler</code> 函数使用 <a href="/docs/ref/#view.EditorView.endOfTextblock"><code>endOfTextblock</code> 方法</a> ，以一种受 bidi 文本影响的方式，决定光标是否在给定文本 block 的末尾。如果是的话，并且下一个 block 是代码块，则光标就会被移动到代码块内（译者注：bidi 影响文本的书写方向，因此影响光标是否在文本块的结尾的判断，ProseMirror 处理了这种情况）：</p>
+<pre><code class="language-javascript"><span class="hl-keyword">import</span> {<span class="hl-def">keymap</span>} <span class="hl-keyword">from</span> <span class="hl-string">"prosemirror-keymap"</span>
+
+<span class="hl-keyword">function</span> <span class="hl-def">arrowHandler</span>(<span class="hl-def">dir</span>) {
+  <span class="hl-keyword">return</span> (<span class="hl-def">state</span>, <span class="hl-def">dispatch</span>, <span class="hl-def">view</span>) <span class="hl-operator">=&gt;</span> {
+    <span class="hl-keyword">if</span> (<span class="hl-variable-2">state</span>.<span class="hl-property">selection</span>.<span class="hl-property">empty</span> <span class="hl-operator">&amp;&amp;</span> <span class="hl-variable-2">view</span>.<span class="hl-property">endOfTextblock</span>(<span class="hl-variable-2">dir</span>)) {
+      <span class="hl-keyword">let</span> <span class="hl-def">side</span> <span class="hl-operator">=</span> <span class="hl-variable-2">dir</span> <span class="hl-operator">==</span> <span class="hl-string">"left"</span> <span class="hl-operator">||</span> <span class="hl-variable-2">dir</span> <span class="hl-operator">==</span> <span class="hl-string">"up"</span> <span class="hl-operator">?</span> <span class="hl-operator">-</span><span class="hl-number">1</span> : <span class="hl-number">1</span>, <span class="hl-def">$head</span> <span class="hl-operator">=</span> <span class="hl-variable-2">state</span>.<span class="hl-property">selection</span>.<span class="hl-property">$head</span>
+      <span class="hl-keyword">let</span> <span class="hl-def">nextPos</span> <span class="hl-operator">=</span> <span class="hl-variable">Selection</span>.<span class="hl-property">near</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">doc</span>.<span class="hl-property">resolve</span>(<span class="hl-variable-2">side</span> <span class="hl-operator">&gt;</span> <span class="hl-number">0</span> <span class="hl-operator">?</span> <span class="hl-variable-2">$head</span>.<span class="hl-property">after</span>() : <span class="hl-variable-2">$head</span>.<span class="hl-property">before</span>()), <span class="hl-variable-2">side</span>)
+      <span class="hl-keyword">if</span> (<span class="hl-variable-2">nextPos</span>.<span class="hl-property">$head</span> <span class="hl-operator">&amp;&amp;</span> <span class="hl-variable-2">nextPos</span>.<span class="hl-property">$head</span>.<span class="hl-property">parent</span>.<span class="hl-property">type</span>.<span class="hl-property">name</span> <span class="hl-operator">==</span> <span class="hl-string">"code_block"</span>) {
+        <span class="hl-variable-2">dispatch</span>(<span class="hl-variable-2">state</span>.<span class="hl-property">tr</span>.<span class="hl-property">setSelection</span>(<span class="hl-variable-2">nextPos</span>))
+        <span class="hl-keyword">return</span> <span class="hl-atom">true</span>
+      }
+    }
+    <span class="hl-keyword">return</span> <span class="hl-atom">false</span>
+  }
+}
+
+<span class="hl-keyword">const</span> <span class="hl-def">arrowHandlers</span> <span class="hl-operator">=</span> <span class="hl-variable">keymap</span>({
+  <span class="hl-property">ArrowLeft</span>: <span class="hl-variable">arrowHandler</span>(<span class="hl-string">"left"</span>),
+  <span class="hl-property">ArrowRight</span>: <span class="hl-variable">arrowHandler</span>(<span class="hl-string">"right"</span>),
+  <span class="hl-property">ArrowUp</span>: <span class="hl-variable">arrowHandler</span>(<span class="hl-string">"up"</span>),
+  <span class="hl-property">ArrowDown</span>: <span class="hl-variable">arrowHandler</span>(<span class="hl-string">"down"</span>)
+})
+</code></pre>
+<link rel=stylesheet href="../../css/editor.css">
+<script src="../prosemirror.js"></script>
+<script src="example.js"></script></article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>
