@@ -22,7 +22,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Install Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
       
       - name: Install Yarn
         run: |
