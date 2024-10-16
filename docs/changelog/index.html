@@ -1,0 +1,1927 @@
+<!doctype html>
+<html lang=en-US>
+<meta charset=utf8>
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>ProseMirror Changelog</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel=stylesheet href=/css/site.css>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-79359216-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-79359216-2');
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5486286026923411"
+     crossorigin="anonymous"></script>
+<script async src="https://fundingchoicesmessages.google.com/i/pub-5486286026923411?ers=1" nonce="wfbcB_BXTEc885VHCZEEPg"></script><script nonce="wfbcB_BXTEc885VHCZEEPg">(function() {function signalGooglefcPresent() {if (!window.frames['googlefcPresent']) {if (document.body) {const iframe = document.createElement('iframe'); iframe.style = 'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;'; iframe.style.display = 'none'; iframe.name = 'googlefcPresent'; document.body.appendChild(iframe);} else {setTimeout(signalGooglefcPresent, 0);}}}signalGooglefcPresent();})();</script>
+
+<header >
+  <nav>
+    <a class=logo href="/">ProseMirror</a>
+    <div class=navlinks><a href="/examples/" >示例</a>
+      <a href="/docs/" class=active>文档</a>
+      <a href="https://discuss.prosemirror.net/">论坛</a>
+      <a href="https://github.com/prosemirror">GitHub</a>
+      <a href="https://twitter.com/prosemirror">Twitter</a>
+      <a href="https://github.com/Xheldon">译者</a>
+    </div>
+  </nav></header><article><h2>Version Changelog</h2><h3><a href="../ref/#commands">prosemirror-commands</a> 1.1.9 (2021-06-07)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a regression where <code>splitBlock</code> could crash when splitting at the end of a non-default block.</p>
+<h3><a href="../ref/#dropcursor">prosemirror-dropcursor</a> 1.3.5 (2021-05-25)</h3>
+<h4>Bug fixes</h4>
+<p>Avoid a crash that happened when the document shrank during dragging.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.1.8 (2021-05-22)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash in <code>splitBlock</code> that occurred with certain types of schemas.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.18.7 (2021-05-20)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug where clicking on a textblock that had a node-selected parent didn't set a cursor selection.</p>
+<p>Fix a bug that caused a workaround for a Chrome Android issue to not work correctly, leading to bad cursor placement after some types of text input.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.18.6 (2021-05-17)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash in mouse click handling introduced in the previous version.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.18.5 (2021-05-17)</h3>
+<h4>Bug fixes</h4>
+<p>Work around a Firefox bug where backspace sometimes deletes the node after the cursor.</p>
+<p>Fix a bug that prevented <code>transformPasted</code> hooks from being called on content dragged within the editor.</p>
+<p>Fixes an issue where clicking near a node or other special selection on Chrome would in some cases do nothing.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.18.4 (2021-04-27)</h3>
+<h4>Bug fixes</h4>
+<p>Fix incorrect drag cursor in Chrome on some platforms.</p>
+<p>Fix an issue where a race condition could leave a node uneditable when clicked.</p>
+<p>Fix scroll handling when the editor is placed through a DOM component slot.</p>
+<p>Fix a typo in the Chrome backspace workaround.</p>
+<p>Fixes an issue where, when mouseup events weren't being delivered, the editor could leak event handlers.</p>
+<h3><a href="../ref/#test-builder">prosemirror-test-builder</a> 1.0.4 (2021-04-27)</h3>
+<h4>Bug fixes</h4>
+<p>Treat ProseMirror libraries as peer dependencies, to avoid duplicate libraries when using this.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.14.1 (2021-04-26)</h3>
+<h4>Bug fixes</h4>
+<p>DOM parsing with <code>preserveWhitespace: "full"</code> will no longer ignore whitespace-only nodes.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.18.3 (2021-04-13)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where, when pressing enter or space at the start of a composition, the cursor would jump to the end of the composition on Chrome Android.</p>
+<p>Fix an issue that would cause Enter presses to be dropped on Android when in a node whose DOM representation nested more than one element.</p>
+<p>Fix a bug where pasting specific types of HTML could cause a crash.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.14.0 (2021-04-06)</h3>
+<h4>Bug fixes</h4>
+<p><code>Node.check</code> will now error if a node has an invalid combination of marks.</p>
+<p>Don't leave carriage return characters in parsed DOM content, since they confuse Chrome's cursor motion.</p>
+<h4>New features</h4>
+<p><code>Fragment.textBetween</code> is now public.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.3.2 (2021-04-06)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a regression in <code>dropPoint</code> that caused it to dereference undefined in some circumstances.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.3.1 (2021-04-01)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash in <code>Transform.replaceRange</code> when called with under specific circumstances.</p>
+<p>Fix an issue where <code>dropPoint</code> could return an invalid drop point.</p>
+<h3><a href="../ref/#dropcursor">prosemirror-dropcursor</a> 1.3.4 (2021-04-01)</h3>
+<h4>Bug fixes</h4>
+<p>Hide the drop cursor when <code>dropPoint</code> doesn't return a position.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.3.0 (2021-03-31)</h3>
+<h4>New features</h4>
+<p>The various properties of subclasses of <code>Step</code> (<code>ReplaceStep</code>, <code>ReplaceAroundStep</code>, <code>AddMarkStep</code>, and <code>RemoveMarkStep</code>) are now part of the public interface.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.18.2 (2021-03-25)</h3>
+<h4>Bug fixes</h4>
+<p>Properly handle CSS class name strings with extra spaces in decorations.</p>
+<p>Fix a performance bug when updating nodes with thousands of children.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.18.1 (2021-03-15)</h3>
+<h4>Bug fixes</h4>
+<p>Fix the scrolling-into-view logic in the case where a scale transformation is applied to the editor. Strip carriage return chars from text pasted as code</p>
+<p>Remove carriage return characters when pasting text into code blocks.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.18.0 (2021-03-04)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash in <code>posAtDOM</code>.</p>
+<h4>New features</h4>
+<p>Node view constructors and <code>update</code> methods are now passed the inner decorations of the node.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.17.8 (2021-02-26)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where some user actions (such as enter on iOS) in a node whose content DOM element isn't it's top element could leave the DOM in a damaged state.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.17.7 (2021-02-22)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where the <code>ProseMirror-hideselection</code> element class would be briefly removed and then restored when moving from one invisible selection to another.</p>
+<p>Fix an issue where the cursor could end up on the wrong side of a widget with <code>side</code> &lt; 0.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.1.7 (2021-02-22)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a regression where <code>createParagraphNear</code> no longer fired for gap cursor selections.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.2.12 (2021-02-20)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug where merging replace steps with the <code>structure</code> flag could create steps that couldn't be applied.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.17.6 (2021-02-11)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where using the vertical arrow keys after select-all didn't update the selection.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.1.6 (2021-02-10)</h3>
+<h4>Bug fixes</h4>
+<p>Improve behavior of enter when the entire document is selected.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.2.11 (2021-02-06)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue in <code>Transform.removeMark</code> where the mark type was passed through to be removed instead of the mark itself.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.2.10 (2021-02-05)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where <code>Transform.removeMark</code>, when given a mark type, would only remove the first instance from nodes that had multiple marks of the type.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.17.5 (2021-02-05)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where the view could go into an endless DOM flush loop in specific circumstances involving asynchronous DOM mutation.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.13.3 (2021-02-04)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where nested tags that match mark parser rules could cause the parser to apply marks in invalid places.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.13.2 (2021-02-04)</h3>
+<h4>Bug fixes</h4>
+<p><code>MarkType.removeFromSet</code> now removes all instances of the mark, not just the first one.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.17.4 (2021-02-04)</h3>
+<h4>Bug fixes</h4>
+<p>Add another kludge to work around an issue where Firefox displays the cursor in the wrong place in code blocks.</p>
+<p>Fix a bug where validation of decorations passed to <code>DecorationSet.add</code> sometimes passed the wrong offsets to the validator.</p>
+<p>Fix bad selection position in empty textblocks. Solves several issues with editing in Firefox Android.</p>
+<h3><a href="../ref/#dropcursor">prosemirror-dropcursor</a> 1.3.3 (2021-02-04)</h3>
+<h4>Bug fixes</h4>
+<p>Fix drop cursor positioning when the editor's <code>offsetParent</code> has been scrolled.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.17.3 (2021-01-29)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug where adding invalid decorations (for example zero-length inline decorations) with <code>DecorationSet.add</code> would fail to drop those.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.3.4 (2021-01-20)</h3>
+<h4>Bug fixes</h4>
+<p>Remove (broken, poorly conceptualized) <code>schema</code> option to <code>EditorState.reconfigure</code>.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.2.9 (2021-01-19)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where <code>AddMarkStep</code> would mark inline nodes with content.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.1.5 (2021-01-14)</h3>
+<h4>Bug fixes</h4>
+<p><code>joinBackward</code> and <code>joinForward</code> will now, when the textblock after the cut can't be moved into the structure before the cut, try to just join the inline content onto the last child in the structure before the cut.</p>
+<p><code>toggleMark</code> will now skip whitespace at the start and end of the selection when adding a mark.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.17.2 (2021-01-12)</h3>
+<h4>Bug fixes</h4>
+<p>The library will now always let the browser perform its native pasting behavior when the clipboard data is empty and no paste handler handles the event.</p>
+<p>Fix a bug where <code>domAtPos</code> (and thus cursor placement) would pick positions inside uneditable DOM or atom nodes.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.17.1 (2021-01-08)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a regression in <code>coordsAtPos</code> when used on an empty line at the end of a code block.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.17.0 (2021-01-07)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where starting a composition with stored marks would sometimes create the wrong steps (and thus break the mark) on Chrome.</p>
+<h4>New features</h4>
+<p><code>EditorView.domAtPos</code> now takes a second parameter that can be used to control whether it should enter DOM nodes on the side of the given position.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.5.1 (2021-01-06)</h3>
+<h4>Bug fixes</h4>
+<p>The Markdown parser will now correctly set the <code>tight</code> attribute on list nodes.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.13.1 (2020-12-20)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug where nested marks of the same type would be applied to the wrong node when parsing from DOM.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.13.0 (2020-12-11)</h3>
+<h4>New features</h4>
+<p>Parse rules can now have a <code>consuming: false</code> property which allows other rules to match their tag or style even when they apply.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.16.5 (2020-12-11)</h3>
+<h4>Bug fixes</h4>
+<p>Fix platform detection on recent iPadOS versions, restoring several workarounds for bugs that were accidentally turned off there.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.16.4 (2020-12-02)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where the cursor ended up in the wrong place when pressing enter in an empty heading on iOS.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.16.3 (2020-11-23)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where pressing enter at the start of a line in a code block would leave the visible cursor in the wrong place on Firefox.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.16.2 (2020-11-18)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug where overlapping inline decorations would get drawn incorrectly (and even corrupt the drawing of unrelated content).</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.16.1 (2020-10-26)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where the attributes of defining nodes were dropped when copying to the clipboard.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.12.0 (2020-10-11)</h3>
+<h4>New features</h4>
+<p>The output of <code>toDOM</code> functions can now be a <code>{dom, contentDOM}</code> object specifying the precise parent and content DOM elements.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.16.0 (2020-10-01)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where a drag starting briefly after an aborted drag could confuse the view and break the second drag. Allow callers of coordsAtPos to specify a side</p>
+<h4>New features</h4>
+<p><code>EditorView.coordsAtPos</code> now takes a <code>side</code> argument that determines which side of the position to look, if ambiguous.</p>
+<h3><a href="../ref/#inputrules">prosemirror-inputrules</a> 1.1.3 (2020-09-16)</h3>
+<h4>Bug fixes</h4>
+<p>Fix crash when undoing input rules when the rule was triggered without inserting text.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.11.2 (2020-09-12)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where 1.11.1 uses an array method not available on Internet Explorer.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.11.1 (2020-09-11)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where an inner node's mark information could reset the same mark provided by an outer node in the DOM parser.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.15.7 (2020-09-11)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where, when inserting <code>&lt;br&gt;</code> nodes, Safari would briefly show the cursor before the inserted break, though the DOM selection had already been set after it.</p>
+<p>When dragging inside the editor, whether the operation copies or moves is now determined by the modifiers held on drop, not on drag start.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.15.6 (2020-09-03)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where the DOM selection could end up in an invalid state after a keyboard cursor motion event that had no effect.</p>
+<p>Fix an issue where some types of drop events would fail to select the dropped content.</p>
+<p>Work around Safari issues when pressing shift-down with the cursor before an uneditable element.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.15.5 (2020-08-25)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where mapping a decoration set could corrupt the decoration positions in specific cases.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.15.4 (2020-08-13)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash that occurred when inline decorations covered inline nodes that weren't leaf nodes.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.2.8 (2020-08-11)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where fitting a slice at the top level of the document would, in some circumstances, crash.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.15.3 (2020-08-11)</h3>
+<h4>Bug fixes</h4>
+<p>Work around a Firefox issue where the cursor is sometimes shown in the wrong place when directly after a <code>&lt;br&gt;</code> node.</p>
+<p>The editor will now reset composition when stored marks are set on the state, so that the marks can be added to the next input.</p>
+<p>Inline decorations are no longer applied to inline nodes that aren't leaves, only to the innermost layer.</p>
+<h3><a href="../ref/#schema-list">prosemirror-schema-list</a> 1.1.4 (2020-08-11)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a regression where <code>liftListItem</code> couldn't lift a paragraph from the end of a composite list item.</p>
+<h3><a href="../ref/#schema-list">prosemirror-schema-list</a> 1.1.3 (2020-08-04)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where <code>splitListItem</code> could delete other content in the item when pressing enter in an empty paragraph that had other content below it in a list item.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.5.0 (2020-07-17)</h3>
+<h4>New features</h4>
+<p>Markdown parse specs can now be specified as <code>noCloseToken</code>, which will cause the parser to treat them as a single token, rather than a pair of <code>_open</code>/<code>_close</code> tokens.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.2.7 (2020-07-09)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where in some cases replace fitting would insert an additional bogus node when fitting content into nodes with strict content restrictions.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.15.2 (2020-07-09)</h3>
+<h4>Bug fixes</h4>
+<p>Adjust the workaround for Chrome's DOM selection corruption bug to cover more cases.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.15.1 (2020-07-09)</h3>
+<h4>Bug fixes</h4>
+<p>Work around another issue where Chrome misreports the DOM selection.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.11.0 (2020-07-08)</h3>
+<h4>New features</h4>
+<p>Resolved positions have a new convenience method, <code>posAtIndex</code>, which can resolve a depth and index to a position.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.10.1 (2020-07-08)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug that prevented non-canonical list structure from being normalized.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.15.0 (2020-06-24)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where Enter on iOS might be handled twice on slow devices. Pass plain text flag to transformPastedText and clipboardTextParser props</p>
+<p>Fix a bug where typing in front of a mark could in some circumstances cause the editor to discard the new content.</p>
+<h4>New features</h4>
+<p>The <code>transformPastedText</code> and <code>clipboardTextParser</code> props now receive an extra argument, <code>plain</code>, indicating whether the paste was forced as plain text.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.2.6 (2020-06-10)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where creating a replace step would sometimes fail due to unmatchable close tokens after the replaced range.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.13 (2020-06-05)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug where storing DOM nodes directly in widget decorations (not recommended) could cause the view to try and place the same DOM node multiple times.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.12 (2020-06-03)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash when the editor tries to read a DOM selection outside of itself.</p>
+<p>Improve the way inline decorations covering non-leaf inline nodes are rendered. Ensure elt is defined before accessing it in posAtCoords</p>
+<p>Fix a crash in Safari when the browser's <code>elementFromPoint</code> returns null in <code>posAtCoords</code>. Handle case where Chrome flips the nesting order of edited inline nodes</p>
+<p>Fix the issue of <code>&lt;a&gt;</code> marks on decorated text being lost during editing because Chrome changes the nesting order of the link and the decoration <code>&lt;span&gt;</code> element in the DOM.</p>
+<p>Fix an issue where, when pressing enter with a bolded virtual keyboard suggestion on Android's Gboard, the cursor would stay on the wrong line.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.10.0 (2020-05-25)</h3>
+<h4>Bug fixes</h4>
+<p>Avoid fixing directly nested list nodes during DOM parsing when it looks like the schema allows those.</p>
+<h4>New features</h4>
+<p>DOM parser rules can now specify <code>closeParent: true</code> to have the effect of closing their parent node when matched.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.11 (2020-05-19)</h3>
+<h4>Bug fixes</h4>
+<p>Fix bug in the way the editor handles Cmd-arrow presses on macOS.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.10 (2020-05-18)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where the editor would override behavior for Cmd-arrow key presses on macOS the wrong way in some situations.</p>
+<p>Fix handling of copy and paste in IE when top-level elements can't be focused.</p>
+<h3><a href="../ref/#keymap">prosemirror-keymap</a> 1.1.4 (2020-05-18)</h3>
+<h4>Bug fixes</h4>
+<p>Fall through to the name associated with a key's <code>keyCode</code> when the character produced isn't ASCII and isn't directly bound.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.4.5 (2020-05-14)</h3>
+<h4>Bug fixes</h4>
+<p>Don't allow hard_break nodes in headings.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.9 (2020-05-06)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash on IE, which sets <code>document.activeElement</code> to null in some circumstances.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.8 (2020-05-01)</h3>
+<h4>Bug fixes</h4>
+<p>Work around an issue in Safari where you couldn't click inside a selected element to put the cursor there.</p>
+<p>Fix enter at start of paragraph in iOS inserting two new paragraphs.</p>
+<p>Scrolling the cursor into view now makes sure it doesn't end up below a scrollbar.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.7 (2020-04-20)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash on Chrome during selection updates when <code>Selection.collapse</code> inexplicably leaves the selection empty. Update documented type for handlePaste event arg</p>
+<p>Fix another issue that could break decoration set mapping in deeply nested nodes.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.2.5 (2020-04-15)</h3>
+<h4>Bug fixes</h4>
+<p>Rewrite the slice-fitting code used by <code>replaceStep</code> to handle a few more corner cases.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.1.4 (2020-04-15)</h3>
+<h4>Bug fixes</h4>
+<p><code>selectNodeForward</code> and <code>selectNodeBackward</code> will now also select nodes next to a gap cursor (or other custom empty selection type).</p>
+<h3><a href="../ref/#gapcursor">prosemirror-gapcursor</a> 1.1.5 (2020-04-05)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where the gap cursor plugin would sometimes cause perfectly selectable content to be skipped when moving the selection with the arrow keys.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.6 (2020-03-25)</h3>
+<h4>Bug fixes</h4>
+<p>Fix superfluous cursor showing up in Chrome when there is a gap cursor or similar custom empty selection active.</p>
+<p>Fix an issue where <code>DecorationSet.remove</code> would ignore the positions of its argument decorations, and only compare by type.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.5 (2020-03-23)</h3>
+<h4>Bug fixes</h4>
+<p>Work around Chrome Android issue where pasting would close the virtual keyboard.</p>
+<p>Fix an issue where some kinds of changes would cause nodes to show up twice in the DOM.</p>
+<h3><a href="../ref/#gapcursor">prosemirror-gapcursor</a> 1.1.4 (2020-03-20)</h3>
+<h4>Bug fixes</h4>
+<p>Improve behavior around unselectable block nodes.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.3.3 (2020-03-18)</h3>
+<h4>Bug fixes</h4>
+<p>When deleting a whole-document-selection causes default content to be generated, make sure the selection is moved to the start of the document.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.4 (2020-03-17)</h3>
+<h4>Bug fixes</h4>
+<p>Improve return values from <code>coordsAtPos</code> on line breaks in Safari and Firefox.</p>
+<p>Make sure enter on iOS is handled even when the native behavior has no effect.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.3 (2020-03-16)</h3>
+<h4>Bug fixes</h4>
+<p>Fix mismatch between DOM and state selection bug at compositionend in IE11.</p>
+<p>Make sure <code>handleDrop</code>](https://prosemirror.net/docs/ref/#view.EditorProps.handleDrop) is called even when there's nothing on the clipboard.</p>
+<p>Fix a bug where reconfiguring a view in a way that changed both the active node views and the attributes of the top node left the old attributes active.</p>
+<p>Work around another case where Chrome lies to the script about its current DOM selection state.</p>
+<p>Avoid redrawing nodes when both their content and a widget in front of them is updated in the same transaction.</p>
+<p>Fix issue where scrolling with multiple scrollable containers sometimes moves to the wrong position.</p>
+<h3><a href="../ref/#menu">prosemirror-menu</a> 1.1.4 (2020-03-12)</h3>
+<h4>Bug fixes</h4>
+<p>Restore compatibility with IE11.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.2.4 (2020-03-10)</h3>
+<h4>Bug fixes</h4>
+<p>Fix <code>joinPoint</code> to return check whether the parent node allows a given join.</p>
+<h3><a href="../ref/#menu">prosemirror-menu</a> 1.1.3 (2020-03-04)</h3>
+<h4>Bug fixes</h4>
+<p>Update crel dependency to a version that exposes an ES module.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.2 (2020-02-10)</h3>
+<h4>Bug fixes</h4>
+<p>Fix bug when starting a composition after a link, when the composition started with the character that ended the link.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.1 (2020-02-08)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where scrolling the cursor into view in a scrollable editor would sometimes inappropriately scroll an outer container as well.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.14.0 (2020-02-07)</h3>
+<h4>Bug fixes</h4>
+<p>Fix parsing of <code>tbody</code>, <code>tfoot</code>, and <code>caption</code> elements in pasted HTML content. Fix bug in selection-is-at-edge check</p>
+<p>Fix an issue where moving focus to the editor with the keyboard or the DOM <code>focus</code> method would leave the DOM and state selections inconsistent.</p>
+<h4>New features</h4>
+<p>Widget decorations can now take an <code>ignoreSelection</code> option, that causes the editor to leave selections inside them alone.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.13.11 (2020-01-31)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue that could lead to the editor making regular content uneditable on Safari.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.13.10 (2020-01-29)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash on Firefox when starting a composition after a marked non-text node.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.13.9 (2020-01-29)</h3>
+<h4>Bug fixes</h4>
+<p>Make sure to reset the selection when the browser moves it into an uneditable node.</p>
+<p>Fix issue where the editor would fail to create a meaningful DOM selection for a node selection on Safari.</p>
+<p>Makes sure the iOS virtual keyboard gets its internal state (autocorrection, autocapitalization) updated when the user presses enter.</p>
+<h3><a href="../ref/#test-builder">prosemirror-test-builder</a> 1.0.3 (2020-01-28)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.13.8 (2020-01-24)</h3>
+<h4>Bug fixes</h4>
+<p>Fix bug that would sometimes cause widget decorations to be drawn with marks from the node after the text node they were inside of.</p>
+<h3><a href="../ref/#gapcursor">prosemirror-gapcursor</a> 1.1.3 (2020-01-22)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash in documents that have a textblock as top node.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.9.1 (2020-01-17)</h3>
+<h4>Bug fixes</h4>
+<p>Marks found in the DOM at the wrong level (for example, a bold style on a block node) are now properly moved to the node content.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.9.0 (2020-01-07)</h3>
+<h4>New features</h4>
+<p>The <code>NodeType</code> method <a href="https://prosemirror.net/docs/ref/#model.NodeType.hasRequiredAttrs"><code>hasRequiredAttrs</code></a> is now public.</p>
+<p>Element and attribute names in <a href="https://prosemirror.net/docs/ref/#model.DOMOutputSpec"><code>DOMOutputSpec</code></a> structures can now contain namespaces.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.1.3 (2020-01-03)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where, since version 1.7.4 of prosemirror-model, <code>splitBlock</code> fails to create the expected new textblock in some schemas.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.4.4 (2019-12-19)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue that broke parsing ordered lists with a starting number other than 1.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.4.3 (2019-12-17)</h3>
+<h4>Bug fixes</h4>
+<p>Don't use short-hand angle bracket syntax when outputting self-linking URLs that are relative.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.13.7 (2019-12-16)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug that caused the DOM to go out of sync with the decorations when updating inline decorations that added multiple wrapping nodes to a piece of content.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.13.6 (2019-12-13)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash when deleting a list item in Safari while using a parse rule with a <code>context</code> property for <code>&lt;li&gt;</code> elements.</p>
+<p>Work around another case where Chrome reports an incorrect selection.</p>
+<p>Work around issue where Firefox will insert a stray BR node when deleting a text node in some types of DOM structure.</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 1.1.3 (2019-12-10)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes a regression where appeneded transactions were combined into the previous history event even if that had been explicitly closed.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.13.5 (2019-12-09)</h3>
+<h4>Bug fixes</h4>
+<p>Fix the way decorations update node styles to allow removing CSS custom properties. Link to https in readme and changelog</p>
+<p>The <code>root</code> accessor on views now makes sure that, when it returns a shadow root, that object has a <code>getSelection</code> method.</p>
+<p>Fix an issue where the DOM selection could get out of sync with ProseMirror's selection state in Edge.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.2.3 (2019-12-03)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash in <code>deleteRange</code> that occurred when deleting a region that spans to the ends of two nodes at different depths.</p>
+<h3><a href="../ref/#menu">prosemirror-menu</a> 1.1.2 (2019-12-02)</h3>
+<h4>Bug fixes</h4>
+<p>Downgrade a dependency so that the package can run in IE11 again.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.8.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.2.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.3.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.13.4 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#keymap">prosemirror-keymap</a> 1.1.3 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#inputrules">prosemirror-inputrules</a> 1.1.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 1.1.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#collab">prosemirror-collab</a> 1.2.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.1.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#gapcursor">prosemirror-gapcursor</a> 1.1.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#schema-basic">prosemirror-schema-basic</a> 1.1.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#schema-list">prosemirror-schema-list</a> 1.1.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#menu">prosemirror-menu</a> 1.1.1 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#example-setup">prosemirror-example-setup</a> 1.1.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.4.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#dropcursor">prosemirror-dropcursor</a> 1.3.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 2.1.2 (2019-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Rename ES module files to use a .js extension, since Webpack gets confused by .mjs</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.8.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.2.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.3.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.13.3 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where the editor wouldn't update its internal selection when the editor was blurred, its selection was changed programatically, and then the editor was re-focused with its old DOM selection.</p>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#keymap">prosemirror-keymap</a> 1.1.2 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#inputrules">prosemirror-inputrules</a> 1.1.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 1.1.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#collab">prosemirror-collab</a> 1.2.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.1.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#gapcursor">prosemirror-gapcursor</a> 1.1.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#schema-basic">prosemirror-schema-basic</a> 1.1.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#schema-list">prosemirror-schema-list</a> 1.1.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#example-setup">prosemirror-example-setup</a> 1.1.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.4.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#dropcursor">prosemirror-dropcursor</a> 1.3.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#test-builder">prosemirror-test-builder</a> 1.0.2 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 2.1.1 (2019-11-19)</h3>
+<h4>Bug fixes</h4>
+<p>The file referred to in the package's <code>module</code> field now is compiled down to ES5.</p>
+<h3><a href="../ref/#keymap">prosemirror-keymap</a> 1.1.1 (2019-11-15)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where keyboards layouts that use shift to produce characters that are created without shift on a US keyboard would fail to fire bindings for those keys that include the Shift- modifier.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.13.2 (2019-11-14)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where <code>EditorView.focus</code> would scroll the top of the document into view on Safari.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.13.1 (2019-11-12)</h3>
+<h4>Bug fixes</h4>
+<p>Work around selection jumping that sometimes occurs on Chrome when focusing the editor.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.8.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.2.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.3.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.13.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#keymap">prosemirror-keymap</a> 1.1.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#inputrules">prosemirror-inputrules</a> 1.1.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 1.1.0 (2019-11-08)</h3>
+<h4>Bug fixes</h4>
+<p>Prevents appended transactions from starting a new event group, even if they were created a while after the previous transaction.</p>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#collab">prosemirror-collab</a> 1.2.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.1.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#gapcursor">prosemirror-gapcursor</a> 1.1.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#schema-basic">prosemirror-schema-basic</a> 1.1.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#schema-list">prosemirror-schema-list</a> 1.1.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#menu">prosemirror-menu</a> 1.1.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#example-setup">prosemirror-example-setup</a> 1.1.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.4.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#dropcursor">prosemirror-dropcursor</a> 1.3.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 2.1.0 (2019-11-08)</h3>
+<h4>New features</h4>
+<p>Add a <code>module</code> field to package json file.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.7.5 (2019-11-07)</h3>
+<h4>Bug fixes</h4>
+<p><code>ContentMatch.edge</code> now throws, as it is supposed to, when you try to access the edge past the last one.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.12.3 (2019-11-07)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where paste events were stopped when the clipboard parser failed to make sense of the content.</p>
+<p>Fix issue where the <code>handlePaste</code> prop might be called multiple times for a single paste.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.12.2 (2019-11-05)</h3>
+<h4>Bug fixes</h4>
+<p>Set the editable element to use a <code>white-space: break-spaces</code> style so that whitespace at the end of a line properly moves the cursor to the next line.</p>
+<p>Fix issue where <code>posAtCoords</code> could throw an error in some circumstances on Firefox.</p>
+<p>Don't force focus back on the editor if a node view moves focus in its <code>setSelection</code> method.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.1.6 (2019-11-01)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes an issue where deleting a range from the start of block A to the end of block B would leave you with an empty block of type B.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.3.2 (2019-10-30)</h3>
+<h4>Bug fixes</h4>
+<p>Code blocks in the schema no longer allow marks inside them.</p>
+<p>Code blocks are now parsed with <code>preserveWhiteSpace: full</code>, preventing removal of newline characters.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.12.1 (2019-10-28)</h3>
+<h4>Bug fixes</h4>
+<p>Reduce unnecessary redraws when typing creates a new text node on Chrome.</p>
+<p>The default prosemirror.css now also turns off ligatures in Edge.</p>
+<p>Fix issue where the cursor stays before the typed text in Edge, when typing in an empty paragraph or between hard break nodes.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.12.0 (2019-10-21)</h3>
+<h4>New features</h4>
+<p>The mutation records passed to <a href="https://prosemirror.net/docs/ref/#view.NodeView.ignoreMutation"><code>ignoreMutation</code></a> now contain the old attribute value.</p>
+<h3><a href="../ref/#keymap">prosemirror-keymap</a> 1.0.2 (2019-10-16)</h3>
+<h4>Bug fixes</h4>
+<p>Upgrade w3c-keyname package dependency.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.11.7 (2019-10-15)</h3>
+<h4>Bug fixes</h4>
+<p>Enabling a mark and then starting a composition, on Chrome Android, will no longer cause the cursor to jump to the start of the composition.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.7.4 (2019-10-10)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where <code>fillBefore</code> would in some cases insert unneccesary optional child nodes in the generated content.</p>
+<h3><a href="../ref/#schema-list">prosemirror-schema-list</a> 1.0.4 (2019-10-08)</h3>
+<h4>Bug fixes</h4>
+<p>Fix regression where <code>splitListItem</code> doesn't work at the end of an item when the content for list items has different first and non-first allowed nodes.</p>
+<h3><a href="../ref/#dropcursor">prosemirror-dropcursor</a> 1.2.0 (2019-10-08)</h3>
+<h4>New features</h4>
+<p><code>dropCursor</code> now takes a new option, <code>class</code>, to set the CSS class name of the cursor element. Add class option to in-code docs</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.11.6 (2019-10-07)</h3>
+<h4>Bug fixes</h4>
+<p>Fix workaround for broken IE11 DOM change records when inserting between <code>&lt;br&gt;</code> nodes to handle more cases.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.11.5 (2019-10-04)</h3>
+<h4>Bug fixes</h4>
+<p>Don't leave DOM selection in place when it is inside a node view but not inside its content DOM element.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.7.3 (2019-10-03)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where <em>any</em> whitespace (not just the characters that HTML collapses) was collapsed by the parser in non-whitespace-preserving mode.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.1.5 (2019-10-02)</h3>
+<h4>Bug fixes</h4>
+<p>Fix crash in building replace steps for open-ended slices with complicated node content expressions.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.11.4 (2019-09-27)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an IE11 issue where marks would sometimes unexpectedly get dropped when inserting a space after marked text.</p>
+<p>Fixes an issue where <code>handleTextInput</code> wasn't called when typing over a single character with the same character.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.11.3 (2019-09-20)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where the DOM node representing a mark could be corrupted when the browser decides to replace it with another node but ProseMirror restored the old node after the change.</p>
+<p>Handle another case where typing over a selection in IE11 confused the editor.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.11.2 (2019-09-17)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where typing over a decorated piece of text would sometimes just act like deletion.</p>
+<p>Fix another problem in IE11 with typing over content, where typing over a decorated bit of text caused a crash.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.11.1 (2019-09-16)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where typing over the entire contents of an inline node on IE11 would insert the typed content in the wrong position.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.11.0 (2019-09-16)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where IE11 would select the entire textblock after deleting content at its start.</p>
+<h4>New features</h4>
+<p>View instances now have a public <code>editable</code> property that indicates whether they are in editable mode.</p>
+<h3><a href="../ref/#dropcursor">prosemirror-dropcursor</a> 1.1.2 (2019-09-05)</h3>
+<h4>Bug fixes</h4>
+<p>Fix crash on IE11 due to using a method that platform doesn't support. Don't show a drop cursor when the view isn't editable</p>
+<p>The drop cursor will no longer show up when the view isn't editable.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.7.2 (2019-09-04)</h3>
+<h4>Bug fixes</h4>
+<p>When <code>&lt;br&gt;</code> DOM nodes can't be parsed normally, the parser now converts them to newlines. This should improve parsing of some forms of source code HTML.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.10.3 (2019-09-04)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a regression in 1.10.2 that broke copying on IE11.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.10.2 (2019-09-03)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where <code>posAtCoords</code> could crash by dereferencing undefined in some circumstances.</p>
+<p>Fix inserting text next to a hard break in IE11.</p>
+<p>Fix an issue where typing over a selection would result in two different transactions (once for the deletion, once for the insertion) on IE11.</p>
+<p>Selecting the word at the start of the document and typing over it no longer causes the text input to appear at the end of the document in IE11.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.10.1 (2019-08-28)</h3>
+<h4>Bug fixes</h4>
+<p>Copying content will no longer create elements in the main document, which prevents images from loading just because they appear in clipboard content.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.1.4 (2019-08-26)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/#transform.Mapping.invert"><code>Mapping.invert</code></a> is now part of the documented API (it was intented to be public from the start, but a typo prevented it from showing up in the docs).</p>
+<p>Fix an issue where a replace could needlessly drop content when the first node of the slice didn't fit the target context.</p>
+<p><code>replaceRange</code> now more aggressively expands the replaced region if <code>replace</code> fails to place the slice.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.10.0 (2019-08-13)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue that caused the cursor to be scrolled into view when <code>focus()</code> was called on IE11.</p>
+<p>Fix problem where the cursor cycled through pieces of right-to-left text on Firefox during horizontal motion when the gapcursor plugin was enabled.</p>
+<p>Fix spurious mutation events in Firefox causing mark replacement at end of composition. Restore call to dom.focus on view.focus</p>
+<p>Fix a bug that could cause node views in front of marked nodes to not be destroyed when deleted, and caused confusion in composition handling in some situations.</p>
+<p>Cursor wrappers (a kludge to make sure typed text gets wrapping DOM structure corresponding to the current marks) are now created less eagerly, and in a less invasive way, which resolves a number of problems with composition (especially on Safari) and bidirectional text.</p>
+<h4>New features</h4>
+<p>Node views can now ignore selection change events through their <a href="https://prosemirror.net/docs/ref/#view.NodeView.ignoreMutation"><code>ignoreMutation</code></a> callback.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.2.4 (2019-08-12)</h3>
+<h4>Bug fixes</h4>
+<p><code>Transaction.setSelection</code> now immediately checks whether the given selection points into the proper document, rather than silently accepting an invalid selection.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.13 (2019-07-29)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where copying content from a ProseMirror instance into an instance using another schema could, in some circumstances, insert schema-violating content.</p>
+<p>Fix comparison of decoration sets, which should solve unneccesary re-renders when updating decorations with an identical but newly allocated set. Don't update DOM selection in uneditable editors when the focus is elsewhere</p>
+<p>Fix a bug where the editor would steal focus from child elements when in non-editable mode.</p>
+<p>Fix error and corruption in IE11 when backspacing out a single character after a br node.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.12 (2019-07-16)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash <code>posAtCoords</code> in Firefox when the coordinates are above a text input field.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.11 (2019-07-03)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where the DOM change handler would treat the parsed content as the wrong part of the document.</p>
+<p>Fix an issue in IE11 where deleting the last character in a textblock causes a crash.</p>
+<p>Fix an issue where backspacing out the first character in a textblock would cause IE11 to move the selection to some incorrect position.</p>
+<h3><a href="../ref/#gapcursor">prosemirror-gapcursor</a> 1.0.4 (2019-06-24)</h3>
+<h4>Bug fixes</h4>
+<p>Do not show a gap cursor when the view isn't editable.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.10 (2019-06-12)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash in <code>coordsAtPos</code> caused by use of an incorrect variable name.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.9 (2019-06-09)</h3>
+<h4>Bug fixes</h4>
+<p>Fix arrowing over unselectable inline nodes in Chrome and Safari, which by default introduce an extra needless cursor position before the node.</p>
+<p>Fix a bug that caused DOM changes to be ignored when happening directly in front of some types of DOM events (such as focus/blur).</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.3.1 (2019-06-08)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug that could occur when parsing multiple adjacent pieces of text with the same style.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.7.1 (2019-05-31)</h3>
+<h4>Bug fixes</h4>
+<p>Using <code>Fragment.from</code> on an invalid value, including a <code>Fragment</code> instance from a different version/instance of the library, now raises a meaningful error rather than getting confused.</p>
+<p>Fix a bug in parsing overlapping marks of the same non-self-exclusive type.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.8 (2019-05-29)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where moving focus from a node inside of the editor to the editor itself could sometimes lead to a node selection around the inner node rather than the intended selection (on Chrome).</p>
+<h3><a href="../ref/#collab">prosemirror-collab</a> 1.1.2 (2019-05-29)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where in <code>mapSelectionBackward</code> mode, the plugin flipped the head and anchor of the selection, leading to selection glitches during collaborative editing.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.7 (2019-05-28)</h3>
+<h4>Bug fixes</h4>
+<p>ProseMirror will no longer try to stabilize the scroll position during updates on browsers that support <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/overflow-anchor">scroll anchoring</a>, since it'd inadvertently cancel the browser's behavior.</p>
+<p>Fix an issue in Safari where the editor would interrupt the composition spacebar menu because it incorrectly interpreted the mutation events fired by the browser as representing a replacement of the selection with identical text.</p>
+<p>Work around an issue where, on Safari, an IME composition started in an empty textblock would vanish when you press enter.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.6 (2019-05-17)</h3>
+<h4>Bug fixes</h4>
+<p>Fix bug in composition handling when the composition's parent node has an extra wrapper node around its content.</p>
+<h3><a href="../ref/#inputrules">prosemirror-inputrules</a> 1.0.4 (2019-05-17)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a null-dereference when running in strict mode.</p>
+<h3><a href="../ref/#inputrules">prosemirror-inputrules</a> 1.0.3 (2019-05-17)</h3>
+<h4>Bug fixes</h4>
+<p>Prevent input rules from running during compositions, since they will annoyingly interrupt them.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.5 (2019-05-14)</h3>
+<h4>Bug fixes</h4>
+<p>Fix regression in handling text editing events on IE11.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.0.8 (2019-05-14)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash caused by using a position potentially outside the document in <a href="https://prosemirror.net/docs/ref/#commands.splitBlock"><code>splitBlock</code></a>.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.4 (2019-05-13)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a regression where all plugin views were recreated when calling <a href="https://prosemirror.net/docs/ref/#view.EditorView.setProps"><code>setProps</code></a>.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.3 (2019-05-10)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug where, if the document was changed at exactly the right moment, <code>handleClickOn</code> could be called with <code>null</code> as the node.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.2.3 (2019-05-08)</h3>
+<h4>Bug fixes</h4>
+<p>The <a href="https://prosemirror.net/docs/ref/#state.Transaction.insertText"><code>insertText</code></a> method now collapses the selection to the end of the inserted text, even when given explicit start/end positions.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.2 (2019-05-08)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug where updating to a reconfigured state would not recreate the view's plugin views.</p>
+<h3><a href="../ref/#inputrules">prosemirror-inputrules</a> 1.0.2 (2019-05-08)</h3>
+<h4>Bug fixes</h4>
+<p>Improve selection handling during text replacement.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.1 (2019-05-04)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a regression where mouse selection would sometimes raise an error.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.9.0 (2019-05-03)</h3>
+<h4>New features</h4>
+<p>Changes made during compositions now immediately fire transactions on each update, rather than only a single one at the end of the composition.</p>
+<p>The view now immediately shows changes to the document or decorations during composition, even if they come from transactions not directly generated by the use's editing. The only exception is decorations that affect the focused text node—those are still delayed to avoid unneccesarily canceling the composition.</p>
+<h3><a href="../ref/#schema-list">prosemirror-schema-list</a> 1.0.3 (2019-04-19)</h3>
+<h4>Bug fixes</h4>
+<p><code>sinkListItem</code> will no longer copy the attributes of the parent list when creating an inner list.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.8.9 (2019-04-18)</h3>
+<h4>Bug fixes</h4>
+<p>Improve display update times for nodes with thousands of children by fix an accidental piece of quadratic complexity.</p>
+<p>Fixes an issue where changes to the <a href="https://prosemirror.net/docs/ref/#view.EditorProps.nodeViews"><code>nodeViews</code> prop</a> weren't noticed when using <a href="https://prosemirror.net/docs/ref/#view.EditorView.updateState"><code>updateState</code></a> to update the view.</p>
+<p>Fix issue where sometimes moving the selection back its last position with the mouse failed to update ProseMirror's selection state.</p>
+<p>No longer call <a href="https://prosemirror.net/docs/ref/#view.NodeView.deselectNode"><code>deselectNode</code></a> on already-destroyed node views.</p>
+<h3><a href="../ref/#schema-basic">prosemirror-schema-basic</a> 1.0.1 (2019-04-18)</h3>
+<h4>Bug fixes</h4>
+<p>Make sure images and links don't render whatever happens to be in <code>node.attrs</code> to the DOM.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.8.8 (2019-04-11)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a regression from 1.8.4 that made it return unreasonable rectangles for positions between blocks.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.8.7 (2019-04-09)</h3>
+<h4>Bug fixes</h4>
+<p>The <a href="https://prosemirror.net/docs/ref/#view.EditorProps.handlePaste"><code>handlePaste</code></a> prop is now activated even when the default parser can't make any sense of the clipboard content.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.8.6 (2019-04-08)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug where decorations splitting a text node would sometimes confuse the display updater and make decorated nodes disappear.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.8.5 (2019-04-08)</h3>
+<h4>Bug fixes</h4>
+<p>Multiple <a href="https://prosemirror.net/docs/ref/#view.EditorProps.transformPastedHTML"><code>transformPastedHTML</code></a> props are now all properly called in order, rather than only the first one.</p>
+<p>Fixes an issue where invalid change positions were computed when a composition happened concurrently with a change that inserted content at the same position.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.8.4 (2019-03-20)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/#view.EditorView.coordsAtPos"><code>EditorView.coordsAtPos</code></a> is now more accurate in right-to-left text on Chrome and Firefox.</p>
+<p><a href="https://prosemirror.net/docs/ref/#view.EditorView.coordsAtPos"><code>EditorView.coordsAtPos</code></a> returns more accurate coordinates when querying the position directly after a line wrap point.</p>
+<p>Fix an issue where clicking directly in front of a node selection doesn't clear the node selection markup.</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 2.0.4 (2019-03-12)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes an issue where steps that cause multiple changed ranges (such as <code>ReplaceAroundStep</code>) would cause invalid change sets.</p>
+<p>Fix a bug in incremental change set updates that would cause incorrect results in a number of cases.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.8.3 (2019-03-04)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where clicking when there's a non-text selection active sometimes doesn't cause the appropriate new selection.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.8.2 (2019-02-28)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where a view state update happening between a change to the DOM selection and the corresponding browser event could disrupt mouse selection.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.8.1 (2019-02-22)</h3>
+<h4>Bug fixes</h4>
+<p>Fix infinite loop in <code>coordsAtPos</code>.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.8.0 (2019-02-21)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug where <a href="https://prosemirror.net/docs/ref/#view.EditorView.endOfTextblock"><code>endOfTextblock</code></a> spuriously returns true when the cursor is in a mark.</p>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/#view.EditorView.posAtCoords"><code>posAtCoords</code></a> will no longer return <code>null</code> when called with coordinates outside the browser's viewport. (It <em>will</em> still return null for coordinates outside of the editor's bounding box.)</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.7.3 (2019-02-20)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/#view.EditorView.endOfTextblock"><code>endOfTextblock</code></a> now works on textblocks that are the editor's top-level node.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.7.2 (2019-02-20)</h3>
+<h4>Bug fixes</h4>
+<p>Pressing shift-left/right next to a selectable node no longer selects the node instead of creating a text selection across it.</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 1.0.4 (2019-02-19)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug that corrupted selection data in the history when applying remote steps in some cases.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.7.1 (2019-02-04)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue on Safari where an Enter key events that was part of a composition is interpreted as stand-alone Enter press.</p>
+<h3><a href="../ref/#schema-list">prosemirror-schema-list</a> 1.0.2 (2019-01-31)</h3>
+<h4>Bug fixes</h4>
+<p><code>sinkListItem</code> no longer preserves marks from the outer list when creating an inner list.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.7.0 (2019-01-29)</h3>
+<h4>New features</h4>
+<p>Mark specs now support a property <a href="https://prosemirror.net/docs/ref/#model.MarkSpec.spanning"><code>spanning</code></a> which, when set to <code>false</code>, prevents the mark's DOM markup from spanning multiple nodes, so that a separate wrapper is created for each adjacent marked node.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.7.0 (2019-01-29)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where node selections on uneditable nodes couldn't be copied or cut on Chrome.</p>
+<h4>New features</h4>
+<p>The editable view now recognizes the <a href="https://prosemirror.net/docs/ref/#model.MarkSpec.spanning"><code>spanning</code></a> mark property.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.3.0 (2019-01-22)</h3>
+<h4>Bug fixes</h4>
+<p>Inline code containing backticks is now serialized wrapped in the appropriate amount of backticks.</p>
+<h4>New features</h4>
+<p>The serializer now serializes links whose target is the same as their text content using &lt; &gt; syntax.</p>
+<p>Mark opening and close string callbacks now get passed the mark's context (parent fragment and index).</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 2.0.3 (2019-01-09)</h3>
+<h4>Bug fixes</h4>
+<p>Make <code>simplifyChanges</code> merge adjacent simplified changes (which can occur when a word boundary is inserted).</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 2.0.2 (2019-01-08)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug in simplifyChanges that only occurred when the changes weren't at the start of the document.</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 2.0.1 (2019-01-07)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes issue in <code>simplifyChanges</code> where it sometimes returned nonsense when the inspected text wasn't at the start of the document.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.6.4 (2019-01-05)</h3>
+<h4>Bug fixes</h4>
+<p>Don't output empty style attributes when a style property with a null value is present in <code>renderSpec</code>.</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 2.0.0 (2019-01-04)</h3>
+<h4>Bug fixes</h4>
+<p>Solves various cases where complicated edits could corrupt the set of changes due to the mapped positions of deletions not agreeing with the mapped positions of insertions.</p>
+<h4>New features</h4>
+<p>Moves to a more efficient diffing algorithm (Meyers), so that large replacements can be accurately diffed using reasonable time and memory.</p>
+<p>You can now find the original document given to a <code>ChangeSet</code> with its <code>startDoc</code> accessor.</p>
+<h4>Breaking changes</h4>
+<p>The way change data is stored in <code>ChangeSet</code> objects works differently in this version. Instead of keeping deletions and insertions in separate arrays, the object holds an array of changes, which cover all the changed regions between the old and new document. Each change has start and end positions in both the old and the new document, and contains arrays of insertions and deletions within it.</p>
+<p>This representation avoids a bunch of consistency problems that existed in the old approach, where keeping positions coherent in the deletion and insertion arrays was hard.</p>
+<p>This means the <code>deletions</code> and <code>insertions</code> members in <code>ChangeSet</code> are gone, and instead there is a <code>changes</code> property which holds an array of <code>Change</code> objects. Each of these has <code>fromA</code> and <code>toA</code> properties indicating its extent in the old document, and <code>fromB</code> and <code>toB</code> properties pointing into the new document. Actual insertions and deletions are stored in <code>inserted</code> and <code>deleted</code> arrays in <code>Change</code> objects, which hold <code>{data, length}</code> objects, where the total length of deletions adds up to <code>toA - fromA</code>, and the total length of insertions to <code>toB - fromB</code>.</p>
+<p>When creating a <code>ChangeSet</code> object, you no longer need to pass separate compare and combine callbacks. Instead, these are now represented using a single function that returns a combined data value or <code>null</code> when the values are not compatible.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.6.8 (2019-01-03)</h3>
+<h4>Bug fixes</h4>
+<p>When replacing a selection by typing over it with a letter that matches its start or end, the editor now generates a step that covers the whole replacement.</p>
+<p>Fixes dragging a node when the mouse is in a child DOM element that doesn't represent a document node. Work around Chrome bug in selection management</p>
+<p>Fixes an issue in Chrome where clicking at the start of a textblock after a selected node would sometimes not move the cursor there.</p>
+<p>Fix issue where a node view's <code>getPos</code> callback could sometimes return <code>NaN</code>.</p>
+<p>Fix an issue where deleting more than 5 nodes might cause the nodes after that to be needlessly redrawn.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.6.7 (2018-11-26)</h3>
+<h4>Bug fixes</h4>
+<p>Avoids redrawing of content with marks when other content in front of it is deleted.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.2.2 (2018-11-22)</h3>
+<h4>Bug fixes</h4>
+<p>Hard breaks at the end of an emphasized or strong mark are no longer serialized to invalid Markdown text.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.6.6 (2018-11-15)</h3>
+<h4>Bug fixes</h4>
+<p>Work around a Chrome bug where programmatic changes near the cursor sometimes cause the visible and reported selection to disagree.</p>
+<p>Changing the <code>nodeView</code> prop will no longer leave outdated node views in the DOM.</p>
+<p>Work around an issue where Chrome unfocuses the editor or scrolls way down when pressing down arrow with the cursor between the start of a textblock and an uneditable element.</p>
+<p>Fix a bug where mapping decoration sets through changes that changed the structure of decorated subtrees sometimes produced corrupted output.</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 1.2.1 (2018-11-15)</h3>
+<h4>Bug fixes</h4>
+<p>Properly apply the heuristics for ignoring short matches when diffing, and adjust those heuristics to more agressively weed out tiny matches in large changes.</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 1.2.0 (2018-11-08)</h3>
+<h4>New features</h4>
+<p>The new <code>changedRange</code> method can be used to compare two change sets and find out which range has changed.</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 1.1.0 (2018-11-07)</h3>
+<h4>New features</h4>
+<p>Add a new method, <code>ChangeSet.map</code> to update the data associated with changed ranges.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.6.5 (2018-10-29)</h3>
+<h4>Bug fixes</h4>
+<p>Work around Safari issue where deleting the last bit of text in a table cell creates weird HTML with a BR in a table row.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.6.3 (2018-10-26)</h3>
+<h4>Bug fixes</h4>
+<p>The DOM parser now drops whitespace after BR nodes when not in whitespace-preserving mode.</p>
+<h3><a href="../ref/#dropcursor">prosemirror-dropcursor</a> 1.1.1 (2018-10-23)</h3>
+<h4>Bug fixes</h4>
+<p>Fix crash when destroying the plugin, due to a misspelled method name.</p>
+<h3><a href="../ref/#dropcursor">prosemirror-dropcursor</a> 1.1.0 (2018-10-22)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes an issue where drop cursors changed line breaking, causing the content to jump around during dragging.</p>
+<h4>New features</h4>
+<p>Between-blocks drop cursors are now shown as a horizontal line.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.6.4 (2018-10-19)</h3>
+<h4>Bug fixes</h4>
+<p>Fix pasting when both text and files are present on the clipboard.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.2.1 (2018-10-19)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes a bug where inline mark delimiters were serialized incorrectly (the closing and opening marks were swapped, which was only noticeable when they are different).</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.6.3 (2018-10-12)</h3>
+<h4>Bug fixes</h4>
+<p>The editor will no longer try to handle file paste events with the old-browser compatibility kludge (which might cause scrolling and focus flickering).</p>
+<h3><a href="../ref/#collab">prosemirror-collab</a> 1.1.1 (2018-10-09)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where <code>mapSelectionBackward</code> didn't work because of a typo.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.6.2 (2018-10-08)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes an issue where event handlers were leaked when destroying an editor</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 1.0.3 (2018-10-08)</h3>
+<h4>Bug fixes</h4>
+<p>Appending a transaction to an undo transaction will no longer immediately clear the redo history.</p>
+<p>When handling appended transactions, the history will keep the last step in the original transaction, not the one from the appended transaction, for testing whether a subsequent transaction is adjacent to the previous one.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.2.0 (2018-10-08)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes an issue where the Markdown serializer would escape special characters in inline code.</p>
+<h4>New features</h4>
+<p>Upgrade the markdown-it dependency to version 8.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.6.2 (2018-10-01)</h3>
+<h4>Bug fixes</h4>
+<p>Prevent <a href="https://prosemirror.net/docs/ref/#model.ContentMatch.findWrapping"><code>ContentMatch.findWrapping</code></a> from returning node types with required attributes.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.6.1 (2018-10-01)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes situation where a vertical <a href="https://prosemirror.net/docs/ref/#view.EditorView.endOfTextblock"><code>endOfTextblock</code></a> query could get confused by nearby widgets or complex parent node representation.</p>
+<h3><a href="../ref/#gapcursor">prosemirror-gapcursor</a> 1.0.3 (2018-10-01)</h3>
+<h4>Bug fixes</h4>
+<p>Don't blanket-forbid gap cursors next to textblocks</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.6.0 (2018-09-27)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes a corner case in which DecorationSet.map would map decorations to incorrect new positions.</p>
+<p>When the editor contains scrollable elements, scrolling the cursor into view also scrolls those.</p>
+<h4>New features</h4>
+<p>The <code>scrollMargin</code> and <code>scrollThreshold</code> props may now hold <code>{left, right, top, bottom}</code> objects to set different margins and thresholds for different sides. Make scrolling from a given start node more robust</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 1.0.5 (2018-09-25)</h3>
+<h4>Bug fixes</h4>
+<p>Fix another issue where overlapping changes that can't be merged could produce a corrupt change set.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.5.3 (2018-09-24)</h3>
+<h4>Bug fixes</h4>
+<p>The cursor is now scrolled into view after keyboard driven selection changes even when they were handled by the browser.</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 1.0.4 (2018-09-24)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes an issue where <code>addSteps</code> could produce invalid change sets when a new step's deleted range overlapped with an incompatible previous deletion.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.5.2 (2018-09-07)</h3>
+<h4>Bug fixes</h4>
+<p>Improves selection management around widgets with no actual HTML content (possibly drawn using CSS pseudo elements).</p>
+<p>Fix extra whitespace in pasted HTML caused by previously-collapsed spacing.</p>
+<p>Slow triple-clicks are no longer treated as two double-clicks in a row.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.5.1 (2018-08-24)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where some DOM selections would cause a non-editable view to crash when reading the selection.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.5.0 (2018-08-21)</h3>
+<h4>New features</h4>
+<p>Mark views are now passed a boolean that indicates whether the mark's content is inline as third argument.</p>
+<h3><a href="../ref/#collab">prosemirror-collab</a> 1.1.0 (2018-08-21)</h3>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/#collab.receiveTransaction"><code>receiveTransaction</code></a> now supports a <code>mapSelectionBackward</code> option that makes it so that text selections are mapped to stay in place when remote changes insert content at their position.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.4.4 (2018-08-13)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where a non-empty DOM selection could stick around even though the state's selection is empty.</p>
+<p>Fix an issue where Firefox would create an extra cursor position when arrow-keying through a widget.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.4.3 (2018-08-12)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where the editor got stuck believing shift was down (and hence pasting as plain text) when it was unfocused with shift held down.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.4.2 (2018-08-03)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where reading the selection from the DOM might crash in non-editable mode.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.4.1 (2018-08-02)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes an issue where backspacing out the last character between the start of a textblock and a widget in Chrome would insert a random hard break.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.4.0 (2018-07-26)</h3>
+<h4>New features</h4>
+<p>The <code>dispatchTransaction</code> prop is now called with <code>this</code> bound to the editor view.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.6.1 (2018-07-24)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug where marks were sometimes parsed incorrectly.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.3.8 (2018-07-24)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where Chrome Android would move the cursor forward by one after backspace-joining two paragraphs.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.2.2 (2018-07-23)</h3>
+<h4>Bug fixes</h4>
+<p>The <code>"appendedTransaction"</code> meta property on appended transactions now points to the root transaction instead of at the transaction itself, which it accidentally did before.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.6.0 (2018-07-20)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where marks would be applied to the wrong node when parsing a slice from DOM.</p>
+<h4>New features</h4>
+<p>Adds a new node spec property, <a href="https://prosemirror.net/docs/ref/#model.NodeSpec.toDebugString"><code>toDebugString</code></a>, making it possible to customize your nodes' <code>toString</code> behavior.</p>
+<h3><a href="../ref/#menu">prosemirror-menu</a> 1.0.5 (2018-07-19)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where menu items would still execute their command when clicked even if disabled.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.1.1 (2018-07-08)</h3>
+<h4>Bug fixes</h4>
+<p>Fix bug that caused superfluous backslashes to be inserted at the start of some lines when serializing to Markdown.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.1.3 (2018-07-03)</h3>
+<h4>Bug fixes</h4>
+<p>Replacing from a code block into a paragraph that has marks, or similar scenarios that would join content with the wrong marks into a node, no longer crashes.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.2.1 (2018-07-02)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes a bug in the default implementation of <code>Selection.getBookmark</code>.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.3.7 (2018-07-02)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a crash when scrolling things into view when the editor isn't a child of <code>document.body</code>.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.1.2 (2018-06-29)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where <a href="https://prosemirror.net/docs/ref/#transform.Transform.replaceRange"><code>replaceRange</code></a> might create invalid nodes.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.1.1 (2018-06-26)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issues in the new <a href="https://prosemirror.net/docs/ref/#transform.dropPoint"><code>dropPoint</code></a> function.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.3.6 (2018-06-21)</h3>
+<h4>Bug fixes</h4>
+<p>Make sure Safari version detection for clipboard support also works in iOS webview.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.1.0 (2018-06-20)</h3>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/#transform.Transform.getMirror"><code>Transform.getMirror</code></a>, usable in obscure circumstances for inspecting the mirroring structure or a transform, is now a public method.</p>
+<p>New utility function <a href="https://prosemirror.net/docs/ref/#transform.dropPoint"><code>dropPoint</code></a>, which tries to find a valid position for dropping a slice near a given document position.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.3.5 (2018-06-20)</h3>
+<h4>Bug fixes</h4>
+<p>Use shared implementation of <a href="https://prosemirror.net/docs/ref/#transform.dropPoint"><code>dropPoint</code></a> to handle finding a drop position.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.3.4 (2018-06-20)</h3>
+<h4>Bug fixes</h4>
+<p>Enable use of browser clipboard API on Mobile Safari version 11 and up, which makes cut work on that platform and should generally improve clipboard handling.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.1.0 (2018-06-20)</h3>
+<h4>New features</h4>
+<p>You can now override the handling of softbreak tokens in a custom handler.</p>
+<h3><a href="../ref/#dropcursor">prosemirror-dropcursor</a> 1.0.1 (2018-06-20)</h3>
+<h4>Bug fixes</h4>
+<p>Dragging from a content node directly to the outside of the editor will now properly hide the drop cursor.</p>
+<p>Make removal of drop cursor part of the drop transaction when possible.</p>
+<p>Use <code>dropPoint</code> from prosemirror-transform, rather than a local parallel implementation.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.3.3 (2018-06-15)</h3>
+<h4>Bug fixes</h4>
+<p>Fix arrow-left cursor motion from cursor wrapper (for example after a link).</p>
+<p>Fix selection glitches when shift-selecting around widget decorations.</p>
+<p>Fix issue where a parsing a code block from the editor DOM might drop newlines in the code.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.3.2 (2018-06-15)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/#view.EditorProps.handleKeyDown"><code>handleKeyDown</code></a> will now get notified of key events happening directly after a composition ends.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.3.1 (2018-06-08)</h3>
+<h4>Bug fixes</h4>
+<p>The package can now be loaded in a web worker context (where <code>navigator</code> is defined but <code>document</code> isn't) without crashing.</p>
+<p>Dropping something like a list item into a textblock will no longer split the textblock.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.5.0 (2018-05-31)</h3>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/#model.ParseRule.getContent"><code>ParseRule.getContent</code></a> is now passed the parser schema as second argument.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.4.4 (2018-05-03)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a regression where <code>DOMParser.parse</code> would fail to apply mark nodes directly at the start of the input.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.4.3 (2018-04-27)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/#model.DOMParser.parseSlice"><code>DOMParser.parseSlice</code></a> can now correctly parses marks at the top level again.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.3.0 (2018-04-24)</h3>
+<h4>Bug fixes</h4>
+<p>Fix mouse-selecting (in IE and Edge) from the end of links and other positions that cause a cursor wrapper.</p>
+<p><a href="https://prosemirror.net/docs/ref/#view.Decoration%5Ewidget">Widget decorations</a> with the same <a href="https://prosemirror.net/docs/ref/#view.Decoration%5Ewidget%5Espec.key">key</a> are now considered equivalent, even if their other spec fields differ.</p>
+<h4>New features</h4>
+<p>The new <a href="https://prosemirror.net/docs/ref/#view.EditorView.posAtDOM"><code>EditorView.posAtDOM</code> method</a> can be used to find the document position corresponding to a given DOM position.</p>
+<p>The new <a href="https://prosemirror.net/docs/ref/#view.EditorView.nodeDOM"><code>EditorView.nodeDOM</code> method</a> gives you the DOM node that is used to represent a specific node in the document.</p>
+<p><a href="https://prosemirror.net/docs/ref/#view.Decoration%5Ewidget"><code>Decoration.widget</code></a> now accepts a function as second argument, which can be used to delay rendering of the widget until the document is drawn (at which point a reference to the view is available).</p>
+<p>The <code>getPos</code> function passed to a <a href="https://prosemirror.net/docs/ref/#view.editorProps.nodeViews">node view constructor</a> can now be called immediately (it used to return undefined until rendering had finished).</p>
+<p>The function used to render a <a href="https://prosemirror.net/docs/ref/#view.Decoration%5Ewidget">widget</a> is now passed a <code>getPos</code> method that event handlers can use to figure out where in the DOM the widget is.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.0.4 (2018-04-17)</h3>
+<h4>Bug fixes</h4>
+<p>Fix crash when serializing marks with line breaks inside of them.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.4.2 (2018-04-15)</h3>
+<h4>Bug fixes</h4>
+<p>Remove a <code>console.log</code> that was accidentally left in the previous release.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.0.10 (2018-04-15)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/#transform.Transform.setBlockType"><code>Transform.setBlockType</code></a> no longer drops marks on the nodes it updates.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.4.1 (2018-04-13)</h3>
+<h4>Bug fixes</h4>
+<p><code>DOMParser</code> can now parse marks on block nodes.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.0.7 (2018-04-09)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes an issue where <a href="https://prosemirror.net/docs/ref/#commands.joinBackward"><code>joinBackward</code></a> might create a selection pointing into the old document.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.0.9 (2018-04-05)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug that made <a href="https://prosemirror.net/docs/ref/#transform.replaceStep"><code>replaceStep</code></a> unable to generate wrapper nodes in some circumstances.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.2.0 (2018-04-05)</h3>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/#state.EditorState%5Ecreate"><code>EditorState.create</code></a> now accepts a <code>storedMark</code> option to set the state's stored marks.</p>
+<p><a href="https://prosemirror.net/docs/ref/#state.EditorState.toJSON"><code>EditorState.toJSON</code></a> and <a href="https://prosemirror.net/docs/ref/#state.EditorState%5EfromJSON"><code>fromJSON</code></a> persist the set of stored marks, when available.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.0.8 (2018-04-04)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes an issue where <a href="https://prosemirror.net/docs/ref/#transform.replaceStep"><code>replaceStep</code></a> could generate slices that internally violated the schema.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.0.6 (2018-04-04)</h3>
+<h4>Bug fixes</h4>
+<p>The <a href="https://prosemirror.net/docs/ref/#commands.setBlockType"><code>setBlockType</code> command</a> command is now considered applicable when <em>any</em> of the selected textblocks can be changed (it used to only look at the first one).</p>
+<p>Fix crash when calling <a href="https://prosemirror.net/docs/ref/#commands.splitBlock"><code>splitBlock</code></a> when the selection isn't in a block node (by disabling the command in that case).</p>
+<p>Fixes an issue where <a href="https://prosemirror.net/docs/ref/#commands.joinForward"><code>joinForward</code></a> might create a selection pointing into the old document.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.4.0 (2018-03-22)</h3>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/#model.ContentMatch.defaultType"><code>ContentMatch.defaultType</code></a>, a way to get a matching node type at a content match position, is now public.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.3.0 (2018-03-22)</h3>
+<h4>New features</h4>
+<p><code>ContentMatch</code> objects now have an <a href="https://prosemirror.net/docs/ref/#model.ContentMatch.edgeCount"><code>edgeCount</code></a> property and an <a href="https://prosemirror.net/docs/ref/#model.ContentMatch.edge"><code>edge</code></a> method, providing direct access to the finite automaton structure.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.0.7 (2018-03-21)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/#transform.Transform.deleteRange"><code>Transform.deleteRange</code></a> will cover unmatched opening at the start of the deleted range.</p>
+<h3><a href="../ref/#schema-list">prosemirror-schema-list</a> 1.0.1 (2018-03-16)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes a bug that caused <a href="https://prosemirror.net/docs/ref/#schema-list.wrapInList"><code>wrapInList</code></a> to split list items in the wrong place.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.2.2 (2018-03-15)</h3>
+<h4>Bug fixes</h4>
+<p>Throw errors, rather than constructing invalid objects, when deserializing from invalid JSON data.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.2.1 (2018-03-15)</h3>
+<h4>Bug fixes</h4>
+<p>Content expressions with text nodes in required positions now raise the appropriate error about being unable to generate such nodes.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.0.6 (2018-03-15)</h3>
+<h4>Bug fixes</h4>
+<p>Throw errors, rather than constructing invalid objects, when deserializing from invalid JSON data.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.1.1 (2018-03-15)</h3>
+<h4>Bug fixes</h4>
+<p>Throw errors, rather than constructing invalid objects, when deserializing from invalid JSON data.</p>
+<h3><a href="../ref/#gapcursor">prosemirror-gapcursor</a> 1.0.2 (2018-03-15)</h3>
+<h4>Bug fixes</h4>
+<p>Throw errors, rather than constructing invalid objects, when deserializing from invalid JSON data.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.2.0 (2018-03-14)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/#model.Node.rangeHasMark"><code>rangeHasMark</code></a> now always returns false for empty ranges.</p>
+<p>The DOM renderer no longer needlessly splits mark nodes when starting a non-rendered mark.</p>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/#model.DOMSerializer"><code>DOMSerializer</code></a> now allows <a href="https://prosemirror.net/docs/ref/#model.DOMOutputSpec">DOM specs</a> for marks to have holes in them, to specify the precise position where their content should be rendered.</p>
+<p>The base position parameter to <a href="https://prosemirror.net/docs/ref/#model.Node.nodesBetween"><code>Node.nodesBetween</code></a> and <a href="https://prosemirror.net/docs/ref/#model.Fragment.nodesBetween"><code>Fragment.nodesBetween</code></a> is now part of the public interface.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.0.5 (2018-03-14)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/#transform.replaceStep"><code>replaceStep</code></a> will now return null rather than an empty step when it fails to place the slice.</p>
+<p>Avoid duplicating defining parent nodes in <a href="https://prosemirror.net/docs/ref/#tranform.Transform.replaceRange"><code>replaceRange</code></a>.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.2.0 (2018-03-14)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a problem where updating the state of a non-editable view would not set the selection, causing problems when the DOM was updated in a way that disrupted the DOM selection.</p>
+<p>Fix an issue where, on IE and Chrome, starting a drag selection in a position that required a cursor wrapper (on a mark boundary) would sometimes fail to work.</p>
+<p>Fix crash in key handling when the editor is focused but there is no DOM selection.</p>
+<p>Fixes a bug that prevented decorations inside node views with a <a href="https://prosemirror.net/docs/ref/#view.NodeView.contentDOM"><code>contentDOM</code> property</a> from being drawn.</p>
+<p>Fixes an issue where, on Firefox, depending on a race condition, the skipping over insignificant DOM nodes done at keypress was canceled again before the keypress took effect.</p>
+<p>Fixes an issue where an <code>:after</code> pseudo-element on a non-inclusive mark could block the cursor, making it impossible to arrow past it.</p>
+<h4>New features</h4>
+<p>The DOM structure for marks is no longer constrained to a single node. <a href="https://prosemirror.net/docs/ref/#view.NodeView">Mark views</a> can have a <code>contentDOM</code> property, and <a href="https://prosemirror.net/docs/ref/#model.MarkSpec">mark spec</a> <code>toDOM</code> methods can return structures with holes.</p>
+<p><a href="https://prosemirror.net/docs/ref/#view.Decoration%5Ewidget">Widget decorations</a> are now wrapped in the marks of the node after them when their <a href="https://prosemirror.net/docs/ref/#view.Decoration%5Ewidget%5Espec.side"><code>side</code> option</a> is &gt;= 0.</p>
+<p><a href="https://prosemirror.net/docs/ref/#view.Decoration%5Ewidget">Widget decorations</a> may now specify a <a href="https://prosemirror.net/docs/ref/#view.Decoration%5Ewidget%5Espec.marks"><code>marks</code> option</a> to set the precise set of marks they should be wrapped in.</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 1.0.2 (2018-03-13)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug that could corrupt the history when rebasing changes because of collaborative editing.</p>
+<h3><a href="../ref/#menu">prosemirror-menu</a> 1.0.4 (2018-03-09)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes a bug that prevented the menu bar from properly unregistering its <code>"scroll"</code> event handlers when destroyed.</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 1.0.1 (2018-03-05)</h3>
+<h4>Bug fixes</h4>
+<p>Fix crash that could occur (in specific circumstance) when redoing.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.1.1 (2018-03-01)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes typo that broke paste.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.1.0 (2018-02-28)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes issue where dragging a draggable node directly below a selected node would move the old selection rather than the target node.</p>
+<p>A drop that can't fit the dropped content will no longer dispatch an empty transaction.</p>
+<h4>New features</h4>
+<p>Transactions generated for drop now have a <code>"uiEvent"</code> metadata field holding <code>"drop"</code>. Paste and cut transactions get that field set to <code>"paste"</code> or <code>"cut"</code>.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.0.4 (2018-02-23)</h3>
+<h4>Bug fixes</h4>
+<p>Fix overeager closing of destination nodes when fitting a slice during replacing.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.0.3 (2018-02-23)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a problem where slice-placing didn't handle content matches correctly and might generate invalid steps or fail to generate steps though a valid one exists.</p>
+<p>Allows adjacent nodes from an inserted slice to be placed in different parent nodes, allowing <code>Transform.replace</code> to create fits that weren't previously found.</p>
+<h3><a href="../ref/#keymap">prosemirror-keymap</a> 1.0.1 (2018-02-23)</h3>
+<h4>Bug fixes</h4>
+<p>Upgrade <code>w3c-keyname</code> dependency to version 1.1.8 to prevent users getting stuck with a buggy version.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.0.11 (2018-02-16)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where the cursor was visible when a node was selected on recent Chrome versions.</p>
+<h3><a href="../ref/#gapcursor">prosemirror-gapcursor</a> 1.0.1 (2018-02-16)</h3>
+<h4>Bug fixes</h4>
+<p>Prevent issue where clicking on a selectable node near a valid gap cursor position would create a gap cursor rather than select the node.</p>
+<h3><a href="../ref/#menu">prosemirror-menu</a> 1.0.3 (2018-02-15)</h3>
+<h4>Bug fixes</h4>
+<p>The floating menu bar now works better in a scrollable parent node.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.0.5 (2018-01-30)</h3>
+<h4>Bug fixes</h4>
+<p>Fix crash in <a href="https://prosemirror.net/docs/ref/#commands.splitBlock"><code>splitBlock</code></a> when <code>defaultContentType</code> returns null.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.0.2 (2018-01-24)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes a crash in <a href="https://prosemirror.net/docs/ref/#transform.Transform.replace"><code>replace</code></a>.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.0.10 (2018-01-24)</h3>
+<h4>Bug fixes</h4>
+<p>Improve preservation of open and closed nodes in slices taken from the clipboard.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.1.0 (2018-01-22)</h3>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/#state.EditorState.toJSON"><code>EditorState.toJSON</code></a> now accepts a string or number as argument to support the way <code>JSON.stringify</code> can call it.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.0.4 (2018-01-18)</h3>
+<h4>Bug fixes</h4>
+<p>Pressing delete in front of an <a href="https://prosemirror.net/docs/ref/#model.NodeSpec.isolating">isolating</a> node no longer opens it.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.0.9 (2018-01-17)</h3>
+<h4>Bug fixes</h4>
+<p>Work around a Chrome cursor motion bug by making sure <br> nodes don't get a contenteditable=false attribute.</p>
+<h3><a href="../ref/#menu">prosemirror-menu</a> 1.0.2 (2018-01-17)</h3>
+<h4>Bug fixes</h4>
+<p>Make the <code>render</code> property of a menu item spec work as documented again.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.0.3 (2018-01-10)</h3>
+<h4>Bug fixes</h4>
+<p>Fix dependency version range for prosemirror-model.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.0.8 (2018-01-09)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where <a href="https://prosemirror.net/docs/ref/#view.DecorationSet.map"><code>Decoration.map</code></a> would in some situations with nested nodes incorrectly map decoration positions.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.1.0 (2018-01-05)</h3>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/#model.Slice%5EmaxOpen"><code>Slice.maxOpen</code></a> now has a second argument that can be used to prevent it from opening isolating nodes.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.0.7 (2018-01-05)</h3>
+<h4>Bug fixes</h4>
+<p>Pasting from an external source no longer opens isolating nodes like table cells.</p>
+<h3><a href="../ref/#test-builder">prosemirror-test-builder</a> 1.0.1 (2018-01-05)</h3>
+<h4>Bug fixes</h4>
+<p>Fix overly restrictive depencency version ranges.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.0.6 (2017-12-26)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/#view.DecorationSet.remove"><code>DecorationSet.remove</code></a> now uses a proper deep compare to determine if widgets are the same (it used to compare by identity).</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.0.3 (2017-12-19)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where <a href="https://prosemirror.net/docs/ref/#commands.joinBackward"><code>joinBackward</code></a> would sometimes create an invalid selection.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.0.2 (2017-12-13)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where a character might be selected after overwriting across block nodes.</p>
+<p>Make sure <code>replaceSelectionWith</code> doesn't needlessly copy unmarked nodes.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.0.2 (2017-12-07)</h3>
+<h4>Bug fixes</h4>
+<p>Code blocks are always wrapped in triple backticks when serializing, to avoid parsing corner cases around indented code blocks.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.0.5 (2017-12-05)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where deeply nested decorations were mapped incorrectly in corner cases.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.0.4 (2017-11-27)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a corner-case crash during drop.</p>
+<h3><a href="../ref/#example-setup">prosemirror-example-setup</a> 1.0.1 (2017-11-24)</h3>
+<h4>Bug fixes</h4>
+<p>The example menu now allows you to enter relative links without automatically adding http:// in front of them.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.0.3 (2017-11-23)</h3>
+<h4>Bug fixes</h4>
+<p>Pressing backspace between two identical characters will no longer generate a transaction that deletes the second one.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.0.2 (2017-11-21)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/#commands.splitBlock"><code>splitBlock</code></a> no longer crashes when used in a block that's it's parent node's only allowed child.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.0.2 (2017-11-20)</h3>
+<h4>Bug fixes</h4>
+<p>Fix test for whether a node can be selected when arrowing onto it from the right.</p>
+<p>Calling <a href="https://prosemirror.net/docs/ref/#view.EditorView.posAtCoords"><code>posAtCoords</code></a> while a read from the DOM is pending will no longer return a malformed result.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.0.1 (2017-11-10)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/#model.ReplaceError"><code>ReplaceError</code></a> instances now properly inherit from <code>Error</code>.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.0.1 (2017-11-10)</h3>
+<h4>Bug fixes</h4>
+<p>The errors raised by <a href="https://prosemirror.net/docs/ref/#transform.Transform.step"><code>Transform.step</code></a> now properly inherit from Error.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.0.1 (2017-11-10)</h3>
+<h4>Bug fixes</h4>
+<p>Deleting the last character in a list item no longer results in a spurious hard_break node on Safari.</p>
+<p>Fixes a crash on IE11 when starting to drag.</p>
+<h3><a href="../ref/#inputrules">prosemirror-inputrules</a> 1.0.1 (2017-11-10)</h3>
+<h4>Bug fixes</h4>
+<p>Input rules no longer fire in blocks that have their <code>code</code> spec set to true.</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 1.0.3 (2017-11-10)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where deleting, inserting, and deleting the same content would lead to an inconsistent change set.</p>
+<h3><a href="../ref/#markdown">prosemirror-markdown</a> 1.0.1 (2017-11-05)</h3>
+<h4>Bug fixes</h4>
+<p>Link marks are now non-inclusive (typing after them produces non-linked text).</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 1.0.1 (2017-11-01)</h3>
+<h4>Bug fixes</h4>
+<p>Typing over marked text now properly makes the new text inherit the old text's marks.</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 1.0.2 (2017-10-19)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug that caused <code>addSteps</code> to break when merging two insertions into a single deletion.</p>
+<h3><a href="../ref/#menu">prosemirror-menu</a> 1.0.1 (2017-10-18)</h3>
+<h4>Bug fixes</h4>
+<p>The menu no longer flips enabled/disabled styles on each update in IE11.</p>
+<h3><a href="../ref/#changeset">prosemirror-changeset</a> 1.0.1 (2017-10-18)</h3>
+<h4>Bug fixes</h4>
+<p>Fix crash in <code>ChangeSet.addSteps</code>.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 1.0.0 (2017-10-13)</h3>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/#model.ParseRule.context"><code>ParseRule.context</code></a> may now include multiple, pipe-separated context expressions.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 1.0.0 (2017-10-13)</h3>
+<h4>Bug fixes</h4>
+<p>When <a href="https://prosemirror.net/docs/ref/#transform.Transform.setBlockType"><code>setBlockType</code></a> comes across a textblock that can't be changed due to schema constraints, it skips it instead of failing.</p>
+<p><a href="https://prosemirror.net/docs/ref/#transform.canSplit"><code>canSplit</code></a> now returns false when the requested split goes through isolating nodes.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 1.0.0 (2017-10-13)</h3>
+<h4>Bug fixes</h4>
+<p>Dragging nodes with a node view that handles its own mouse events should work better now.</p>
+<p>List item DOM nodes are no longer assigned <code>pointer-events: none</code> in the default style. Ctrl-clicking list markers now properly selects the list item again.</p>
+<p>Arrow-down through an empty textblock no longer causes the browser to forget the cursor's horizontal position.</p>
+<p>Copy-dragging on OS X is now done by holding option, rather than control, following the convention on that system.</p>
+<p>Fixes a crash related to decoration management.</p>
+<p>Fixes a problem where using cut on IE11 wouldn't actually remove the selected text.</p>
+<p>Copy/paste on Edge 15 and up now uses the clipboard API, fixing a problem that made them fail entirely.</p>
+<h4>New features</h4>
+<p>The <a href="https://prosemirror.net/docs/ref/#view.EditorView.dragging"><code>dragging</code></a> property of a view, which contains information about editor content being dragged, is now part of the public interface.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 1.0.0 (2017-10-13)</h3>
+<h4>New features</h4>
+<p>The <a href="https://prosemirror.net/docs/ref/#commands.setBlockType"><code>setBlockType</code> command</a> can now be used to change the types of multiple selected textblocks (rather than only one).</p>
+<p>The platform-dependent versions of the <a href="https://prosemirror.net/docs/ref/#commands.baseKeymap">base keymap</a> are now exported separately as <a href="https://prosemirror.net/docs/ref/#commands.pcBaseKeymap"><code>pcBaseKeymap</code></a> and <a href="https://prosemirror.net/docs/ref/#commands.macBaseKeymap"><code>macBaseKeymap</code></a>.</p>
+<h3><a href="../ref/#gapcursor">prosemirror-gapcursor</a> 1.0.0 (2017-10-13)</h3>
+<h4>New features</h4>
+<p>Valid gap cursor positions are not determined in a way that allows them inside nested nodes. By default, any position where a textblock can be inserted is valid gap cursor position.</p>
+<p>Nodes can override whether they allow gap cursors with the <code>allowGapCursor</code> property in their spec.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 0.24.0 (2017-09-25)</h3>
+<h4>Breaking changes</h4>
+<p>The <code>setNodeType</code> method on transforms is now more descriptively called <a href="https://prosemirror.net/docs/ref/version/0.24.0.html#transform.Transform.setNodeMarkup"><code>setNodeMarkup</code></a>. The old name will continue to work with a warning until the next release.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.24.0 (2017-09-25)</h3>
+<h4>New features</h4>
+<p>The <a href="https://prosemirror.net/docs/ref/version/0.24.0.html#view.EditorProps.clipboardTextParser"><code>clipboardTextParser</code></a> prop is now passed a context position.</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 0.24.0 (2017-09-25)</h3>
+<h4>New features</h4>
+<p>It is no longer necessary to manually enable the <code>preserveItems</code> option to the history plugin when using collaborative editing. (This behavior is now automatically enabled when necessary.)</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 0.23.1 (2017-09-21)</h3>
+<h4>Bug fixes</h4>
+<p><code>NodeType.allowsMarks</code> and <code>allowedMarks</code> now actually work for nodes that allow only specific marks.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 0.23.0 (2017-09-13)</h3>
+<h4>Breaking changes</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.ResolvedPos.marks"><code>ResolvedPos.marks</code></a> no longer takes a parameter (you probably want <a href="https://prosemirror.net/doc/ref/version/0.23.0.html#model.ResolvedPos.marksAcross"><code>marksAcross</code></a> if you were passing true there).</p>
+<p>Attribute and mark constraints in <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeSpec.content">content expressions</a> are no longer supported (this also means the <code>prosemirror-schema-table</code> package, which relied on them, is no longer supported). In this release, mark constraints are still (approximately) recognized with a warning, when present.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.ContentMatch"><code>ContentMatch</code></a> objects lost a number of methods: <code>matchNode</code>, <code>matchToEnd</code>, <code>findWrappingFor</code> (which can be easily emulated using the remaining API), and <code>allowsMark</code>, which is now the responsibility of <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.allowsMarkType">node types</a> instead.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.ContentMatch.validEnd"><code>ContentMatch.validEnd</code></a> is now a property rather than a method.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.ContentMatch.findWrapping"><code>ContentMatch.findWrapping</code></a> now returns an array of plain node types, with no attribute information (since this is no longer necessary).</p>
+<p>The <code>compute</code> method for attributes is no longer supported.</p>
+<p>Fragments no longer have an <code>offsetAt</code> method.</p>
+<p><code>DOMParser.schemaRules</code> is no longer public (use <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.DOMParser%5EfromSchema"><code>fromSchema</code></a> and get the resulting parser's <code>rules</code> property instead).</p>
+<p>The DOM parser option <code>topStart</code> has been replaced by <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.ParseOptions.topMatch"><code>topMatch</code></a>.</p>
+<p>The <code>DOMSerializer</code> methods <code>nodesFromSchema</code> and <code>marksFromSchema</code> are no longer public (construct a serializer with <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.DOMSerializer%5EfromSchema"><code>fromSchema</code></a> and read its <code>nodes</code> and <code>marks</code> properties instead).</p>
+<h4>Bug fixes</h4>
+<p>Fix issue where whitespace at node boundaries was sometimes dropped during content parsing.</p>
+<p>Attribute default values of <code>undefined</code> are now allowed.</p>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.ParseRule.contentElement"><code>contentElement</code></a> in parse rules may now be a function.</p>
+<p>The new method <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.ResolvedPos.marksAcross"><code>ResolvedPos.marksAcross</code></a> can be used to find the set of marks that should be preserved after a deletion.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeSpec.content">Content expressions</a> are now a regular language, meaning all the operators can be nested and composed as desired, and a bunch of constraints on what could appear next to what have been lifted.</p>
+<p>The starting content match for a node type now lives in <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.contentMatch"><code>NodeType.contentMatch</code></a>.</p>
+<p>Allowed marks are now specified per node, rather than in content expressions, using the <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeSpec.marks"><code>marks</code></a> property on the node spec.</p>
+<p>Node types received new methods <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.allowsMarkType"><code>allowsMarkType</code></a>, <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.allowsMarks"><code>allowsMarks</code></a>, and <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.allowedMarks"><code>allowedMarks</code></a>, which tell you about the marks that node supports.</p>
+<p>The <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#model.ParseRule.style"><code>style</code></a> property on parse rules may now have the form <code>"font-style=italic"</code> to only match styles that have the value after the equals sign.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 0.23.0 (2017-09-13)</h3>
+<h4>Breaking changes</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.23.0.html#transform.Step.toJSON"><code>Step.toJSON</code></a> no longer has a default implementation.</p>
+<p>Steps no longer have an <code>offset</code> method. Map them through a map created with <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#transform.StepMap%5Eoffset"><code>StepMap.offset</code></a> instead.</p>
+<p>The <code>clearMarkup</code> method on <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#transform.Transform"><code>Transform</code></a> is no longer supported (you probably needed <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#transform.Transform.clearIncompatible"><code>clearIncompatible</code></a> anyway).</p>
+<h4>Bug fixes</h4>
+<p>Pasting a list item at the start of a non-empty textblock now wraps the textblock in a list.</p>
+<p>Marks on open nodes at the left of a slice are no longer dropped by <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#transform.Transform.replace"><code>Transform.replace</code></a>.</p>
+<h4>New features</h4>
+<p><code>StepMap</code> now has a static method <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#transform.StepMap%5Eoffset"><code>offset</code></a>, which can be used to create a map that offsets all positions by a given distance.</p>
+<p>Transform objects now have a <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#transform.Transform.clearIncompatible"><code>clearIncompatible</code></a> method that can help make sure a node's content matches another node type.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.23.0 (2017-09-13)</h3>
+<h4>Breaking changes</h4>
+<p>The <code>onFocus</code>, <code>onBlur</code>, and <code>handleContextMenu</code> props are no longer supported. You can achieve their effect with the <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#view.EditorProps.handleDOMEvents"><code>handleDOMEvents</code></a> prop.</p>
+<h4>Bug fixes</h4>
+<p>Fixes occasional crash when reading the selection in Firefox.</p>
+<p>Putting a table cell on the clipboard now properly wraps it in a table.</p>
+<p>The view will no longer scroll into view when receiving a state that isn't derived from its previous state.</p>
+<h4>New features</h4>
+<p>Transactions caused by a paste now have their "paste" meta property set to true.</p>
+<p>Adds a new view prop, <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#view.EditorProps.handleScrollToSelection"><code>handleScrollToSelection</code></a> to override the behavior of scrolling the selection into view.</p>
+<p>The new editor prop <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#view.EditorProps.clipboardTextSerializer"><code>clipboardTextSerializer</code></a> allows you to override the way a piece of document is converted to clipboard text.</p>
+<p>Adds the editor prop <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#view.EditorProps.clipboardTextParser"><code>clipboardTextParser</code></a>, which can be used to define your own parsing strategy for clipboard text content.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.23.0.html#view.DecorationSet.find"><code>DecorationSet.find</code></a> now supports passing a predicate to filter decorations by spec.</p>
+<h3><a href="../ref/#inputrules">prosemirror-inputrules</a> 0.23.0 (2017-09-13)</h3>
+<h4>Breaking changes</h4>
+<p>Schema-specific rule-builders <code>blockQuoteRule</code>, <code>orderedListRule</code>, <code>bulletListRule</code>, <code>codeBlockRule</code>, and <code>headingRule</code>, along with the <code>allInputRules</code> array, are no longer included in this module.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 0.23.0 (2017-09-13)</h3>
+<h4>Breaking changes</h4>
+<p><code>joinForward</code> and <code>joinBackward</code> no longer fall back to selecting the next node when no other behavior is possible. There are now separate commands <code>selectNodeForward</code> and <code>selectNodeBackward</code> that do this, which the base keymap binds as fallback behavior.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.23.0.html#commands.baseKeymap"><code>baseKeymap</code></a> no longer binds keys for <code>joinUp</code>, <code>joinDown</code>, <code>lift</code>, and <code>selectParentNode</code>.</p>
+<h4>New features</h4>
+<p>New commands <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#commands.selectNodeForward"><code>selectNodeForward</code></a> and <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#commands.selectNodeBackward"><code>selectNodeBackward</code></a> added.</p>
+<h3><a href="../ref/#schema-list">prosemirror-schema-list</a> 0.23.0 (2017-09-13)</h3>
+<h4>Bug fixes</h4>
+<p>The <a href="https://prosemirror.net/docs/ref/version/0.23.0.html#schema-list.splitListItem"><code>splitListItem</code> command</a> now splits the parent list item when executed in a (trailing) empty list item in a nested list.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.22.1 (2017-08-16)</h3>
+<h4>Bug fixes</h4>
+<p>Invisible selections that don't cover any content (i.e., a cursor) are now properly hidden.</p>
+<p>Initializing the editor view non-editable no longer causes a crash.</p>
+<h3><a href="../ref/#keymap">prosemirror-keymap</a> 0.22.1 (2017-07-14)</h3>
+<h4>Bug fixes</h4>
+<p>Bindings like Alt-3 should now fire even if your keyboard produces a special character for that combination.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 0.22.2 (2017-07-06)</h3>
+<h4>Bug fixes</h4>
+<p>Fix another bug in the way <code>canSplit</code> interpreted its <code>typesAfter</code> argument.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 0.22.1 (2017-07-03)</h3>
+<h4>Bug fixes</h4>
+<p>Fix crash in <a href="https://prosemirror.net/docs/ref/version/0.22.0.html#transform.canSplit"><code>canSplit</code></a> when an array containing null fields is passed as fourth argument.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 0.22.0 (2017-06-29)</h3>
+<h4>Bug fixes</h4>
+<p>When using <a href="https://prosemirror.net/docs/ref/version/0.22.0.html#model.DOMParser.parseSlice"><code>parseSlice</code></a>, inline DOM content wrapped in block elements for which no parse rule is defined will now be properly wrapped in a textblock node.</p>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.22.0.html#model.ResolvedPos">Resolved positions</a> now have a <a href="https://prosemirror.net/docs/ref/version/0.22.0.html#model.ResolvedPos.doc"><code>doc</code></a> accessor to easily get their root node.</p>
+<p>Parse rules now support a <a href="https://prosemirror.net/docs/ref/version/0.22.0.html#model.ParseRule.namespace"><code>namespace</code> property</a> to match XML namespaces.</p>
+<p>The <a href="https://prosemirror.net/docs/ref/version/0.22.0.html#model.NodeRange"><code>NodeRange</code></a> constructor is now public (whereas before you could only construct these through <a href="https://prosemirror.net/docs/ref/version/0.22.0.html#model.ResolvedPos.blockRange"><code>blockRange</code></a>).</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 0.22.0 (2017-06-29)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.22.0.html#transform.canSplit"><code>canSplit</code></a> now returns false when given custom after-split node types that don't match the content at that point.</p>
+<p>Fixes <a href="https://prosemirror.net/docs/ref/version/0.22.0.html#transform.canLift"><code>canLift</code></a> incorrectly returning null when lifting into an isolating node.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.22.0 (2017-06-29)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where moving the cursor through a text widget causes the editor to lose the selection in Chrome.</p>
+<p>Fixes an issue where down-arrow in front of a widget would sometimes not cause any cursor motion on Chrome.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.22.0.html#view.EditorView.destroy">Destroying</a> a <a href="https://prosemirror.net/docs/ref/version/0.22.0.html#view.EditorView.constructor">mounted</a> editor view no longer leaks event handlers.</p>
+<p>Display updates for regular, non-composition input are now synchronous, which should reduce flickering when, for example, updating decorations in response to typing.</p>
+<h4>New features</h4>
+<p>The editor can now be initialized in a document other than the global document (say, an <code>iframe</code>).</p>
+<p>Editor views now have a <a href="https://prosemirror.net/docs/ref/version/0.22.0.html#view.EditorView.domAtPos"><code>domAtPos</code> method</a>, which gives you the DOM position corresponding to a given document position.</p>
+<h3><a href="../ref/#inputrules">prosemirror-inputrules</a> 0.22.0 (2017-06-29)</h3>
+<h4>Bug fixes</h4>
+<p>Input rules with spaces in them now match any whitespace where the space is expected, to avoid mysteriously not working when a non-breaking space is present.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 0.21.1 (2017-05-16)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.21.0.html#transform.Transform.addMark"><code>addMark</code></a> no longer assumes marks always <a href="https://prosemirror.net/docs/ref/version/0.21.0.html#model.MarkSpec.excludes">exclude</a> only themselves.</p>
+<p><code>replaceRange</code>](https://prosemirror.net/docs/ref/version/0.21.0.html#transform.Transform.replaceRange) and <a href="https://prosemirror.net/docs/ref/version/0.21.0.html#transform.Transform.deleteRange"><code>deleteRange</code></a> will no longer expand the range across isolating node boundaries.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.21.1 (2017-05-09)</h3>
+<h4>Bug fixes</h4>
+<p>Copying and pasting table cells on Edge no longer strips the table structure.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 0.21.0 (2017-05-03)</h3>
+<h4>Breaking changes</h4>
+<p>The <code>openLeft</code> and <code>openRight</code> properties of <code>Slice</code> objects have been renamed to <a href="https://prosemirror.net/docs/ref/version/0.21.0.html#model.Slice.openStart"><code>openStart</code></a> and <a href="https://prosemirror.net/docs/ref/version/0.21.0.html#model.Slice.openEnd"><code>openEnd</code></a> to avoid confusion in right-to-left text. The old names will continue to work with a warning until the next release.</p>
+<h4>New features</h4>
+<p>Mark <a href="https://prosemirror.net/docs/ref/version/0.21.0.html#model.MarkSpec.toDOM">serializing functions</a> now get a second parameter that indicates whether the mark's content is inline or block nodes.</p>
+<p>Setting a mark serializer to <code>null</code> in a <a href="https://prosemirror.net/docs/ref/version/0.21.0.html#model.DOMSerializer"><code>DOMSerializer</code></a> can now be used to omit that mark when serializing.</p>
+<p>Node specs support a new property <a href="https://prosemirror.net/docs/ref/version/0.21.0.html#model.NodeSpec.isolating"><code>isolating</code></a>, which is used to disable editing actions like backspacing and lifting across such a node's boundaries.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 0.21.0 (2017-05-03)</h3>
+<h4>Breaking changes</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.21.0.html#state.Selection%5EatStart"><code>Selection.atStart</code></a>, and <a href="https://prosemirror.net/docs/ref/version/0.21.0.html#state.Selection%5EatEnd"><code>atEnd</code></a> no longer take a second <code>textOnly</code> parameter.</p>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.21.0.html#state.Selection%5Enear"><code>Selection.near</code></a>, <a href="https://prosemirror.net/docs/ref/version/0.21.0.html#state.Selection%5EatStart"><code>atStart</code></a>, and <a href="https://prosemirror.net/docs/ref/version/0.21.0.html#state.Selection%5EatEnd"><code>atEnd</code></a> will now fall back to returning an <a href="https://prosemirror.net/docs/ref/version/0.21.0.html#state.AllSelection"><code>AllSelection</code></a> when unable to find a valid selection. This removes the (undocumented) requirement that documents always contain a valid selection position (though you'll probably still want to maintain this for practical UI reasons).</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.21.0 (2017-05-03)</h3>
+<h4>Breaking changes</h4>
+<p>The <code>associative</code> option to widget decorations is no longer supported. To make a widget left-associative, set its <code>side</code> option to a negative number. <code>associative</code> will continue to work with a warning until the next release.</p>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.21.0.html#view.Decoration%5Ewidget">Widget decorations</a> now support a <code>side</code> option that controls which side of them the cursor is drawn, where they move when content is inserted at their position, and the order in which they appear relative to other widgets at the same position.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.20.5 (2017-05-02)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes an issue where the DOM selection could be shown on the wrong side of hard break or image nodes.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.20.4 (2017-04-24)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug that prevented the DOM selection from being updated when the new position was near the old one in some circumstances.</p>
+<p>Stop interfering with alt-d keypresses on OS X.</p>
+<p>Fix issue where reading a DOM change in a previously empty node could crash.</p>
+<p>Fixes crash when reading a change that removed a decorated text node from the DOM.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.20.3 (2017-04-12)</h3>
+<h4>Bug fixes</h4>
+<p>Shift-pasting and pasting into a code block now does the right thing on IE and Edge.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.20.2 (2017-04-05)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes a bug that broke dragging from the editor.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.20.1 (2017-04-04)</h3>
+<h4>Bug fixes</h4>
+<p>Typing in code blocks no longer replaces newlines with spaces.</p>
+<p>Copy and paste on Internet Explorer, Edge, and mobile Safari should now behave more like it does on other browsers. Handlers are called, and the changes to the document are made by ProseMirror's code, not the browser.</p>
+<p>Fixes a problem where triple-clicking the editor would sometimes cause the scroll position to inexplicably jump around on IE11.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 0.20.0 (2017-04-03)</h3>
+<h4>Breaking changes</h4>
+<p>Newlines in the text are now normalized to spaces when parsing except when you set <code>preserveWhitespace</code> to <code>"full"</code> in your <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#model.DOMParser.parse">options</a> or in a <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#model.ParseRule.preserveWhitespace">parse rule</a>.</p>
+<h4>Bug fixes</h4>
+<p>Fix crash in IE when parsing DOM content.</p>
+<h4>New features</h4>
+<p>Fragments now have <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#model.Fragment.nodesBetween"><code>nodesBetween</code></a> and <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#model.Fragments.descendants"><code>descendants</code></a> methods, providing the same functionality as the methods by the same name on nodes.</p>
+<p>Resolved positions now have <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#model.ResolvedPos.max"><code>max</code></a> and <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#model.ResolvedPos.min"><code>min</code></a> methods to easily find a maximum or minimum position.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 0.20.0 (2017-04-03)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes issue where replacing would sometimes unexpectedly split nodes.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 0.20.0 (2017-04-03)</h3>
+<h4>Breaking changes</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.20.0.html#state.Selection%5Enear"><code>Selection.near</code></a> no longer accepts a <code>textOnly</code> parameter.</p>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.20.0.html#state.TextSelection%5Ebetween"><code>TextSelection.between</code></a> may now return a node selection when the document does not contain a valid cursor position.</p>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.20.0.html#model.Selection"><code>Selection</code></a> objects now implement a <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#model.Selection.content"><code>content</code></a> method that returns their content. This is used to determine what ends up on the clipboard when the selection is copied or dragged.</p>
+<p>Selections may now specify multiple <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#state.Selection.ranges">ranges</a> that they cover, to generalize to more types of selections. The <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#state.Selection"><code>Selection</code></a> superclass constructor takes an array of <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#state.SelectionRange">ranges</a> as optional third argument.</p>
+<p>Selections gained new methods <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#state.Selection.replace"><code>replace</code></a> and <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#state.Selection.replaceWith"><code>replaceWith</code></a> to provide subclasses more control over how selections of that type respond to being deleted or overwritten.</p>
+<p>Selections have a new method <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#state.Selection.getBookmark"><code>getBookmark</code></a> that custom selection classes can implement to allow the undo history to accurately store and restore them.</p>
+<p>The new selection class <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#state.AllSelection"><code>AllSelection</code></a> can be used to select the entire document.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.20.0 (2017-04-03)</h3>
+<h4>Breaking changes</h4>
+<p>The <code>inclusiveLeft</code> and <code>inclusiveRight</code> options to inline decorations were renamed to <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#view.Decoration%5Einline%5Espec.inclusiveStart"><code>inclusiveStart</code></a> and <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#view.Decoration%5Einline%5Espec.inclusiveEnd"><code>inclusiveEnd</code></a> so that they also make sense in right-to-left text. The old names work with a warning until the next release.</p>
+<p>The default styling for lists and blockquotes was removed from <code>prosemirror.css</code>. (They were moved to the <a href="https://github.com/ProseMirror/prosemirror-example-setup"><code>example-setup</code></a> module.)</p>
+<h4>Bug fixes</h4>
+<p>Fixes reading of selection in Chrome in a shadow DOM.</p>
+<p>Registering DOM event handlers that the editor doesn't listen to by default with the <code>handleDOMEvents</code> prop should work again.</p>
+<p>Backspacing after turning off a mark now works again in Firefox.</p>
+<h4>New features</h4>
+<p>The new props <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#view.EditorProps.handlePaste"><code>handlePaste</code></a> and <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#view.EditorProps.handleDrop"><code>handleDrop</code></a> can be used to override drop and paste behavior.</p>
+<h3><a href="../ref/#inputrules">prosemirror-inputrules</a> 0.20.0 (2017-04-03)</h3>
+<h4>Breaking changes</h4>
+<p>The input rules <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#inputrules.inputRules">plugin</a> no longer implicitly binds backspace to undo the last applied rule.</p>
+<h4>New features</h4>
+<p>This module now exposes a command <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#inputrules.undoInputRule"><code>undoInputRule</code></a>, which will revert an input rule when run directly after one was applied.</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 0.20.0 (2017-04-03)</h3>
+<h4>Bug fixes</h4>
+<p>Appended transactions no longer generate undo history events.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 0.20.0 (2017-04-03)</h3>
+<h4>New features</h4>
+<p>The new <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#commands.selectAll"><code>selectAll</code> command</a>, bound to Mod-a in the base keymap, sets the selection to an <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#state.AllSelection"><code>AllSelection</code></a>.</p>
+<h3><a href="../ref/#schema-list">prosemirror-schema-list</a> 0.20.0 (2017-04-03)</h3>
+<h4>New features</h4>
+<p>The <a href="https://prosemirror.net/docs/ref/version/0.20.0.html#schema-list.liftListItem"><code>liftListItem</code></a> command can now lift items out of a list entirely, when the parent node isn't another list.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.19.1 (2017-03-18)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes a number of issues with characters being duplicated or disappearing when typing on mark boundaries.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 0.19.1 (2017-03-17)</h3>
+<h4>Bug fixes</h4>
+<p>Fix an issue where <code>ensureMarks</code> would fail to reset the marks to the empty set when turning off the last mark.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 0.19.0 (2017-03-16)</h3>
+<h4>Breaking changes</h4>
+<p><code>MarkSpec.inclusiveRight</code> was replaced by <a href="https://prosemirror.net/docs/ref/version/0.19.0.html#model.MarkSpec.inclusive"><code>inclusive</code></a>, which behaves slightly differently. <code>inclusiveRight</code> will be interpreted as <code>inclusive</code> (with a warning) until the next release.</p>
+<h4>New features</h4>
+<p>The new <a href="https://prosemirror.net/docs/ref/version/0.19.0.html#model.Node.inlineContent"><code>inlineContent</code></a> property on nodes and node types tells you whether a node type supports inline content.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.19.0.html#model.MarkSpec.inclusive"><code>MarkSpec.inclusive</code></a> can now be used to control whether content inserted at the boundary of a mark receives that mark.</p>
+<p>Parse rule <a href="https://prosemirror.net/docs/ref/version/0.19.0.html#model.ParseRule.context"><code>context</code></a> restrictions can now use node <a href="https://prosemirror.net/docs/ref/version/0.19.0.html#model.NodeSpec.group">groups</a>, not just node names, to specify valid context.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 0.19.0 (2017-03-16)</h3>
+<h4>Breaking changes</h4>
+<p><code>Selection.between</code> is now called <a href="state.TextSelection%5Ebetween"><code>TextSelection.between</code></a>, and only returns text selections.</p>
+<p>The JSON representation of selections changed. <a href="https://prosemirror.net/docs/ref/version/0.19.0.html#state.Selection%5EfromJSON"><code>fromJSON</code></a> will continue to understand the old representation, but if your own code touches the JSON data, you'll have to adjust it.</p>
+<p>All <code>Selection</code> objects now have <a href="https://prosemirror.net/docs/ref/version/0.19.0.html#state.Selection.$head"><code>$head</code></a>/<a href="https://prosemirror.net/docs/ref/version/0.19.0.html#state.Selection.$anchor"><code>$anchor</code></a> properties, so those can no longer be used to recognize text selections (use <a href="https://prosemirror.net/docs/ref/version/0.19.0.html#state.TextSelection.$cursor"><code>$cursor</code></a> or <code>instanceof</code>).</p>
+<h4>New features</h4>
+<p>It is now possible to write your own <a href="https://prosemirror.net/docs/ref/version/0.19.0.html#state.Selection"><code>Selection</code></a> subclasses and set the editor selection to an instance of them (provided you implement all required methods and register them with <a href="https://prosemirror.net/docs/ref/version/0.19.0.html#state.Selection%5EjsonID"><code>Selection.jsonID</code></a>).</p>
+<p>Text selections now have a <a href="https://prosemirror.net/docs/ref/version/0.19.0.html#state.TextSelection.$cursor"><code>$cursor</code></a> getter which returns a position only if this is a cursor selection.</p>
+<p>The new <a href="https://prosemirror.net/docs/ref/version/0.19.0.html#state.Transaction.ensureMarks"><code>Transaction.ensureMarks</code></a> method makes it easier to ensure given set of active marks without needlessly setting <code>storedMarks</code>.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.19.0 (2017-03-16)</h3>
+<h4>Breaking changes</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.19.0.html#view.EditorView.endOfTextblock"><code>endOfTextblock</code></a> no longer always returns false for horizontal motion on non-cursor selections, but checks the position of the selection head instead.</p>
+<h4>Bug fixes</h4>
+<p>Typing after adding/removing a mark no longer briefly shows the new text with the wrong marks.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.19.0.html#view.EditorView.posAtCoords"><code>posAtCoords</code></a> is now more reliable on modern browsers by using browser APIs.</p>
+<p>Fix a bug where the view would in some circumstances leave superfluous DOM nodes around inside marks.</p>
+<h4>New features</h4>
+<p>You can now override the selection the editor creates for a given DOM selection with the <a href="https://prosemirror.net/docs/ref/version/0.19.0.html#view.EditorProps.createSelectionBetween"><code>createSelectionBetween</code></a> prop.</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 0.19.0 (2017-03-16)</h3>
+<h4>New features</h4>
+<p>A new function <a href="https://prosemirror.net/docs/ref/version/0.19.0.html#history.closeHistory"><code>closeHistory</code></a> can be used to force separation of history events at the start of a given transaction.</p>
+<h3><a href="../ref/#collab">prosemirror-collab</a> 0.19.0 (2017-03-16)</h3>
+<h4>New features</h4>
+<p>You can now use strings (as well as numbers) as client IDs (this already worked, but now the documentation reflects this).</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 0.19.0 (2017-03-16)</h3>
+<h4>Bug fixes</h4>
+<p>Calling <code>joinBackward</code> at the start of a node that can't be joined no longer raises an error.</p>
+<h3><a href="../ref/#schema-basic">prosemirror-schema-basic</a> 0.19.0 (2017-03-16)</h3>
+<h4>Breaking changes</h4>
+<p>Link marks are now non-inclusive by default.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 0.18.0 (2017-02-24)</h3>
+<h4>Breaking changes</h4>
+<p><code>schema.nodeSpec</code> and <code>schema.markSpec</code> have been deprecated in favor of <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#model.Schema.spec"><code>schema.spec</code></a>. The properties still work with a warning in this release, but will be dropped in the next.</p>
+<h4>New features</h4>
+<p><code>Node</code> objects now have a <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#model.Node.check"><code>check</code></a> method which can be used to assert that they conform to the schema.</p>
+<p>Node specs now support an <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#model.NodeSpec.atom"><code>atom</code> property</a>, and nodes an <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#model.Node.isAtom"><code>isAtom</code> accessor</a>, which is currently only used to determine whether such nodes should be directly selectable (for example when they are rendered as an uneditable node view).</p>
+<p>The new <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#model.MarkSpec.excludes"><code>excludes</code></a> field on mark specs can be used to control the marks that this mark may coexist with. Mark type objects also gained an <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#model.MarkType.excludes"><code>excludes</code> <em>method</em></a> to querty this relation.</p>
+<p>Mark specs now support a <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#model.MarkSpec.group"><code>group</code></a> property, and marks can be referred to by group name in content specs.</p>
+<p>The <code>Schema</code> class now provides its whole <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#model.SchemaSpec">spec</a> under its <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#model.Schema.spec"><code>spec</code></a> property.</p>
+<p>The name of a schema's default top-level node is now <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#model.SchemaSpec.topNode">configurable</a>. You can use <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#model.Schema.topNodeType"><code>schema.topNodeType</code></a> to retrieve the top node type.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.18.0.html#model.ParseRule">Parse rules</a> now support a <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#model.ParseRule.context"><code>context</code> field</a> that can be used to only make the rule match inside certain ancestor nodes.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 0.18.0 (2017-02-24)</h3>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.18.0.html#transform.Transform.setNodeType"><code>Transform.setNodeType</code></a> now takes an optional argument to set the new node's attributes.</p>
+<p>Steps now provide an <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#transform.Step.offset"><code>offset</code></a> method, which makes it possible to create a copy the step with its position offset by a given amount.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.18.0.html#transform.Transform.docChanged"><code>docChanged</code></a> is now a property on the <code>Transform</code> class, rather than its <code>Transaction</code> subclass.</p>
+<p><code>Mapping</code> instances now have <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#transform.Mapping.invert"><code>invert</code></a> and <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#transform.Mapping.appendMappingInverted"><code>appendMappingInverted</code></a> methods to make mapping through them in reverse easier.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 0.18.0 (2017-02-24)</h3>
+<h4>Breaking changes</h4>
+<p>Plugin objects now store their spec under a <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#state.PluginSpec.spec"><code>spec</code></a> instead of an <code>options</code> property. The <code>options</code> property still works with a warning in this release.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.18.0 (2017-02-24)</h3>
+<h4>Breaking changes</h4>
+<p><code>Decoration</code> objects now store their definition object under <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#Decoration.spec"><code>spec</code></a>, not <code>options</code>. The old property name still works, with a warning, until the next release.</p>
+<h4>Bug fixes</h4>
+<p>Fix bug where calling <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#view.EditorView.focus"><code>focus</code></a> when there was a text selection would sometimes result in <code>state.selection</code> receiving an incorrect value.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.18.0.html#view.EditorView.props"><code>EditorView.props</code></a> now has its <code>state</code> property updated when you call <code>updateState</code>.</p>
+<p>Putting decorations on or inside a node view with an <code>update</code> method now works.</p>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.18.0.html#state.PluginSpec.view">Plugin view</a> update methods are now passed the view's previous state as second argument.</p>
+<p>The <code>place</code> agument to the <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#view.EditorView"><code>EditorView</code> constructor</a> can now be an object with a <code>mount</code> property to directly provide the node that should be made editable.</p>
+<p>The new <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#view.EditorView.setProps"><code>EditorView.setProps</code> method</a> makes it easier to update individual props.</p>
+<h3><a href="../ref/#keymap">prosemirror-keymap</a> 0.18.0 (2017-02-24)</h3>
+<h4>New features</h4>
+<p>Add a <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#keymap.keydownHandler"><code>keydownHandler</code></a> function, which takes a keymap and produces a <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#view.EditorProps.handleKeydown"><code>handleKeydown</code> prop</a>-style function.</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 0.18.0 (2017-02-24)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a problem where simultaneous collaborative editing could break the undo history.</p>
+<h3><a href="../ref/#collab">prosemirror-collab</a> 0.18.0 (2017-02-24)</h3>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.18.0.html#collab.sendableSteps"><code>sendableSteps</code></a> now also returns information about the original transactions that produced the steps.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 0.18.0 (2017-02-24)</h3>
+<h4>New features</h4>
+<p>New command <a href="https://prosemirror.net/docs/ref/version/0.18.0.html#commands.splitBlockKeepMarks"><code>splitBlockKeepMarks</code></a> which splits a block but preserves the marks at the cursor.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 0.17.1 (2017-02-08)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.17.0.html##state.Transaction.scrolledIntoView"><code>Transaction.scrolledIntoView</code></a> no longer always returns true.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.17.0.html#state.Selection%5Eneard"><code>Selection.near</code></a> now takes a third <code>textOnly</code> argument, as the docs already claimed.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.17.7 (2017-02-08)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes crash in the code that maintains the scroll position when the document is empty or hidden.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.17.6 (2017-02-08)</h3>
+<h4>Bug fixes</h4>
+<p>Transactions that shouldn't <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#state.transaction.scrollIntoView">scroll the selection into view</a> now no longer do so.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.17.4 (2017-02-02)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes bug where widget decorations would sometimes get parsed as content when editing near them.</p>
+<p>The editor now prevents the behavior of Ctrl-d and Ctrl-h on textblock boundaries on OS X, as intended.</p>
+<p>Make sure long words don't cause a horizontal scrollbar in Firefox</p>
+<p>Various behavior fixes for IE11.</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 0.17.1 (2017-02-02)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where collaborative editing corner cases could corrupt the history.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.17.3 (2017-01-19)</h3>
+<h4>Bug fixes</h4>
+<p>DOM changes deleting a node's inner wrapping DOM element (for example the <code>&lt;code&gt;</code> tag in a schema-basic code block) no longer break the editor.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.17.2 (2017-01-16)</h3>
+<h4>Bug fixes</h4>
+<p>Call custom click handlers before applying select-node behavior for a ctrl/cmd-click.</p>
+<p>Fix failure to apply DOM changes that start at document position 0.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 0.17.1 (2017-01-16)</h3>
+<h4>Bug fixes</h4>
+<p>Make sure <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#commands.toggleMark"><code>toggleMark</code></a> also works in the top-level node (when it is a textblock).</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.17.1 (2017-01-07)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where a document update that left the selection in the same place sometimes led to an incorrect DOM selection.</p>
+<p>Make sure <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#view.EditorView.focus"><code>EditorView.focus</code></a> doesn't cause the browser to scroll the top of the editor into view.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 0.17.0 (2017-01-05)</h3>
+<h4>Breaking changes</h4>
+<p><code>Node.marksAt</code> was replaced with <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#model.ResolvedPos.marks"><code>ResolvedPos.marks</code></a>. It still works (with a warning) in this release, but will be removed in the next one.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 0.17.0 (2017-01-05)</h3>
+<h4>Breaking changes</h4>
+<p>The way state is updated was changed. Instead of applying an action (a raw object with a <code>type</code> property), it is now done by <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#state.EditorState.apply">applying</a> a <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#state.Transaction"><code>Transaction</code></a>.</p>
+<p>The <code>EditorTransform</code> class was renamed <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#state.Transaction"><code>Transaction</code></a>, and extended to allow changing the set of stored marks and attaching custom metadata.</p>
+<h4>New features</h4>
+<p>Plugins now accept a <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#state.Plugin.constructor%5Eoptions.filterTransaction"><code>filterTransaction</code></a> option that can be used to filter out transactions as they come in.</p>
+<p>Plugins also got an <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#state.Plugin.constructor%5Eoptions.appendTransaction"><code>appendTransaction</code></a> option making it possible to follow up transactions with another transaction.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.17.0 (2017-01-05)</h3>
+<h4>Breaking changes</h4>
+<p>The <code>handleDOMEvent</code> prop has been dropped in favor of the <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#view.EditorProps.handleDOMEvents"><code>handleDOMEvents</code></a> (plural) prop.</p>
+<p>The <code>onChange</code> prop has been replaced by a <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#view.EditorProps.dispatchTransaction"><code>dispatchTransaction</code></a> prop (which takes a transaction instead of an action).</p>
+<h4>New features</h4>
+<p>Added support for a <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#view.EditorProps.handleDOMEvents"><code>handleDOMEvents</code> prop</a>, which allows you to provide handler functions per DOM event, and works even for events that the editor doesn't normally add a handler for.</p>
+<p>Add view method <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#view.EditorView.dispatch"><code>dispatch</code></a>, which provides a convenient way to dispatch transactions.</p>
+<p>The <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#view.EditorProps.dispatchTransaction"><code>dispatchTransaction</code></a> (used to be <code>onAction</code>) prop is now optional, and will default to simply applying the transaction to the current view state.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.17.0.html#view.Decoration.widget">Widget decorations</a> now accept an option <code>associative</code> which can be used to configure on which side of content inserted at their position they end up.</p>
+<p>Typing immediately after deleting text now preserves the marks of the deleted text.</p>
+<p>Transactions that update the selection because of mouse or touch input now get a metadata property <code>pointer</code> with the value <code>true</code>.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 0.17.0 (2017-01-05)</h3>
+<h4>Breaking changes</h4>
+<p>The <code>dispatch</code> function passed to commands is now passed a <a href="https://prosemirror.net/docs/ref/version/0.17.0.html#state.Transaction"><code>Transaction</code></a>, not an action object.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 0.16.0 (2016-12-23)</h3>
+<h4>New features</h4>
+<p>Plugins now take a <a href="https://prosemirror.net/docs/ref/version/0.16.0.html#state.Plugin.constructor%5Eoptions.view"><code>view</code> option</a> that can be used to interact with the <a href="https://prosemirror.net/docs/ref/version/0.16.0.html#view.EditorView">editor view</a>.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.16.0 (2016-12-23)</h3>
+<h4>Bug fixes</h4>
+<p>Solve problem where setting a node selection would trigger a DOM read, leading to the selection being reset.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.16.0 (2016-12-23)</h3>
+<h4>Breaking changes</h4>
+<p>The <code>spellcheck</code>, <code>label</code>, and <code>class</code> props are now replaced by an <a href="https://prosemirror.net/docs/ref/version/0.16.0.html#view.EditorProps.attributes"><code>attributes</code> prop</a>.</p>
+<h4>Bug fixes</h4>
+<p>Ignoring/aborting an action should no longer lead to the DOM being stuck in an outdated state.</p>
+<p>Typing at the end of a textblock which ends in a non-text node now actually works.</p>
+<p>DOM nodes for leaf document nodes are now set as non-editable to prevent various issues such as stray cursors inside of them and Firefox adding image resize controls.</p>
+<p>Inserting a node no longer causes nodes of the same type after it to be neednessly redrawn.</p>
+<h4>New features</h4>
+<p>Add a new editor prop <a href="https://prosemirror.net/docs/ref/version/0.16.0.html#view.EditorProps.editable"><code>editable</code></a> which controls whether the editor's <code>contentEditable</code> behavior is enabled.</p>
+<p>Plugins and props can now set any DOM attribute on the outer editor node using the <a href="https://prosemirror.net/docs/ref/version/0.16.0.html#view.EditorProps.attributes"><code>attributes</code> prop</a>.</p>
+<p>Node view constructors and update methods now have access to the node's wrapping decorations, which can be used to pass information to a node view without encoding it in the document.</p>
+<p>Attributes added or removed by node and inline <a href="https://prosemirror.net/docs/ref/version/0.16.0.html#view.Decoration">decorations</a> no longer cause the nodes inside of them to be fully redrawn, making node views more stable and allowing CSS transitions to be used.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 0.15.0 (2016-12-10)</h3>
+<h4>Breaking changes</h4>
+<p><code>ResolvedPos.atNodeBoundary</code> is deprecated and will be removed in the next release. Use <code>textOffset &gt; 0</code> instead.</p>
+<h4>New features</h4>
+<p>Parse rules associated with a schema can now specify a <a href="https://prosemirror.net/docs/ref/version/0.15.0.html#model.ParseRule.priority"><code>priority</code></a> to influence the order in which they are applied.</p>
+<p>Resolved positions have a new getter <a href="https://prosemirror.net/docs/ref/version/0.15.0.html#model.ResolvedPos.textOffset"><code>textOffset</code></a> to find their position within a text node (if any).</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 0.15.0 (2016-12-10)</h3>
+<h4>Bug fixes</h4>
+<p>Fix bug where pasted/inserted content would sometimes get incorrectly closed at the right side.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 0.15.0 (2016-12-10)</h3>
+<h4>Breaking changes</h4>
+<p>Selection actions no longer scroll the new selection into view by default (they never were supposed to, but due to a bug they did). Add a <code>scrollIntoView</code> property to the action to get this behavior.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.15.2 (2016-12-10)</h3>
+<h4>Bug fixes</h4>
+<p>The native selection is now appropriately hidden when there is a node selection.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.15.1 (2016-12-10)</h3>
+<h4>Bug fixes</h4>
+<p>Fix DOM parsing for decorated text nodes.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.15.0 (2016-12-10)</h3>
+<h4>Breaking changes</h4>
+<p>The editor view no longer wraps its editable DOM element in a wrapper element. The <code>ProseMirror</code> CSS class now applies directly to the editable element. The <code>ProseMirror-content</code> CSS class is still present for ease of upgrading but will be dropped in the next release.</p>
+<p>The editor view no longer draws a drop cursor when dragging content over the editor. The new <a href="https://github.com/prosemirror/prosemirror-dropcursor"><code>prosemirror-dropcursor</code></a> module implements this as a plugin.</p>
+<h4>Bug fixes</h4>
+<p>Simple typing and backspacing now gets handled by the browser without ProseMirror redrawing the touched nodes, making spell-checking and various platform-specific input tricks (long-press on OS X, double space on iOS) work in the editor.</p>
+<p>Improve tracking of DOM nodes that have been touched by user changes, so that <a href="https://prosemirror.net/docs/ref/version/0.15.0.html#view.EditorView.updateState"><code>updateState</code></a> can reliably fix them.</p>
+<p>Changes to the document that happen while dragging editor content no longer break moving of the content.</p>
+<p>Adding or removing a mark directly in the DOM (for example with the bold/italic buttons in iOS' context menu) now produces mark steps, rather than replace steps.</p>
+<p>Pressing backspace at the start of a paragraph on Android now allows key handlers for backspace to fire.</p>
+<p>Toggling a mark when there is no selection now works better on mobile platforms.</p>
+<h4>New features</h4>
+<p>Introduces an <a href="https://prosemirror.net/docs/ref/version/0.15.0.html#view.EditorView.endOfTextblock"><code>endOfTextblock</code></a> method on views, which can be used to find out in a bidi- and layout-aware way whether the selection is on the edge of a textblock.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 0.15.0 (2016-12-10)</h3>
+<h4>Breaking changes</h4>
+<p>Drops suppport for <code>delete(Char|Word)(Before|After)</code> and <code>move(Back|For)ward</code>, since we are now letting the browser handle those natively.</p>
+<h4>Bug fixes</h4>
+<p>The <a href="https://prosemirror.net/docs/ref/version/0.15.0.html#commands.joinForward"><code>joinForward</code></a> and <a href="https://prosemirror.net/docs/ref/version/0.15.0.html#commands.joinBackward"><code>joinBackward</code></a> commands can now strip out markup and nodes that aren't allowed in the joined node.</p>
+<h4>New features</h4>
+<p>A new command <a href="https://prosemirror.net/docs/ref/version/0.15.0.html#commands.exitCode"><code>exitCode</code></a> allows a user to exit a code block by creating a new paragraph below it.</p>
+<p>The <a href="https://prosemirror.net/docs/ref/version/0.15.0.html#commands.joinForward"><code>joinForward</code></a> and <a href="https://prosemirror.net/docs/ref/version/0.15.0.html#commands.joinBackward"><code>joinBackward</code></a> commands now use a bidirectional-text-aware way to determine whether the cursor is at the proper side of its parent textblock when they are passed a view.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.14.4 (2016-12-02)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where node decorations would stick around in the DOM after the decoration was removed.</p>
+<p>Setting or removing a node selection in an unfocused editor now properly updates the DOM to show that selection.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 0.14.1 (2016-11-30)</h3>
+<h4>Bug fixes</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.14.0.html#model.DOMParser.parseSlice"><code>DOMParser.parseSlice</code></a> will now ignore whitespace-only text nodes at the top of the slice.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.14.2 (2016-11-30)</h3>
+<h4>Bug fixes</h4>
+<p>FIX: Avoid unneeded selection resets which sometimes confused browsers.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.14.2 (2016-11-29)</h3>
+<h4>Bug fixes</h4>
+<p>Fix a bug where inverted selections weren't created in the DOM correctly.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.14.1 (2016-11-29)</h3>
+<h4>Bug fixes</h4>
+<p>Restores previously broken kludge that allows the cursor to appear after non-text content at the end of a line.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 0.14.0 (2016-11-28)</h3>
+<h4>New features</h4>
+<p>Parse rules now support <a href="https://prosemirror.net/docs/ref/version/0.14.0.html#model.ParseRule.skip"><code>skip</code></a> (skip outer element, parse content) and <a href="https://prosemirror.net/docs/ref/version/0.14.0.html#model.ParseRule.getContent"><code>getContent</code></a> (compute content using custom code) properties.</p>
+<p>The <code>DOMSerializer</code> class now exports a static <a href="https://prosemirror.net/docs/ref/version/0.14.0.html#model.DOMSerializer%5ErenderSpec"><code>renderSpec</code></a> method that can help render DOM spec arrays.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 0.14.0 (2016-11-28)</h3>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.14.0.html#state.SelectionAction">Selection actions</a> now have a <code>time</code> field and an (optional) <code>origin</code> field.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.14.0 (2016-11-28)</h3>
+<h4>Breaking changes</h4>
+<p>Wrapping decorations are now created using the <a href="https://prosemirror.net/docs/ref/version/0.14.0.html#view.DecorationAttrs.nodeName"><code>nodeName</code></a> property. The <code>wrapper</code> property is no longer supported.</p>
+<p>The <code>onUnmountDOM</code> prop is no longer supported (use a node view with a <a href="https://prosemirror.net/docs/ref/version/0.14.0.html#view.NodeView.destroy"><code>destroy</code></a> method instead).</p>
+<p>The <code>domSerializer</code> prop is no longer supported. Use <a href="https://prosemirror.net/docs/ref/version/0.14.0.html#view.EditorProps.nodeViews">node views</a> to configure editor-specific node representations.</p>
+<h4>New features</h4>
+<p>Widget decorations can now be given a <a href="https://prosemirror.net/docs/ref/version/0.14.0.html#view.Decoration.widget%5Eoptions.key"><code>key</code></a> property to prevent unneccesary redraws.</p>
+<p>The <code>EditorView</code> class now has a <a href="https://prosemirror.net/docs/ref/version/0.14.0.html#view.EditorView.destroy"><code>destroy</code></a> method for cleaning up.</p>
+<p>The <a href="https://prosemirror.net/docs/ref/version/0.14.0.html#view.EditorProps.handleClickOn"><code>handleClickOn</code></a> prop and friends now receive a <code>direct</code> boolean argument that indicates whether the node was clicked directly.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.14.0.html#view.Decoration%5Ewidget">Widget decorations</a> now support a <code>stopEvent</code> option that can be used to control which DOM events that pass through them should be ignored by the editor view.</p>
+<p>You can now <a href="https://prosemirror.net/docs/ref/version/0.14.0.html#view.EditorProps.nodeViews">specify</a> custom <a href="https://prosemirror.net/docs/ref/version/0.14.0.html#view.NodeView">node views</a> for an editor view, which give you control over the way node of a given type are represented in the DOM. See the related <a href="https://discuss.prosemirror.net/t/rfc-node-views-to-manage-the-representation-of-nodes/463">RFC</a>.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.13.2 (2016-11-15)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes an issue where widget decorations in the middle of text nodes would sometimes disappear.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.13.1 (2016-11-15)</h3>
+<h4>Bug fixes</h4>
+<p>Fixes event handler crash (and subsequent bad default behavior) when pasting some types of external HTML into an editor.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 0.13.0 (2016-11-11)</h3>
+<h4>Breaking changes</h4>
+<p><code>ResolvedPos.sameDepth</code> is now called <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#model.ResolvedPos.sharedDepth"><code>ResolvedPos.sharedDepth</code></a>, and takes a raw, unresolved position as argument.</p>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.13.0.html#model.DOMSerializer"><code>DOMSerializer</code></a>'s <code>nodes</code> and <code>marks</code> properties are now public.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.13.0.html#model.ContentMatch.findWrapping"><code>ContentMatch.findWrapping</code></a> now takes a third argument, <code>marks</code>. There's a new method <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#model.ContentMatch.findWrappingFor"><code>findWrappingFor</code></a> that accepts a whole node.</p>
+<p>Adds <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#model.Slice%5EmaxOpen"><code>Slice.maxOpen</code></a> static method to create maximally open slices.</p>
+<p>DOM parser objects now have a <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#model.DOMParser.parseSlice"><code>parseSlice</code></a> method which parses an HTML fragment into a <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#model.Slice"><code>Slice</code></a>, rather than trying to create a whole document from it.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 0.13.0 (2016-11-11)</h3>
+<h4>Bug fixes</h4>
+<p>Fix issue where <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#transform.Transform.replace"><code>Transform.replace</code></a> would, in specific circumstances, unneccessarily drop content.</p>
+<h4>New features</h4>
+<p>The new <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#transform.Transform"><code>Transform</code></a> method <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#transform.Transform.replaceRange"><code>replaceRange</code></a>, <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#transform.Transform.replaceRangeWith"><code>replaceRangeWith</code></a>, and <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#transform.Transform.deleteRange"><code>deleteRange</code></a> provide a way to replace and delete content in a 'do what I mean' way, automatically expanding the replaced region over empty parent nodes and including the parent nodes in the inserted content when appropriate.</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 0.13.0 (2016-11-11)</h3>
+<h4>Breaking changes</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.13.0.html#state.EditorTransform.replaceSelection"><code>EditorTransform.replaceSelection</code></a> now takes a <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#model.Slice">slice</a>, no longer a node. The new <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#state.EditorTransform.replaceSelectionWith"><code>replaceSelectionWith</code></a> method should be used to replace the selection with a node. Until the next release, calling it the old way will still work and emit a warning.</p>
+<h4>Bug fixes</h4>
+<p>The documentation for <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#state.StateField.applyAction"><code>applyAction</code></a> now actually reflects the arguments this method is given.</p>
+<h4>New features</h4>
+<p>A state field's <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#state.StateField.applyAction"><code>applyAction</code></a> method is now passed the previous state as 4th argument, so that it has access to the new doc and selection.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.13.0.html#state.EditorTransform.replaceSelection"><code>EditorTransform.replaceSelection</code></a> now accepts a slice (or, as before, as a node), and uses a revised algorithm, relying on the <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#model.NodeSpec.defining"><code>defining</code></a> node flag.</p>
+<p>The <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#state.TextSelection"><code>TextSelection</code></a> and <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#state.NodeSelection"><code>NodeSelection</code></a> classes now have a static <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#state.TextSelection%5Ecreate"><code>create</code></a> convenience method for creating selections from unresolved positions.</p>
+<p>Allow <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#state.TransformAction">transform actions</a> to be extended during dispatch using <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#state.extendTransformAction"><code>extendTransformAction</code></a>. Introduce <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#state.TransformAction.sealed"><code>sealed</code></a> flag to indicate when this is not safe.</p>
+<p>A new utility function <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#state.NodeSelection.isSelectable"><code>NodeSelection.isSelectable</code></a> can be used to test whether a node can be the target of a node selection.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.13.0 (2016-11-11)</h3>
+<h4>Breaking changes</h4>
+<p>Selecting nodes on OS X is now done with cmd-leftclick rather than ctrl-leftclick.</p>
+<h4>Bug fixes</h4>
+<p>Pasting text into a code block will now insert the raw text.</p>
+<p>Widget decorations at the start or end of a textblock no longer block horizontal cursor motion through them.</p>
+<p>Widget nodes at the end of textblocks are now reliably drawn during display updates.</p>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.13.0.html#view.DecorationSet.map"><code>DecorationSet.map</code></a> now takes an options object which allows you to specify an <code>onRemove</code> callback to be notified when remapping drops decorations.</p>
+<p>The <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#view.EditorProps.transformPastedHTML"><code>transformPastedHTML</code></a> and <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#view.EditorProps.transformPastedText"><code>transformPastedText</code></a> props were (re-)added, and can be used to clean up pasted content.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 0.13.0 (2016-11-11)</h3>
+<h4>New features</h4>
+<p>The <a href="https://prosemirror.net/docs/ref/version/0.13.0.html#commands.autoJoin"><code>autoJoin</code></a> function allows you to wrap command functions so that when the command makes nodes of a certain type occur next to each other, they are automatically joined.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.12.2 (2016-11-02)</h3>
+<h4>Bug fixes</h4>
+<p>Inline decorations that span across an empty textblock no longer crash the display drawing code.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 0.12.1 (2016-11-01)</h3>
+<h4>Bug fixes</h4>
+<p>Fix bug in <code>Transform.setBlockType</code> when used in a transform that already has steps.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.12.1 (2016-11-01)</h3>
+<h4>Bug fixes</h4>
+<p>Use a separate document to parse pasted HTML to better protect
+against cross-site scripting attacks.</p>
+<p>Specifying multiple classes in a decoration now actually works.</p>
+<p>Ignore empty inline decorations when building a decoration set.</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 0.12.1 (2016-11-01)</h3>
+<h4>Bug fixes</h4>
+<p>Fix crash in undo or redo commands when the history is empty.</p>
+<h3><a href="../ref/#model">prosemirror-model</a> 0.12.0 (2016-10-21)</h3>
+<h4>Breaking changes</h4>
+<p>Drops support for some undocumented options to the DOM
+serializer that were used by the view.</p>
+<h4>Bug fixes</h4>
+<p>When rendering DOM attributes, only ignore null values, not all
+falsy values.</p>
+<h3><a href="../ref/#transform">prosemirror-transform</a> 0.12.0 (2016-10-21)</h3>
+<h4>Breaking changes</h4>
+<p>Mapped positions now count as deleted when the token to the
+side specified by the <code>assoc</code> parameter is deleted, rather than when
+both tokens around them are deleted. (This is usually what you already
+wanted anyway.)</p>
+<h3><a href="../ref/#state">prosemirror-state</a> 0.12.0 (2016-10-21)</h3>
+<h4>Breaking changes</h4>
+<p>The interace to
+<a href="https://prosemirror.net/docs/ref/version/0.12.0.html#state.EditorState.toJSON"><code>EditorState.toJSON</code></a> and
+<a href="https://prosemirror.net/docs/ref/version/0.12.0.html#state.EditorState.fromJSON"><code>EditorState.fromJSON</code></a> has changed.</p>
+<p>The way plugins declare their <a href="https://prosemirror.net/docs/ref/version/0.12.0.html#state.Plugin.constructor.options.state">state
+field</a> has changed. Only one
+state field per plugin is supported, and state fields no longer have
+hard-coded names. <a href="https://prosemirror.net/docs/ref/version/0.12.0.html#state.Plugin.getState"><code>Plugin.getState</code></a> is the
+way to access plugin state now.</p>
+<p>Plugin dependencies are no longer supported.</p>
+<p><code>Plugin.reconfigure</code> is gone. Plugins are now always created
+with <a href="https://prosemirror.net/docs/ref/version/0.12.0.html#state.Plugin.constructor"><code>new Plugin</code></a>.</p>
+<p>Plugins no longer have a <code>config</code> field.</p>
+<h4>Bug fixes</h4>
+<p>Node selections are now properly dropped when mapped over a
+change that replaces their nodes.</p>
+<h4>New features</h4>
+<p><a href="https://prosemirror.net/docs/ref/version/0.12.0.html#state.PluginKey">Plugin keys</a> can now be used to find
+plugins by identity.</p>
+<p><a href="https://prosemirror.net/docs/ref/version/0.12.0.html#state.TransformAction">Transform actions</a> now have a
+<code>time</code> field containing the timestamp when the change was made.</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.12.0 (2016-10-21)</h3>
+<h4>Breaking changes</h4>
+<p>The return value of
+<a href="https://prosemirror.net/docs/ref/version/0.12.0.html#view.EditorView.posAtCoords"><code>EditorView.posAtCoords</code></a> changed to
+contain an <code>inside</code> property pointing at the innermost node that the
+coordinates are inside of. (Note that the docs for this method were
+wrong in the previous release.)</p>
+<h4>Bug fixes</h4>
+<p>Reduce reliance on shift-state tracking to minimize damage when
+it gets out of sync.</p>
+<p>Fix bug that'd produce bogus document positions for DOM positions
+inside non-document nodes.</p>
+<p>Don't treat fast ctrl-clicks as double or triple clicks.</p>
+<h4>New features</h4>
+<p>Implement <a href="https://prosemirror.net/docs/ref/version/0.12.0.html#view.Decoration">decorations</a>, a way to
+influence the way the document is drawn. Add the <a href="https://prosemirror.net/docs/ref/version/0.12.0.html#view.EditorProps.decorations"><code>decorations</code>
+prop</a> to specify them.</p>
+<h3><a href="../ref/#keymap">prosemirror-keymap</a> 0.12.0 (2016-10-21)</h3>
+<h4>Breaking changes</h4>
+<p>Key names are now based on
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key"><code>KeyboardEvent.key</code></a>
+instead of
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code"><code>.code</code></a>.
+This means that, for character-producing keys, you'll want to use the
+character typed, not the key name. So <code>Ctrl-Z</code> now means uppercase Z,
+and you'll usually want <code>Ctrl-z</code> instead. Single-quoted key names are
+no longer supported.</p>
+<h3><a href="../ref/#history">prosemirror-history</a> 0.12.0 (2016-10-21)</h3>
+<h4>Breaking changes</h4>
+<p>The <a href="https://prosemirror.net/docs/ref/version/0.12.0.html#history.history"><code>history</code></a> export is now a function
+that creates a history plugin, rather than a plugin instance.</p>
+<h4>New features</h4>
+<p>Add a
+<a href="https://prosemirror.net/docs/ref/version/0.12.0.html#history.history%5Econfig.newGroupDelay"><code>newGroupDelay</code></a> plugin
+option. This brings back the behavior where pausing between edits will
+automatically cause the history to put subsequent changes in a new
+undo event.</p>
+<h3><a href="../ref/#commands">prosemirror-commands</a> 0.12.0 (2016-10-21)</h3>
+<h4>Bug fixes</h4>
+<p>Fix crash when backspacing into nodes with complex content
+expressions.</p>
+<h3><a href="../ref/#schema-basic">prosemirror-schema-basic</a> 0.12.0 (2016-10-21)</h3>
+<h4>Bug fixes</h4>
+<p>Don't treat &lt;b style=font-weight: normal&gt; as strong when parsing.
+(Google Docs puts such ridiculous HTML on the clipboard.)</p>
+<h3><a href="../ref/#view">prosemirror-view</a> 0.11.2 (2016-10-04)</h3>
+<h4>Bug fixes</h4>
+<p>Pass actual event object to <a href="https://prosemirror.net/docs/ref/version/0.11.0.html#view.EditorProps.handleDOMEvent"><code>handleDOMEvent</code></a>, rather than just its name.</p>
+<p>Fix display corruption caused by using the wrong state as previous version during IME.</p>
+</article>
+
+<footer>
+  <nav>
+    <a class=logo href=".">ProseMirror</a>
+    <div class=navlinks>
+      <a href="/backers.html">支持者</a>
+      <a href="http://contributor-covenant.org/version/1/1/0/">代码贡献公约</a>
+      <a href="https://discuss.prosemirror.net/">官方论坛</a>
+      <a href="https://github.com/prosemirror/prosemirror/issues">报告错误</a>
+      <a href="https://github.com/xheldon-prosemirror/prosemirror/issues">报告翻译错误</a>
+    </div>
+  </nav>
+</footer>
+
+</html>
